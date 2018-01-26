@@ -2,6 +2,8 @@ package com.github.ellie;
 
 import org.junit.jupiter.api.DynamicTest;
 
+import java.util.Arrays;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,14 +13,16 @@ public class ExploratoryRunner {
 
 
     private final Explorer explorer;
+    private Consumer<Object[]> passingCases;
 
-    private ExploratoryRunner(Explorer explorer) {
+    private ExploratoryRunner(Explorer explorer, Consumer<Object[]> passingCases) {
         this.explorer = explorer;
+        this.passingCases = passingCases;
     }
 
-    public static Stream<DynamicTest> generateTestsFor(Object testInstance) {
+    public static Stream<DynamicTest> generateTestsFor(Object testInstance, Consumer<Object[]> passingCases) {
         Explorer explorer = new Explorer(testInstance);
-        return new ExploratoryRunner(explorer).tests();
+        return new ExploratoryRunner(explorer,passingCases).tests();
     }
 
     private Stream<DynamicTest> tests() {
@@ -39,6 +43,7 @@ public class ExploratoryRunner {
                                          assertThat(data)
                                              .as("no data validates this behaviour")
                                              .isNotEmpty();
+                                         data.forEach(passingCases);
                                      }));
     }
 

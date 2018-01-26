@@ -22,8 +22,10 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -36,8 +38,8 @@ import static org.mockito.Mockito.verify;
 
 public class ExploratoryRunnerShould {
 
+    private static final Consumer<Object[]> IGNORE_PASSING_CASES_CONSUMER = (o)->{};
 
-    // Can generate easily input methods
 
     // Nice to have
     // PotentialBehaviour => returns a consumer (can use assertions)
@@ -58,7 +60,7 @@ public class ExploratoryRunnerShould {
     @MethodSource("numberOfBehaviours")
     void createsOneNodePerPotentialBehaviorAndOneMoreForUndefinedBehaviour(Object testInstance,
                                                                            int numberOfBehaviours) {
-        Stream<? extends DynamicNode> behaviours = ExploratoryRunner.generateTestsFor(testInstance);
+        Stream<? extends DynamicNode> behaviours = generateTestsFor(testInstance);
         assertThat(behaviours).hasSize(numberOfBehaviours + 1);
     }
 
@@ -74,7 +76,7 @@ public class ExploratoryRunnerShould {
     @MethodSource("methodNames")
     void namesNodesWithActionAndSupposedBehaviour(Object testInstance, String actionName,
                                                   List<String> behaviourNames) {
-        Stream<? extends DynamicNode> behaviours = ExploratoryRunner.generateTestsFor(testInstance);
+        Stream<? extends DynamicNode> behaviours = generateTestsFor(testInstance);
 
         assertThat(behaviours).extracting(DynamicNode::getDisplayName)
                               .containsAll(
@@ -99,7 +101,7 @@ public class ExploratoryRunnerShould {
     @ParameterizedTest
     @MethodSource("testInstances")
     void addsUnknownBehaviourLast(Object testInstance) {
-        Stream<? extends DynamicNode> behaviours = ExploratoryRunner.generateTestsFor(testInstance);
+        Stream<? extends DynamicNode> behaviours = generateTestsFor(testInstance);
 
         assertThat(behaviours).extracting(DynamicNode::getDisplayName)
                               .last()
@@ -110,7 +112,7 @@ public class ExploratoryRunnerShould {
     @Test
     void testsEachBehavioursWithEachData() {
         OneSuppositionExploration testInstance = Mockito.spy(new OneSuppositionExploration());
-        ExploratoryRunner.generateTestsFor(testInstance)
+        generateTestsFor(testInstance)
                          .forEach(t -> {
                              try {
                                  t.getExecutable()
@@ -129,7 +131,7 @@ public class ExploratoryRunnerShould {
     @Test
     void combinesAllDataProviderMethods() {
         TwoDataProviderExploration testInstance = Mockito.spy(new TwoDataProviderExploration());
-        ExploratoryRunner.generateTestsFor(testInstance)
+        generateTestsFor(testInstance)
                          .forEach(t -> {
                              try {
                                  t.getExecutable()
@@ -148,9 +150,25 @@ public class ExploratoryRunnerShould {
 
 
     @Test
+    void printsDataThatPassesPotentialBehaviour() {
+        List<Object[]> dataThatPass = new ArrayList<>();
+        OneSuppositionExploration testInstance = Mockito.spy(new OneSuppositionExploration());
+        ExploratoryRunner.generateTestsFor(testInstance,dataThatPass::add)
+                         .forEach(t -> {
+                             try {
+                                 t.getExecutable()
+                                  .execute();
+                             } catch (Throwable throwable) {
+                                 //test result is not the concern here
+                             }
+                         });
+        assertThat(dataThatPass).containsExactly(new Object[]{2});
+    }
+
+    @Test
     void failPotentialBehaviourIfNotDataValidatesPredicate() {
         Stream<DynamicTest> behaviours =
-            ExploratoryRunner.generateTestsFor(new AllWrongSuppositionExploration());
+            generateTestsFor(new AllWrongSuppositionExploration());
 
         Assertions.assertThatThrownBy(firstTestOf(behaviours)::execute)
                   .isInstanceOf(AssertionError.class)
@@ -169,7 +187,7 @@ public class ExploratoryRunnerShould {
     @MethodSource("perfectExplorations")
     void passUnknownBehaviourIfAllDataValidatesAtLeastPredicate(Object testInstance) {
         Stream<DynamicTest> behaviours =
-            ExploratoryRunner.generateTestsFor(testInstance);
+            generateTestsFor(testInstance);
 
         try {
             unknowBehaviourTestOf(behaviours).execute();
@@ -181,7 +199,7 @@ public class ExploratoryRunnerShould {
     @Test
     void failUnknownBehaviourIfAtLeastOneDataValidatesAnyPredicateAndLogIt() {
         Stream<DynamicTest> behaviours =
-            ExploratoryRunner.generateTestsFor(new AllWrongSuppositionExploration());
+            generateTestsFor(new AllWrongSuppositionExploration());
 
         Assertions.assertThatThrownBy(unknowBehaviourTestOf(behaviours)::execute)
                   .isInstanceOf(AssertionError.class)
@@ -192,7 +210,7 @@ public class ExploratoryRunnerShould {
 
     @Test
     void throwsAnExceptionIfMoreThanOneBehaviourIsExplored() {
-        Assertions.assertThatThrownBy(() -> ExploratoryRunner.generateTestsFor(new TwoBehaviourExploration()))
+        Assertions.assertThatThrownBy(() -> generateTestsFor(new TwoBehaviourExploration()))
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("only one method")
                   .hasMessageContaining(TestedBehaviour.class.getSimpleName());
@@ -200,7 +218,7 @@ public class ExploratoryRunnerShould {
 
     @Test
     void throwsAnExceptionIfNoDataIsGiven() {
-        Assertions.assertThatThrownBy(() -> ExploratoryRunner.generateTestsFor(new NoDataExploration()))
+        Assertions.assertThatThrownBy(() -> generateTestsFor(new NoDataExploration()))
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("no data found")
                   .hasMessageContaining(DataProvider.class.getSimpleName());
@@ -208,7 +226,7 @@ public class ExploratoryRunnerShould {
 
     @Test
     void throwsAnExceptionIfDataIsNotIterableOrStream() {
-        Assertions.assertThatThrownBy(() -> ExploratoryRunner.generateTestsFor(new NotIterableDataExploration()))
+        Assertions.assertThatThrownBy(() -> generateTestsFor(new NotIterableDataExploration()))
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("should be iterable or stream")
                   .hasMessageContaining(DataProvider.class.getSimpleName());
@@ -216,7 +234,7 @@ public class ExploratoryRunnerShould {
 
     @Test
     void throwsAnExceptionIfPotentialBehaviourIsNotPredicate() {
-        Assertions.assertThatThrownBy(() -> ExploratoryRunner.generateTestsFor(new NotPredicateExploration()))
+        Assertions.assertThatThrownBy(() -> generateTestsFor(new NotPredicateExploration()))
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("should be predicate")
                   .hasMessageContaining(PotentialBehaviour.class.getSimpleName());
@@ -232,6 +250,10 @@ public class ExploratoryRunnerShould {
         return behaviours.collect(Collectors.toCollection(LinkedList::new))
                          .getLast()
                          .getExecutable();
+    }
+
+    static Stream<DynamicTest> generateTestsFor(Object testInstance) {
+        return ExploratoryRunner.generateTestsFor(testInstance, IGNORE_PASSING_CASES_CONSUMER);
     }
 
 }
