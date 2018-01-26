@@ -5,6 +5,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -37,8 +38,8 @@ class Explorer {
                                .allMatch((m) -> m.returnsAnyOf(Stream.class, Iterable.class));
         List<AccessibleMethod> potentialBehaviours = findMethodsAnnotatedWith(PotentialBehaviour.class);
         assertThat(potentialBehaviours).as(
-            PotentialBehaviour.class.getSimpleName() + " methods return type should be predicate")
-                                       .allMatch(m -> m.returnsAnyOf(Predicate.class));
+            PotentialBehaviour.class.getSimpleName() + " methods return type should be predicate or consumer")
+                                       .allMatch(m -> m.returnsAnyOf(Predicate.class, Consumer.class));
         this.behaviours = potentialBehaviours.stream()
                                              .map(NamedBehaviour::new)
                                              .collect(Collectors.toList());
@@ -101,7 +102,15 @@ class Explorer {
 
         @Override
         public Predicate<Object> apply(Object testInstance, Object[] arguments) {
-            return (Predicate<Object>) m.invoke(testInstance, arguments);
+            if (m.returnsAnyOf(Predicate.class)) return (Predicate<Object>) m.invoke(testInstance, arguments);
+            return (o) -> {
+                try {
+                    m.invoke(testInstance, arguments);
+                    return true;
+                } catch (AssertionError e) {
+                    return false;
+                }
+            };
         }
 
         @Override

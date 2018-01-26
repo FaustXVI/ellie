@@ -4,6 +4,7 @@ import com.github.ellie.examples.invalids.NoDataExploration;
 import com.github.ellie.examples.invalids.NotIterableDataExploration;
 import com.github.ellie.examples.invalids.NotPredicateExploration;
 import com.github.ellie.examples.invalids.TwoBehaviourExploration;
+import com.github.ellie.examples.valids.AllAllowedTypesExploration;
 import com.github.ellie.examples.valids.AllWrongSuppositionExploration;
 import com.github.ellie.examples.valids.MultipleArgumentsExploration;
 import com.github.ellie.examples.valids.OneSuppositionExploration;
@@ -39,13 +40,6 @@ import static org.mockito.Mockito.verify;
 public class ExploratoryRunnerShould {
 
     private static final Consumer<Object[]> IGNORE_PASSING_CASES_CONSUMER = (o)->{};
-
-
-    // Nice to have
-    // PotentialBehaviour => returns a consumer (can use assertions)
-    // Warning if a same input goes in to different behaviours
-    // framework independant
-
 
     static Stream<Arguments> numberOfBehaviours() {
         return Stream.of(
@@ -179,6 +173,7 @@ public class ExploratoryRunnerShould {
     static Stream<Arguments> perfectExplorations() {
         return Stream.of(
             Arguments.of(new PerfectSuppositionExploration()),
+            Arguments.of(new AllAllowedTypesExploration()),
             Arguments.of(new ProtectedMethodsExploration())
         );
     }
@@ -192,7 +187,22 @@ public class ExploratoryRunnerShould {
         try {
             unknowBehaviourTestOf(behaviours).execute();
         } catch (Throwable throwable) {
-            fail("All behaviour are found", throwable);
+            fail("All behaviour are found, no unknown behaviour should be left", throwable);
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("perfectExplorations")
+    void passAllTestsIfPerfectComprehension(Object testInstance) {
+        List<DynamicTest> behaviours =
+            generateTestsFor(testInstance).collect(Collectors.toList());
+
+        try {
+            for (DynamicTest behaviour : behaviours) {
+                behaviour.getExecutable().execute();
+            }
+        } catch (Throwable throwable) {
+            fail("Perfect comprehension should be green", throwable);
         }
     }
 
@@ -233,10 +243,10 @@ public class ExploratoryRunnerShould {
     }
 
     @Test
-    void throwsAnExceptionIfPotentialBehaviourIsNotPredicate() {
+    void throwsAnExceptionIfPotentialBehaviourIsNotPredicateOrConsumer() {
         Assertions.assertThatThrownBy(() -> generateTestsFor(new NotPredicateExploration()))
                   .isInstanceOf(AssertionError.class)
-                  .hasMessageContaining("should be predicate")
+                  .hasMessageContaining("should be predicate or consumer")
                   .hasMessageContaining(PotentialBehaviour.class.getSimpleName());
     }
 
@@ -252,7 +262,7 @@ public class ExploratoryRunnerShould {
                          .getExecutable();
     }
 
-    static Stream<DynamicTest> generateTestsFor(Object testInstance) {
+    private static Stream<DynamicTest> generateTestsFor(Object testInstance) {
         return ExploratoryRunner.generateTestsFor(testInstance, IGNORE_PASSING_CASES_CONSUMER);
     }
 
