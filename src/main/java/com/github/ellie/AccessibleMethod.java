@@ -2,6 +2,7 @@ package com.github.ellie;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 class AccessibleMethod {
     private final Method method;
@@ -19,7 +20,11 @@ class AccessibleMethod {
         }
     }
 
-    public String getName() {
+    public String name() {
         return method.getName();
+    }
+
+    public boolean returnsAnyOf(Class<?>... classes) {
+        return Arrays.stream(classes).anyMatch(c->c.isAssignableFrom(method.getReturnType()));
     }
 }

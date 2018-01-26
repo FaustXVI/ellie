@@ -10,23 +10,36 @@ import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 public class ExploratoryRunner {
 
 
+    private final Explorer explorer;
+
+    private ExploratoryRunner(Explorer explorer) {
+        this.explorer = explorer;
+    }
+
     public static Stream<DynamicTest> generateTestsFor(Object testInstance) {
         Explorer explorer = new Explorer(testInstance);
-        return Stream.concat(testedBehaviours(explorer), unknownBehaviourTest(explorer));
+        return new ExploratoryRunner(explorer).tests();
     }
 
-    private static Stream<DynamicTest> unknownBehaviourTest(Explorer explorer) {
-        return Stream.of(dynamicTest("Unknown behaviour",
-                                     assertThat(explorer.testsThatPasses(explorer.unknownBehaviour()))
-                                         .as("At least one data has unknown behaviour")::isEmpty));
+    private Stream<DynamicTest> tests() {
+        return Stream.concat(testedBehaviours(), Stream.of(unknownBehaviour()));
     }
 
-    private static Stream<DynamicTest> testedBehaviours(Explorer explorer) {
+    private DynamicTest unknownBehaviour() {
+        return dynamicTest("Unknown behaviour",
+                           assertThat(explorer.dataThatPasses(explorer.unknownBehaviour()))
+                               .as("At least one data has unknown behaviour")::isEmpty);
+    }
+
+    private Stream<DynamicTest> testedBehaviours() {
         return explorer.behavioursTo(
             behaviour -> dynamicTest(behaviour.toString(),
-                                     assertThat(explorer.testsThatPasses(behaviour))
-                                         .as("no data validates this behaviour")
-                                         ::isNotEmpty));
+                                     () -> {
+                                         Iterable<Object[]> data = explorer.dataThatPasses(behaviour);
+                                         assertThat(data)
+                                             .as("no data validates this behaviour")
+                                             .isNotEmpty();
+                                     }));
     }
 
 }

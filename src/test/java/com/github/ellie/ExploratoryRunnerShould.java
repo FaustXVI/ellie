@@ -1,6 +1,8 @@
 package com.github.ellie;
 
 import com.github.ellie.examples.invalids.NoDataExploration;
+import com.github.ellie.examples.invalids.NotIterableDataExploration;
+import com.github.ellie.examples.invalids.NotPredicateExploration;
 import com.github.ellie.examples.invalids.TwoBehaviourExploration;
 import com.github.ellie.examples.valids.AllWrongSuppositionExploration;
 import com.github.ellie.examples.valids.MultipleArgumentsExploration;
@@ -156,7 +158,7 @@ public class ExploratoryRunnerShould {
     }
 
 
-    static Stream<Arguments> perfectEplorations() {
+    static Stream<Arguments> perfectExplorations() {
         return Stream.of(
             Arguments.of(new PerfectSuppositionExploration()),
             Arguments.of(new ProtectedMethodsExploration())
@@ -164,7 +166,7 @@ public class ExploratoryRunnerShould {
     }
 
     @ParameterizedTest
-    @MethodSource("perfectEplorations")
+    @MethodSource("perfectExplorations")
     void passUnknownBehaviourIfAllDataValidatesAtLeastPredicate(Object testInstance) {
         Stream<DynamicTest> behaviours =
             ExploratoryRunner.generateTestsFor(testInstance);
@@ -202,6 +204,22 @@ public class ExploratoryRunnerShould {
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("no data found")
                   .hasMessageContaining(DataProvider.class.getSimpleName());
+    }
+
+    @Test
+    void throwsAnExceptionIfDataIsNotIterableOrStream() {
+        Assertions.assertThatThrownBy(() -> ExploratoryRunner.generateTestsFor(new NotIterableDataExploration()))
+                  .isInstanceOf(AssertionError.class)
+                  .hasMessageContaining("should be iterable or stream")
+                  .hasMessageContaining(DataProvider.class.getSimpleName());
+    }
+
+    @Test
+    void throwsAnExceptionIfPotentialBehaviourIsNotPredicate() {
+        Assertions.assertThatThrownBy(() -> ExploratoryRunner.generateTestsFor(new NotPredicateExploration()))
+                  .isInstanceOf(AssertionError.class)
+                  .hasMessageContaining("should be predicate")
+                  .hasMessageContaining(PotentialBehaviour.class.getSimpleName());
     }
 
     private Executable firstTestOf(Stream<DynamicTest> behaviours) {

@@ -32,9 +32,16 @@ class Explorer {
             .as("no data found : at least one method should be annotated with %s",
                 DataProvider.class.getSimpleName())
             .isGreaterThanOrEqualTo(1);
-        this.behaviours = findMethodsAnnotatedWith(PotentialBehaviour.class).stream()
-                                                                            .map(NamedBehaviour::new)
-                                                                            .collect(Collectors.toList());
+        assertThat(dataMethods).as(
+            DataProvider.class.getSimpleName() + " methods return type should be iterable or stream")
+                               .allMatch((m) -> m.returnsAnyOf(Stream.class, Iterable.class));
+        List<AccessibleMethod> potentialBehaviours = findMethodsAnnotatedWith(PotentialBehaviour.class);
+        assertThat(potentialBehaviours).as(
+            PotentialBehaviour.class.getSimpleName() + " methods return type should be predicate")
+                                       .allMatch(m -> m.returnsAnyOf(Predicate.class));
+        this.behaviours = potentialBehaviours.stream()
+                                             .map(NamedBehaviour::new)
+                                             .collect(Collectors.toList());
     }
 
     <T> Stream<T> behavioursTo(Function<Behaviour, T> mapper) {
@@ -42,8 +49,10 @@ class Explorer {
                          .map(mapper);
     }
 
-    Stream<Object[]> testsThatPasses(Behaviour behaviour) {
-        return allData().filter(testBehaviour(behaviour)::apply);
+    Iterable<Object[]> dataThatPasses(Behaviour behaviour) {
+        return allData().filter(testBehaviour(behaviour))
+                        .map(Arguments::get)
+                        .collect(Collectors.toList());
     }
 
     Behaviour unknownBehaviour() {
@@ -58,15 +67,15 @@ class Explorer {
                      .collect(Collectors.toList());
     }
 
-    private Function<Object[], Boolean> testBehaviour(Behaviour behaviour) {
-        return (Object[] arguments) -> {
-            Object behaviourResult = testedBehaviour.invoke(testInstance, arguments);
-            Predicate<Object> predicate = behaviour.apply(testInstance, arguments);
+    private Predicate<Arguments> testBehaviour(Behaviour behaviour) {
+        return (Arguments arguments) -> {
+            Object behaviourResult = testedBehaviour.invoke(testInstance, arguments.get());
+            Predicate<Object> predicate = behaviour.apply(testInstance, arguments.get());
             return predicate.test(behaviourResult);
         };
     }
 
-    private Stream<Object[]> allData() {
+    private Stream<Arguments> allData() {
         return dataMethods.stream()
                           .flatMap(this::dataOf)
                           .map(this::toArguments);
@@ -78,15 +87,15 @@ class Explorer {
         return StreamSupport.stream(((Iterable<?>) data).spliterator(), false);
     }
 
-    private Object[] toArguments(Object o) {
-        if (o instanceof Arguments) return ((Arguments) o).get();
-        return new Object[]{o};
+    private Arguments toArguments(Object o) {
+        if (o instanceof Arguments) return ((Arguments) o);
+        return Arguments.of(o);
     }
 
     private class NamedBehaviour implements Behaviour {
         private final AccessibleMethod m;
 
-        public NamedBehaviour(AccessibleMethod m) {
+        NamedBehaviour(AccessibleMethod m) {
             this.m = m;
         }
 
@@ -97,7 +106,7 @@ class Explorer {
 
         @Override
         public String toString() {
-            return testedBehaviour.getName() + " " + m.getName();
+            return testedBehaviour.name() + " " + m.name();
         }
 
     }
