@@ -10,7 +10,7 @@ import com.github.ellie.examples.invalids.TwoBehaviourExploration;
 import com.github.ellie.examples.valids.AllAllowedTypesExploration;
 import com.github.ellie.examples.valids.AllWrongSuppositionExploration;
 import com.github.ellie.examples.valids.AllWrongSuppositionWithConsumersExploration;
-import com.github.ellie.examples.valids.MultipleArgumentsExploration;
+import com.github.ellie.examples.valids.MultipleExplorationArgumentsExploration;
 import com.github.ellie.examples.valids.OneSuppositionExploration;
 import com.github.ellie.examples.valids.PerfectSuppositionExploration;
 import com.github.ellie.examples.valids.ProtectedMethodsExploration;
@@ -18,10 +18,7 @@ import com.github.ellie.examples.valids.TwoDataProviderExploration;
 import com.github.ellie.examples.valids.TwoSuppositionExploration;
 import com.github.ellie.examples.valids.ZeroSuppositionExploration;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.DynamicNode;
-import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -51,7 +48,7 @@ public class ExploratoryRunnerShould {
             Arguments.of(new ZeroSuppositionExploration(), 0),
             Arguments.of(new OneSuppositionExploration(), 1),
             Arguments.of(new TwoSuppositionExploration(), 2),
-            Arguments.of(new MultipleArgumentsExploration(), 1)
+            Arguments.of(new MultipleExplorationArgumentsExploration(), 1)
         );
     }
 
@@ -59,7 +56,7 @@ public class ExploratoryRunnerShould {
     @MethodSource("numberOfBehaviours")
     void createsOneNodePerPotentialBehaviorAndOneMoreForUndefinedBehaviour(Object testInstance,
                                                                            int numberOfBehaviours) {
-        Stream<? extends DynamicNode> behaviours = generateTestsFor(testInstance);
+        Stream<BehaviourTest> behaviours = generateTestsFor(testInstance);
         assertThat(behaviours).hasSize(numberOfBehaviours + 1);
     }
 
@@ -75,9 +72,9 @@ public class ExploratoryRunnerShould {
     @MethodSource("methodNames")
     void namesNodesWithActionAndSupposedBehaviour(Object testInstance, String actionName,
                                                   List<String> behaviourNames) {
-        Stream<? extends DynamicNode> behaviours = generateTestsFor(testInstance);
+        Stream<BehaviourTest> behaviours = generateTestsFor(testInstance);
 
-        assertThat(behaviours).extracting(DynamicNode::getDisplayName)
+        assertThat(behaviours).extracting(b->b.name)
                               .containsAll(behaviourNames.stream()
                                                          .map(behaviourName -> actionName + "_" + behaviourName)
                                                          .collect(Collectors.toList()))
@@ -95,9 +92,9 @@ public class ExploratoryRunnerShould {
     @ParameterizedTest
     @MethodSource("testInstances")
     void addsUnknownBehaviourLast(Object testInstance) {
-        Stream<? extends DynamicNode> behaviours = generateTestsFor(testInstance);
+        Stream<BehaviourTest> behaviours = generateTestsFor(testInstance);
 
-        assertThat(behaviours).extracting(DynamicNode::getDisplayName)
+        assertThat(behaviours).extracting(b->b.name)
                               .last()
                               .isEqualTo("Unknown behaviour");
     }
@@ -109,8 +106,8 @@ public class ExploratoryRunnerShould {
         generateTestsFor(testInstance)
             .forEach(t -> {
                 try {
-                    t.getExecutable()
-                     .execute();
+                    t.test
+                     .run();
                 } catch (Throwable throwable) {
                     //test result is not the concern here
                 }
@@ -128,8 +125,7 @@ public class ExploratoryRunnerShould {
         generateTestsFor(testInstance)
             .forEach(t -> {
                 try {
-                    t.getExecutable()
-                     .execute();
+                    t.test.run();
                 } catch (Throwable throwable) {
                     //test result is not the concern here
                 }
@@ -151,8 +147,8 @@ public class ExploratoryRunnerShould {
         ExploratoryRunner.generateTestsFor(testInstance, dataThatPass::put)
                          .forEach(t -> {
                              try {
-                                 t.getExecutable()
-                                  .execute();
+                                 t.test
+                                  .run();
                              } catch (Throwable throwable) {
                                  //test result is not the concern here
                              }
@@ -174,9 +170,9 @@ public class ExploratoryRunnerShould {
     @ParameterizedTest
     @MethodSource("allWrong")
     void failPotentialBehaviourIfNotDataValidatesPredicate(Object testInstance) {
-        Stream<DynamicTest> behaviours = generateTestsFor(testInstance);
+        Stream<BehaviourTest> behaviours = generateTestsFor(testInstance);
 
-        Assertions.assertThatThrownBy(firstTestOf(behaviours)::execute)
+        Assertions.assertThatThrownBy(firstTestOf(behaviours)::run)
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("no data validates this behaviour");
     }
@@ -193,11 +189,11 @@ public class ExploratoryRunnerShould {
     @ParameterizedTest
     @MethodSource("perfectExplorations")
     void passUnknownBehaviourIfAllDataValidatesAtLeastPredicate(Object testInstance) {
-        Stream<DynamicTest> behaviours =
+        Stream<BehaviourTest> behaviours =
             generateTestsFor(testInstance);
 
         try {
-            unknowBehaviourTestOf(behaviours).execute();
+            unknowBehaviourTestOf(behaviours).run();
         } catch (Throwable throwable) {
             fail("All behaviour are found, no unknown behaviour should be left", throwable);
         }
@@ -206,13 +202,12 @@ public class ExploratoryRunnerShould {
     @ParameterizedTest
     @MethodSource("perfectExplorations")
     void passAllTestsIfPerfectComprehension(Object testInstance) {
-        List<DynamicTest> behaviours =
+        List<BehaviourTest> behaviours =
             generateTestsFor(testInstance).collect(Collectors.toList());
 
         try {
-            for (DynamicTest behaviour : behaviours) {
-                behaviour.getExecutable()
-                         .execute();
+            for (BehaviourTest behaviour : behaviours) {
+                behaviour.test.run();
             }
         } catch (Throwable throwable) {
             fail("Perfect comprehension should be green", throwable);
@@ -221,10 +216,10 @@ public class ExploratoryRunnerShould {
 
     @Test
     void failUnknownBehaviourIfAtLeastOneDataValidatesAnyPredicateAndLogIt() {
-        Stream<DynamicTest> behaviours =
+        Stream<BehaviourTest> behaviours =
             generateTestsFor(new AllWrongSuppositionExploration());
 
-        Assertions.assertThatThrownBy(unknowBehaviourTestOf(behaviours)::execute)
+        Assertions.assertThatThrownBy(unknowBehaviourTestOf(behaviours)::run)
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("one data has unknown behaviour")
                   .hasMessageContaining("2")
@@ -263,19 +258,19 @@ public class ExploratoryRunnerShould {
                   .hasMessageContaining(PotentialBehaviour.class.getSimpleName());
     }
 
-    private Executable firstTestOf(Stream<DynamicTest> behaviours) {
+    private Runnable firstTestOf(Stream<BehaviourTest> behaviours) {
         return behaviours.findFirst()
                          .orElseThrow(() -> new AssertionError("Should have at least one behaviour but got none"))
-                         .getExecutable();
+                         .test;
     }
 
-    private Executable unknowBehaviourTestOf(Stream<DynamicTest> behaviours) {
+    private Runnable unknowBehaviourTestOf(Stream<BehaviourTest> behaviours) {
         return behaviours.collect(Collectors.toCollection(LinkedList::new))
                          .getLast()
-                         .getExecutable();
+                         .test;
     }
 
-    private static Stream<DynamicTest> generateTestsFor(Object testInstance) {
+    private static Stream<BehaviourTest> generateTestsFor(Object testInstance) {
         return ExploratoryRunner.generateTestsFor(testInstance, IGNORE_PASSING_CASES_CONSUMER);
     }
 

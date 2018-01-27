@@ -1,11 +1,11 @@
 package com.github.ellie.examples.valids;
 
 import com.github.ellie.api.DataProvider;
-import com.github.ellie.junit5.ExploratoryTest;
 import com.github.ellie.api.PotentialBehaviour;
 import com.github.ellie.api.TestedBehaviour;
+import com.github.ellie.core.ExplorationArguments;
+import com.github.ellie.junit5.ExploratoryTest;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.params.provider.Arguments;
 
 import java.util.Collection;
 import java.util.List;
@@ -16,13 +16,13 @@ import java.util.stream.Stream;
 public class AllAllowedTypesExploration implements ExploratoryTest {
 
     @DataProvider
-    public Collection<Arguments> two() {
-        return List.of(Arguments.of(2, 4));
+    public Collection<ExplorationArguments> two() {
+        return List.of(ExplorationArguments.of(2, 4));
     }
 
     @DataProvider
-    public Stream<Arguments> four() {
-        return Stream.of(Arguments.of(20, 40));
+    public Stream<ExplorationArguments> four() {
+        return Stream.of(ExplorationArguments.of(20, 40));
     }
 
     @TestedBehaviour

@@ -1,20 +1,20 @@
 package com.github.ellie.examples.valids;
 
 import com.github.ellie.api.DataProvider;
-import com.github.ellie.junit5.ExploratoryTest;
 import com.github.ellie.api.PotentialBehaviour;
 import com.github.ellie.api.TestedBehaviour;
-import org.junit.jupiter.params.provider.Arguments;
+import com.github.ellie.core.ExplorationArguments;
+import com.github.ellie.junit5.ExploratoryTest;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class MultipleArgumentsExploration implements ExploratoryTest {
+public class MultipleExplorationArgumentsExploration implements ExploratoryTest {
 
     @DataProvider
-    public Collection<Arguments> numbers() {
-        return List.of(Arguments.of(2, 3));
+    public Collection<ExplorationArguments> numbers() {
+        return List.of(ExplorationArguments.of(2, 3));
     }
 
     @TestedBehaviour

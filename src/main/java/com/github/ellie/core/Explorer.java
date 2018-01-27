@@ -3,7 +3,6 @@ package com.github.ellie.core;
 import com.github.ellie.api.DataProvider;
 import com.github.ellie.api.PotentialBehaviour;
 import com.github.ellie.api.TestedBehaviour;
-import org.junit.jupiter.params.provider.Arguments;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -55,7 +54,7 @@ class Explorer {
 
     Iterable<Object[]> dataThatPasses(Behaviour behaviour) {
         return allData().filter(testBehaviour(behaviour))
-                        .map(Arguments::get)
+                        .map(ExplorationArguments::get)
                         .collect(Collectors.toList());
     }
 
@@ -71,15 +70,15 @@ class Explorer {
                      .collect(Collectors.toList());
     }
 
-    private Predicate<Arguments> testBehaviour(Behaviour behaviour) {
-        return (Arguments arguments) -> {
-            Object behaviourResult = testedBehaviour.invoke(testInstance, arguments);
-            Predicate<Object> predicate = behaviour.apply(testInstance, arguments);
+    private Predicate<ExplorationArguments> testBehaviour(Behaviour behaviour) {
+        return (ExplorationArguments explorationArguments) -> {
+            Object behaviourResult = testedBehaviour.invoke(testInstance, explorationArguments);
+            Predicate<Object> predicate = behaviour.apply(testInstance, explorationArguments);
             return predicate.test(behaviourResult);
         };
     }
 
-    private Stream<Arguments> allData() {
+    private Stream<ExplorationArguments> allData() {
         return dataMethods.stream()
                           .flatMap(this::dataOf)
                           .map(this::toArguments);
@@ -91,9 +90,9 @@ class Explorer {
         return StreamSupport.stream(((Iterable<?>) data).spliterator(), false);
     }
 
-    private Arguments toArguments(Object o) {
-        if (o instanceof Arguments) return ((Arguments) o);
-        return Arguments.of(o);
+    private ExplorationArguments toArguments(Object o) {
+        if (o instanceof ExplorationArguments) return ((ExplorationArguments) o);
+        return ExplorationArguments.of(o);
     }
 
     public final class NamedBehaviour implements Behaviour {
@@ -104,11 +103,11 @@ class Explorer {
         }
 
         @Override
-        public Predicate<Object> apply(Object testInstance, Arguments arguments) {
-            if (m.returnsAnyOf(Predicate.class)) return (Predicate<Object>) m.invoke(testInstance, arguments);
+        public Predicate<Object> apply(Object testInstance, ExplorationArguments explorationArguments) {
+            if (m.returnsAnyOf(Predicate.class)) return (Predicate<Object>) m.invoke(testInstance, explorationArguments);
             return (o) -> {
                 try {
-                    Consumer<Object> consumer = (Consumer<Object>) m.invoke(testInstance, arguments);
+                    Consumer<Object> consumer = (Consumer<Object>) m.invoke(testInstance, explorationArguments);
                     consumer.accept(o);
                     return true;
                 } catch (AssertionError e) {

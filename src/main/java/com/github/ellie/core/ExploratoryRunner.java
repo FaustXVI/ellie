@@ -1,12 +1,10 @@
 package com.github.ellie.core;
 
-import org.junit.jupiter.api.DynamicTest;
-
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
+import static com.github.ellie.core.BehaviourTest.dynamicTest;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 public class ExploratoryRunner {
 
@@ -19,23 +17,23 @@ public class ExploratoryRunner {
         this.passingCases = passingCases;
     }
 
-    public static Stream<DynamicTest> generateTestsFor(Object testInstance,
-                                                       BiConsumer<String, Iterable<Object[]>> passingCases) {
+    public static Stream<BehaviourTest> generateTestsFor(Object testInstance,
+                                                         BiConsumer<String, Iterable<Object[]>> passingCases) {
         Explorer explorer = new Explorer(testInstance);
         return new ExploratoryRunner(explorer, passingCases).tests();
     }
 
-    private Stream<DynamicTest> tests() {
+    private Stream<BehaviourTest> tests() {
         return Stream.concat(testedBehaviours(), Stream.of(unknownBehaviour()));
     }
 
-    private DynamicTest unknownBehaviour() {
+    private BehaviourTest unknownBehaviour() {
         return dynamicTest("Unknown behaviour",
                            assertThat(explorer.dataThatPasses(explorer.unknownBehaviour()))
                                .as("At least one data has unknown behaviour")::isEmpty);
     }
 
-    private Stream<DynamicTest> testedBehaviours() {
+    private Stream<BehaviourTest> testedBehaviours() {
         return explorer.behavioursTo(
             behaviour -> dynamicTest(behaviour.name(),
                                      () -> {
