@@ -23,11 +23,11 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,7 +39,8 @@ import static org.mockito.Mockito.verify;
 
 public class ExploratoryRunnerShould {
 
-    private static final Consumer<Object[]> IGNORE_PASSING_CASES_CONSUMER = (o)->{};
+    private static final BiConsumer<String, Iterable<Object[]>> IGNORE_PASSING_CASES_CONSUMER = (l, o) -> {
+    };
 
     static Stream<Arguments> numberOfBehaviours() {
         return Stream.of(
@@ -73,15 +74,10 @@ public class ExploratoryRunnerShould {
         Stream<? extends DynamicNode> behaviours = generateTestsFor(testInstance);
 
         assertThat(behaviours).extracting(DynamicNode::getDisplayName)
-                              .containsAll(
-                                  createName(behaviourNames, behaviourName -> actionName + " " + behaviourName))
+                              .containsAll(behaviourNames.stream()
+                                                         .map(behaviourName -> actionName + "_" + behaviourName)
+                                                         .collect(Collectors.toList()))
         ;
-    }
-
-    private List<String> createName(List<String> behaviourNames, Function<String, String> behaviourNameConstructor) {
-        return behaviourNames.stream()
-                             .map(behaviourNameConstructor)
-                             .collect(Collectors.toList());
     }
 
     static Stream<Arguments> testInstances() {
@@ -107,14 +103,14 @@ public class ExploratoryRunnerShould {
     void testsEachBehavioursWithEachData() {
         OneSuppositionExploration testInstance = Mockito.spy(new OneSuppositionExploration());
         generateTestsFor(testInstance)
-                         .forEach(t -> {
-                             try {
-                                 t.getExecutable()
-                                  .execute();
-                             } catch (Throwable throwable) {
-                                 //test result is not the concern here
-                             }
-                         });
+            .forEach(t -> {
+                try {
+                    t.getExecutable()
+                     .execute();
+                } catch (Throwable throwable) {
+                    //test result is not the concern here
+                }
+            });
         verify(testInstance, atLeastOnce()).numbers();
         verify(testInstance, times(2)).times2(2);
         verify(testInstance, times(2)).times2(4);
@@ -126,14 +122,14 @@ public class ExploratoryRunnerShould {
     void combinesAllDataProviderMethods() {
         TwoDataProviderExploration testInstance = Mockito.spy(new TwoDataProviderExploration());
         generateTestsFor(testInstance)
-                         .forEach(t -> {
-                             try {
-                                 t.getExecutable()
-                                  .execute();
-                             } catch (Throwable throwable) {
-                                 //test result is not the concern here
-                             }
-                         });
+            .forEach(t -> {
+                try {
+                    t.getExecutable()
+                     .execute();
+                } catch (Throwable throwable) {
+                    //test result is not the concern here
+                }
+            });
         verify(testInstance, atLeastOnce()).two();
         verify(testInstance, atLeastOnce()).four();
         verify(testInstance, times(2)).times2(2);
@@ -144,10 +140,11 @@ public class ExploratoryRunnerShould {
 
 
     @Test
-    void printsDataThatPassesPotentialBehaviour() {
-        List<Object[]> dataThatPass = new ArrayList<>();
-        OneSuppositionExploration testInstance = Mockito.spy(new OneSuppositionExploration());
-        ExploratoryRunner.generateTestsFor(testInstance,dataThatPass::add)
+    void callsConsumerWithDataThatPassesPotentialBehaviour() {
+        Map<String, Iterable<Object[]>> dataThatPass = new HashMap<>();
+        OneSuppositionExploration testInstance = new OneSuppositionExploration();
+
+        ExploratoryRunner.generateTestsFor(testInstance, dataThatPass::put)
                          .forEach(t -> {
                              try {
                                  t.getExecutable()
@@ -156,7 +153,10 @@ public class ExploratoryRunnerShould {
                                  //test result is not the concern here
                              }
                          });
-        assertThat(dataThatPass).containsExactly(new Object[]{2});
+
+        String passingSupposition = "times2_is4";
+        assertThat(dataThatPass).containsOnlyKeys(passingSupposition);
+        assertThat(dataThatPass.get(passingSupposition)).containsExactly(new Object[]{2});
     }
 
     @Test
@@ -199,7 +199,8 @@ public class ExploratoryRunnerShould {
 
         try {
             for (DynamicTest behaviour : behaviours) {
-                behaviour.getExecutable().execute();
+                behaviour.getExecutable()
+                         .execute();
             }
         } catch (Throwable throwable) {
             fail("Perfect comprehension should be green", throwable);

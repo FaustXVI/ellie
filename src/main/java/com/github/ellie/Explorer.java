@@ -19,7 +19,7 @@ class Explorer {
     private final Object testInstance;
     private final AccessibleMethod testedBehaviour;
     private final List<AccessibleMethod> dataMethods;
-    private final List<Behaviour> behaviours;
+    private final List<NamedBehaviour> behaviours;
 
     Explorer(Object testInstance) {
         this.testInstance = testInstance;
@@ -45,7 +45,7 @@ class Explorer {
                                              .collect(Collectors.toList());
     }
 
-    <T> Stream<T> behavioursTo(Function<Behaviour, T> mapper) {
+    <T> Stream<T> behavioursTo(Function<NamedBehaviour, T> mapper) {
         return behaviours.stream()
                          .map(mapper);
     }
@@ -93,7 +93,7 @@ class Explorer {
         return Arguments.of(o);
     }
 
-    private class NamedBehaviour implements Behaviour {
+    public final class NamedBehaviour implements Behaviour {
         private final AccessibleMethod m;
 
         NamedBehaviour(AccessibleMethod m) {
@@ -115,7 +115,7 @@ class Explorer {
 
         @Override
         public String toString() {
-            return testedBehaviour.name() + " " + m.name();
+            return testedBehaviour.name() + "_" + m.name();
         }
 
     }

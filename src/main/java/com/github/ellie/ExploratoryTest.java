@@ -4,7 +4,7 @@ import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 
 import java.util.Arrays;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 public interface ExploratoryTest {
@@ -15,8 +15,8 @@ public interface ExploratoryTest {
         return ExploratoryRunner.generateTestsFor(this, passingCasesConsumer());
     }
 
-    default Consumer<Object[]> passingCasesConsumer() {
-        return o->System.out.println(Arrays.toString(o));
+    default BiConsumer<String,Iterable<Object[]>> passingCasesConsumer() {
+        return (s,l) -> l.forEach(o->System.out.println(Arrays.toString(o)));
     }
 
 }
