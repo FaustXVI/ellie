@@ -52,9 +52,8 @@ class Explorer {
                          .map(mapper);
     }
 
-    Iterable<Object[]> dataThatPasses(Behaviour behaviour) {
+    Iterable<ExplorationArguments> dataThatPasses(Behaviour behaviour) {
         return allData().filter(testBehaviour(behaviour))
-                        .map(ExplorationArguments::get)
                         .collect(Collectors.toList());
     }
 

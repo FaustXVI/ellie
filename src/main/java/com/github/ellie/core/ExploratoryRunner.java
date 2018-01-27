@@ -10,15 +10,15 @@ public class ExploratoryRunner {
 
 
     private final Explorer explorer;
-    private BiConsumer<String, Iterable<Object[]>> passingCases;
+    private BiConsumer<String, Iterable<ExplorationArguments>> passingCases;
 
-    private ExploratoryRunner(Explorer explorer, BiConsumer<String, Iterable<Object[]>> passingCases) {
+    private ExploratoryRunner(Explorer explorer, BiConsumer<String, Iterable<ExplorationArguments>> passingCases) {
         this.explorer = explorer;
         this.passingCases = passingCases;
     }
 
     public static Stream<BehaviourTest> generateTestsFor(Object testInstance,
-                                                         BiConsumer<String, Iterable<Object[]>> passingCases) {
+                                                         BiConsumer<String, Iterable<ExplorationArguments>> passingCases) {
         Explorer explorer = new Explorer(testInstance);
         return new ExploratoryRunner(explorer, passingCases).tests();
     }
@@ -37,7 +37,7 @@ public class ExploratoryRunner {
         return explorer.behavioursTo(
             behaviour -> dynamicTest(behaviour.name(),
                                      () -> {
-                                         Iterable<Object[]> data = explorer.dataThatPasses(behaviour);
+                                         Iterable<ExplorationArguments> data = explorer.dataThatPasses(behaviour);
                                          assertThat(data)
                                              .as("no data validates this behaviour")
                                              .isNotEmpty();

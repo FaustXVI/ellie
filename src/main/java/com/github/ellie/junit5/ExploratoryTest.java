@@ -1,5 +1,6 @@
 package com.github.ellie.junit5;
 
+import com.github.ellie.core.ExplorationArguments;
 import com.github.ellie.core.ExploratoryRunner;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
@@ -18,8 +19,8 @@ public interface ExploratoryTest {
             .map(t-> DynamicTest.dynamicTest(t.name, t.test::run));
     }
 
-    default BiConsumer<String,Iterable<Object[]>> passingCasesConsumer() {
-        return (s,l) -> l.forEach(o->System.out.println(Arrays.toString(o)));
+    default BiConsumer<String,Iterable<ExplorationArguments>> passingCasesConsumer() {
+        return (s,l) -> l.forEach(o->System.out.println(Arrays.toString(o.get())));
     }
 
 }

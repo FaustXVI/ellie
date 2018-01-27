@@ -40,7 +40,7 @@ import static org.mockito.Mockito.verify;
 
 public class ExploratoryRunnerShould {
 
-    private static final BiConsumer<String, Iterable<Object[]>> IGNORE_PASSING_CASES_CONSUMER = (l, o) -> {
+    private static final BiConsumer<String, Iterable<ExplorationArguments>> IGNORE_PASSING_CASES_CONSUMER = (l, o) -> {
     };
 
     static Stream<Arguments> numberOfBehaviours() {
@@ -141,7 +141,7 @@ public class ExploratoryRunnerShould {
 
     @Test
     void callsConsumerWithDataThatPassesPotentialBehaviour() {
-        Map<String, Iterable<Object[]>> dataThatPass = new HashMap<>();
+        Map<String, Iterable<ExplorationArguments>> dataThatPass = new HashMap<>();
         OneSuppositionExploration testInstance = new OneSuppositionExploration();
 
         ExploratoryRunner.generateTestsFor(testInstance, dataThatPass::put)
@@ -156,7 +156,9 @@ public class ExploratoryRunnerShould {
 
         String passingSupposition = "times2_is4";
         assertThat(dataThatPass).containsOnlyKeys(passingSupposition);
-        assertThat(dataThatPass.get(passingSupposition)).containsExactly(new Object[]{2});
+        assertThat(dataThatPass.get(passingSupposition))
+            .extracting(ExplorationArguments::get)
+            .containsExactly(new Object[]{2});
     }
 
 
