@@ -1,6 +1,6 @@
 package com.github.ellie.examples.invalids;
 
-import com.github.ellie.TestedBehaviour;
+import com.github.ellie.api.TestedBehaviour;
 
 public class NoDataExploration {
 

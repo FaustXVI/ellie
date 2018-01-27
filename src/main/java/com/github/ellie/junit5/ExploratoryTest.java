@@ -1,5 +1,6 @@
-package com.github.ellie;
+package com.github.ellie.junit5;
 
+import com.github.ellie.core.ExploratoryRunner;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 

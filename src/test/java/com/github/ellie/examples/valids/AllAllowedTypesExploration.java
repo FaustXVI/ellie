@@ -1,9 +1,9 @@
 package com.github.ellie.examples.valids;
 
-import com.github.ellie.DataProvider;
-import com.github.ellie.ExploratoryTest;
-import com.github.ellie.PotentialBehaviour;
-import com.github.ellie.TestedBehaviour;
+import com.github.ellie.api.DataProvider;
+import com.github.ellie.junit5.ExploratoryTest;
+import com.github.ellie.api.PotentialBehaviour;
+import com.github.ellie.api.TestedBehaviour;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.params.provider.Arguments;
 

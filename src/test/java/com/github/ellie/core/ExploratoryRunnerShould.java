@@ -1,11 +1,15 @@
-package com.github.ellie;
+package com.github.ellie.core;
 
+import com.github.ellie.api.DataProvider;
+import com.github.ellie.api.PotentialBehaviour;
+import com.github.ellie.api.TestedBehaviour;
 import com.github.ellie.examples.invalids.NoDataExploration;
 import com.github.ellie.examples.invalids.NotIterableDataExploration;
 import com.github.ellie.examples.invalids.NotPredicateExploration;
 import com.github.ellie.examples.invalids.TwoBehaviourExploration;
 import com.github.ellie.examples.valids.AllAllowedTypesExploration;
 import com.github.ellie.examples.valids.AllWrongSuppositionExploration;
+import com.github.ellie.examples.valids.AllWrongSuppositionWithConsumersExploration;
 import com.github.ellie.examples.valids.MultipleArgumentsExploration;
 import com.github.ellie.examples.valids.OneSuppositionExploration;
 import com.github.ellie.examples.valids.PerfectSuppositionExploration;
@@ -159,10 +163,18 @@ public class ExploratoryRunnerShould {
         assertThat(dataThatPass.get(passingSupposition)).containsExactly(new Object[]{2});
     }
 
-    @Test
-    void failPotentialBehaviourIfNotDataValidatesPredicate() {
-        Stream<DynamicTest> behaviours =
-            generateTestsFor(new AllWrongSuppositionExploration());
+
+    static Stream<Arguments> allWrong() {
+        return Stream.of(
+            Arguments.of(new AllWrongSuppositionExploration()),
+            Arguments.of(new AllWrongSuppositionWithConsumersExploration())
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("allWrong")
+    void failPotentialBehaviourIfNotDataValidatesPredicate(Object testInstance) {
+        Stream<DynamicTest> behaviours = generateTestsFor(testInstance);
 
         Assertions.assertThatThrownBy(firstTestOf(behaviours)::execute)
                   .isInstanceOf(AssertionError.class)

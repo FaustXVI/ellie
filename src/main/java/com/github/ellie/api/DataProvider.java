@@ -1,4 +1,4 @@
-package com.github.ellie;
+package com.github.ellie.api;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

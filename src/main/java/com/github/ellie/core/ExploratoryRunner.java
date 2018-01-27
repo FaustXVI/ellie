@@ -1,4 +1,4 @@
-package com.github.ellie;
+package com.github.ellie.core;
 
 import org.junit.jupiter.api.DynamicTest;
 
@@ -37,13 +37,13 @@ public class ExploratoryRunner {
 
     private Stream<DynamicTest> testedBehaviours() {
         return explorer.behavioursTo(
-            behaviour -> dynamicTest(behaviour.toString(),
+            behaviour -> dynamicTest(behaviour.name(),
                                      () -> {
                                          Iterable<Object[]> data = explorer.dataThatPasses(behaviour);
                                          assertThat(data)
                                              .as("no data validates this behaviour")
                                              .isNotEmpty();
-                                         passingCases.accept(behaviour.toString(), data);
+                                         passingCases.accept(behaviour.name(), data);
                                      }));
     }
 

@@ -1,5 +1,8 @@
-package com.github.ellie;
+package com.github.ellie.core;
 
+import com.github.ellie.api.DataProvider;
+import com.github.ellie.api.PotentialBehaviour;
+import com.github.ellie.api.TestedBehaviour;
 import org.junit.jupiter.params.provider.Arguments;
 
 import java.lang.annotation.Annotation;
@@ -12,7 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static com.github.ellie.Behaviour.noneOf;
+import static com.github.ellie.core.Behaviour.noneOf;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class Explorer {
@@ -70,8 +73,8 @@ class Explorer {
 
     private Predicate<Arguments> testBehaviour(Behaviour behaviour) {
         return (Arguments arguments) -> {
-            Object behaviourResult = testedBehaviour.invoke(testInstance, arguments.get());
-            Predicate<Object> predicate = behaviour.apply(testInstance, arguments.get());
+            Object behaviourResult = testedBehaviour.invoke(testInstance, arguments);
+            Predicate<Object> predicate = behaviour.apply(testInstance, arguments);
             return predicate.test(behaviourResult);
         };
     }
@@ -82,8 +85,8 @@ class Explorer {
                           .map(this::toArguments);
     }
 
-    private Stream<?> dataOf(AccessibleMethod f) {
-        Object data = f.invoke(testInstance);
+    private Stream<?> dataOf(AccessibleMethod method) {
+        Object data = method.invoke(testInstance);
         if (data instanceof Stream) return (Stream<?>) data;
         return StreamSupport.stream(((Iterable<?>) data).spliterator(), false);
     }
@@ -101,11 +104,12 @@ class Explorer {
         }
 
         @Override
-        public Predicate<Object> apply(Object testInstance, Object[] arguments) {
+        public Predicate<Object> apply(Object testInstance, Arguments arguments) {
             if (m.returnsAnyOf(Predicate.class)) return (Predicate<Object>) m.invoke(testInstance, arguments);
             return (o) -> {
                 try {
-                    m.invoke(testInstance, arguments);
+                    Consumer<Object> consumer = (Consumer<Object>) m.invoke(testInstance, arguments);
+                    consumer.accept(o);
                     return true;
                 } catch (AssertionError e) {
                     return false;
@@ -113,8 +117,7 @@ class Explorer {
             };
         }
 
-        @Override
-        public String toString() {
+        public String name() {
             return testedBehaviour.name() + "_" + m.name();
         }
 

@@ -1,7 +1,7 @@
 package com.github.ellie.examples.invalids;
 
-import com.github.ellie.DataProvider;
-import com.github.ellie.TestedBehaviour;
+import com.github.ellie.api.DataProvider;
+import com.github.ellie.api.TestedBehaviour;
 
 import java.util.Collection;
 import java.util.List;
