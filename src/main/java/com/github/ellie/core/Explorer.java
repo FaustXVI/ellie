@@ -1,11 +1,5 @@
 package com.github.ellie.core;
 
-import com.github.ellie.api.DataProvider;
-import com.github.ellie.api.PotentialBehaviour;
-import com.github.ellie.api.TestedBehaviour;
-
-import java.lang.annotation.Annotation;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -15,36 +9,25 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static com.github.ellie.core.Behaviour.noneOf;
-import static org.assertj.core.api.Assertions.assertThat;
 
 class Explorer {
-    private final Object testInstance;
     private final AccessibleMethod testedBehaviour;
-    private final List<AccessibleMethod> dataMethods;
     private final List<NamedBehaviour> behaviours;
+    private final List<ExplorationArguments> data;
 
     Explorer(Object testInstance) {
-        this.testInstance = testInstance;
-        List<AccessibleMethod> testedBehaviours = findMethodsAnnotatedWith(TestedBehaviour.class);
-        assertThat(testedBehaviours)
-            .as("only one method should be annotated with %s", TestedBehaviour.class.getSimpleName())
-            .hasSize(1);
-        this.testedBehaviour = testedBehaviours.get(0);
-        this.dataMethods = findMethodsAnnotatedWith(DataProvider.class);
-        assertThat(dataMethods.size())
-            .as("no data found : at least one method should be annotated with %s",
-                DataProvider.class.getSimpleName())
-            .isGreaterThanOrEqualTo(1);
-        assertThat(dataMethods).as(
-            DataProvider.class.getSimpleName() + " methods return type should be iterable or stream")
-                               .allMatch((m) -> m.returnsAnyOf(Stream.class, Iterable.class));
-        List<AccessibleMethod> potentialBehaviours = findMethodsAnnotatedWith(PotentialBehaviour.class);
-        assertThat(potentialBehaviours).as(
-            PotentialBehaviour.class.getSimpleName() + " methods return type should be predicate or consumer")
-                                       .allMatch(m -> m.returnsAnyOf(Predicate.class, Consumer.class));
-        this.behaviours = potentialBehaviours.stream()
-                                             .map(NamedBehaviour::new)
-                                             .collect(Collectors.toList());
+        MethodFinder methodFinder = new MethodFinder(testInstance);
+        this.testedBehaviour = methodFinder.testedBehaviour();
+        data = methodFinder.dataProviders()
+                           .stream()
+                           .flatMap(this::dataOf)
+                           .map(this::toArguments)
+                           .collect(Collectors.toList());
+
+        this.behaviours = methodFinder.behaviours()
+                                      .stream()
+                                      .map(NamedBehaviour::new)
+                                      .collect(Collectors.toList());
     }
 
     <T> Stream<T> behavioursTo(Function<NamedBehaviour, T> mapper) {
@@ -61,30 +44,20 @@ class Explorer {
         return noneOf(behaviours);
     }
 
-    private List<AccessibleMethod> findMethodsAnnotatedWith(Class<? extends Annotation> annotationClass) {
-        return Arrays.stream(testInstance.getClass()
-                                         .getDeclaredMethods())
-                     .filter(m -> m.getAnnotation(annotationClass) != null)
-                     .map(AccessibleMethod::new)
-                     .collect(Collectors.toList());
-    }
-
     private Predicate<ExplorationArguments> testBehaviour(Behaviour behaviour) {
         return (ExplorationArguments explorationArguments) -> {
-            Object behaviourResult = testedBehaviour.invoke(testInstance, explorationArguments);
-            Predicate<Object> predicate = behaviour.apply(testInstance, explorationArguments);
+            Object behaviourResult = testedBehaviour.invoke(explorationArguments);
+            Predicate<Object> predicate = behaviour.apply(explorationArguments);
             return predicate.test(behaviourResult);
         };
     }
 
     private Stream<ExplorationArguments> allData() {
-        return dataMethods.stream()
-                          .flatMap(this::dataOf)
-                          .map(this::toArguments);
+        return data.stream();
     }
 
     private Stream<?> dataOf(AccessibleMethod method) {
-        Object data = method.invoke(testInstance);
+        Object data = method.invoke();
         if (data instanceof Stream) return (Stream<?>) data;
         return StreamSupport.stream(((Iterable<?>) data).spliterator(), false);
     }
@@ -102,11 +75,12 @@ class Explorer {
         }
 
         @Override
-        public Predicate<Object> apply(Object testInstance, ExplorationArguments explorationArguments) {
-            if (m.returnsAnyOf(Predicate.class)) return (Predicate<Object>) m.invoke(testInstance, explorationArguments);
+        public Predicate<Object> apply(ExplorationArguments explorationArguments) {
+            if (m.returnsAnyOf(Predicate.class))
+                return (Predicate<Object>) m.invoke(explorationArguments);
             return (o) -> {
                 try {
-                    Consumer<Object> consumer = (Consumer<Object>) m.invoke(testInstance, explorationArguments);
+                    Consumer<Object> consumer = (Consumer<Object>) m.invoke(explorationArguments);
                     consumer.accept(o);
                     return true;
                 } catch (AssertionError e) {

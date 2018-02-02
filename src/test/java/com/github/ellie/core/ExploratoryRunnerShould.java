@@ -34,7 +34,6 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -112,7 +111,7 @@ public class ExploratoryRunnerShould {
                     //test result is not the concern here
                 }
             });
-        verify(testInstance, atLeastOnce()).numbers();
+        verify(testInstance).numbers();
         verify(testInstance, times(2)).times2(2);
         verify(testInstance, times(2)).times2(4);
         verify(testInstance, times(2)).is4(2);
@@ -130,8 +129,8 @@ public class ExploratoryRunnerShould {
                     //test result is not the concern here
                 }
             });
-        verify(testInstance, atLeastOnce()).two();
-        verify(testInstance, atLeastOnce()).four();
+        verify(testInstance).two();
+        verify(testInstance).four();
         verify(testInstance, times(2)).times2(2);
         verify(testInstance, times(2)).times2(4);
         verify(testInstance, times(2)).is4(2);

@@ -7,16 +7,18 @@ import java.util.Arrays;
 
 class AccessibleMethod {
     private final Method method;
+    private final Object instance;
 
-    AccessibleMethod(Method method) {
+    AccessibleMethod(Object instance, Method method) {
         this.method = method;
+        this.instance = instance;
     }
 
-    public Object invoke(Object instance) {
-        return invoke(instance, ExplorationArguments.of());
+    public Object invoke() {
+        return invoke(ExplorationArguments.of());
     }
 
-    public Object invoke(Object instance, ExplorationArguments explorationArguments) {
+    public Object invoke(ExplorationArguments explorationArguments) {
         method.setAccessible(true);
         try {
             return method.invoke(instance, explorationArguments.get());
