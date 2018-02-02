@@ -31,13 +31,13 @@ public class AllAllowedTypesExploration implements ExploratoryTest {
     }
 
     @PotentialBehaviour
-    public Predicate<Integer> isGreaterThanA(int a, int b) {
-        return i -> i > a;
+    public Predicate<Integer> isLessThan10(int a, int b) {
+        return i -> i < 10;
     }
 
     @PotentialBehaviour
-    public Consumer<Integer> isGreaterThanB(int a, int b) {
+    public Consumer<Integer> isMoreThan10(int a, int b) {
         return i -> Assertions.assertThat(i)
-                              .isGreaterThan(b);
+                              .isGreaterThan(10);
     }
 }

@@ -18,13 +18,20 @@ public class ExploratoryRunner {
     }
 
     public static Stream<BehaviourTest> generateTestsFor(Object testInstance,
-                                                         BiConsumer<String, Iterable<ExplorationArguments>> passingCases) {
+                                                         BiConsumer<String, Iterable<ExplorationArguments>>
+                                                             passingCases) {
         Explorer explorer = new Explorer(testInstance);
         return new ExploratoryRunner(explorer, passingCases).tests();
     }
 
     private Stream<BehaviourTest> tests() {
-        return Stream.concat(testedBehaviours(), Stream.of(unknownBehaviour()));
+        return Stream.concat(Stream.concat(testedBehaviours(), Stream.of(multipleBehaviours())),
+                             Stream.of(unknownBehaviour()));
+    }
+
+    private BehaviourTest multipleBehaviours() {
+        return dynamicTest("Match multiple behaviours", assertThat(explorer.dataThatPassesMultipleBehaviours())
+            .as("At least one data has many behaviours")::isEmpty);
     }
 
     private BehaviourTest unknownBehaviour() {

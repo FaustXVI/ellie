@@ -60,6 +60,10 @@ class Explorer {
         return dataThatBehaviours(Collection::isEmpty);
     }
 
+    Iterable<ExplorationArguments> dataThatPassesMultipleBehaviours() {
+        return dataThatBehaviours(c -> c.size() > 1);
+    }
+
     private List<ExplorationArguments> dataThatBehaviours(Predicate<List<String>> behaviourPredicate) {
         return map.entrySet()
                   .stream()

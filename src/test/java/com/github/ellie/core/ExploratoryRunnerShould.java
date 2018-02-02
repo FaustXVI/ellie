@@ -1,8 +1,5 @@
 package com.github.ellie.core;
 
-import com.github.ellie.api.DataProvider;
-import com.github.ellie.api.PotentialBehaviour;
-import com.github.ellie.api.TestedBehaviour;
 import com.github.ellie.examples.invalids.NoDataExploration;
 import com.github.ellie.examples.invalids.NotIterableDataExploration;
 import com.github.ellie.examples.invalids.NotPredicateExploration;
@@ -10,6 +7,7 @@ import com.github.ellie.examples.invalids.TwoBehaviourExploration;
 import com.github.ellie.examples.valids.AllAllowedTypesExploration;
 import com.github.ellie.examples.valids.AllWrongSuppositionExploration;
 import com.github.ellie.examples.valids.AllWrongSuppositionWithConsumersExploration;
+import com.github.ellie.examples.valids.DataMatchesMultipleSuppositionExploration;
 import com.github.ellie.examples.valids.MultipleExplorationArgumentsExploration;
 import com.github.ellie.examples.valids.OneSuppositionExploration;
 import com.github.ellie.examples.valids.PerfectSuppositionExploration;
@@ -53,10 +51,10 @@ public class ExploratoryRunnerShould {
 
     @ParameterizedTest
     @MethodSource("numberOfBehaviours")
-    void createsOneNodePerPotentialBehaviorAndOneMoreForUndefinedBehaviour(Object testInstance,
+    void createsOneNodePerPotentialBehaviorAndOneMoreForUndefinedBehaviourAndMultiple(Object testInstance,
                                                                            int numberOfBehaviours) {
         Stream<BehaviourTest> behaviours = generateTestsFor(testInstance);
-        assertThat(behaviours).hasSize(numberOfBehaviours + 1);
+        assertThat(behaviours).hasSize(numberOfBehaviours + 2);
     }
 
 
@@ -98,6 +96,16 @@ public class ExploratoryRunnerShould {
                               .isEqualTo("Unknown behaviour");
     }
 
+
+    @ParameterizedTest
+    @MethodSource("testInstances")
+    void addsMultipleBehaviourSecondLast(Object testInstance) {
+        List<BehaviourTest> behaviours = generateTestsFor(testInstance).collect(Collectors.toList());
+
+        assertThat(behaviours).extracting(b->b.name)
+                              .element(behaviours.size() - 2)
+                              .isEqualTo("Match multiple behaviours");
+    }
 
     @Test
     void testsEachBehavioursWithEachData() {
@@ -194,7 +202,7 @@ public class ExploratoryRunnerShould {
             generateTestsFor(testInstance);
 
         try {
-            unknowBehaviourTestOf(behaviours).run();
+            unknownBehaviourTestOf(behaviours).run();
         } catch (Throwable throwable) {
             fail("All behaviour are found, no unknown behaviour should be left", throwable);
         }
@@ -220,7 +228,7 @@ public class ExploratoryRunnerShould {
         Stream<BehaviourTest> behaviours =
             generateTestsFor(new AllWrongSuppositionExploration());
 
-        Assertions.assertThatThrownBy(unknowBehaviourTestOf(behaviours)::run)
+        Assertions.assertThatThrownBy(unknownBehaviourTestOf(behaviours)::run)
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("one data has unknown behaviour")
                   .hasMessageContaining("2")
@@ -228,35 +236,38 @@ public class ExploratoryRunnerShould {
     }
 
     @Test
+    void failMultipleBehaviourIfAtLeastOneDataValidatesMultiplePredicateAndLogIt() {
+        Stream<BehaviourTest> behaviours =
+            generateTestsFor(new DataMatchesMultipleSuppositionExploration());
+
+        Assertions.assertThatThrownBy(multipleBehaviourTestOf(behaviours)::run)
+                  .isInstanceOf(AssertionError.class)
+                  .hasMessageContaining("one data has many behaviours")
+                  .hasMessageContaining("2");
+    }
+
+    @Test
     void throwsAnExceptionIfMoreThanOneBehaviourIsExplored() {
         Assertions.assertThatThrownBy(() -> generateTestsFor(new TwoBehaviourExploration()))
-                  .isInstanceOf(AssertionError.class)
-                  .hasMessageContaining("only one method")
-                  .hasMessageContaining(TestedBehaviour.class.getSimpleName());
+                  .isInstanceOf(AssertionError.class);
     }
 
     @Test
     void throwsAnExceptionIfNoDataIsGiven() {
         Assertions.assertThatThrownBy(() -> generateTestsFor(new NoDataExploration()))
-                  .isInstanceOf(AssertionError.class)
-                  .hasMessageContaining("no data found")
-                  .hasMessageContaining(DataProvider.class.getSimpleName());
+                  .isInstanceOf(AssertionError.class);
     }
 
     @Test
     void throwsAnExceptionIfDataIsNotIterableOrStream() {
         Assertions.assertThatThrownBy(() -> generateTestsFor(new NotIterableDataExploration()))
-                  .isInstanceOf(AssertionError.class)
-                  .hasMessageContaining("should be iterable or stream")
-                  .hasMessageContaining(DataProvider.class.getSimpleName());
+                  .isInstanceOf(AssertionError.class);
     }
 
     @Test
     void throwsAnExceptionIfPotentialBehaviourIsNotPredicateOrConsumer() {
         Assertions.assertThatThrownBy(() -> generateTestsFor(new NotPredicateExploration()))
-                  .isInstanceOf(AssertionError.class)
-                  .hasMessageContaining("should be predicate or consumer")
-                  .hasMessageContaining(PotentialBehaviour.class.getSimpleName());
+                  .isInstanceOf(AssertionError.class);
     }
 
     private Runnable firstTestOf(Stream<BehaviourTest> behaviours) {
@@ -265,10 +276,15 @@ public class ExploratoryRunnerShould {
                          .test;
     }
 
-    private Runnable unknowBehaviourTestOf(Stream<BehaviourTest> behaviours) {
+    private Runnable unknownBehaviourTestOf(Stream<BehaviourTest> behaviours) {
         return behaviours.collect(Collectors.toCollection(LinkedList::new))
                          .getLast()
                          .test;
+    }
+
+    private Runnable multipleBehaviourTestOf(Stream<BehaviourTest> behaviours) {
+        List<BehaviourTest> bs = behaviours.collect(Collectors.toList());
+        return bs.get(bs.size() - 2).test;
     }
 
     private static Stream<BehaviourTest> generateTestsFor(Object testInstance) {
