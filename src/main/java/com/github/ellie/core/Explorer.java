@@ -1,6 +1,8 @@
 package com.github.ellie.core;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -8,52 +10,62 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static com.github.ellie.core.Behaviour.noneOf;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 
 class Explorer {
     private final AccessibleMethod testedBehaviour;
     private final List<NamedBehaviour> behaviours;
-    private final List<ExplorationArguments> data;
+    private final Map<ExplorationArguments, List<String>> map;
 
     Explorer(Object testInstance) {
         MethodFinder methodFinder = new MethodFinder(testInstance);
         this.testedBehaviour = methodFinder.testedBehaviour();
-        data = methodFinder.dataProviders()
-                           .stream()
-                           .flatMap(this::dataOf)
-                           .map(this::toArguments)
-                           .collect(Collectors.toList());
 
         this.behaviours = methodFinder.behaviours()
                                       .stream()
                                       .map(NamedBehaviour::new)
                                       .collect(Collectors.toList());
+
+        List<ExplorationArguments> data = methodFinder.dataProviders()
+                                                      .stream()
+                                                      .flatMap(this::dataOf)
+                                                      .map(this::toArguments)
+                                                      .collect(Collectors.toList());
+
+
+        map = data.stream()
+                  .collect(toMap(identity(), this::behavioursFor));
     }
 
-    <T> Stream<T> behavioursTo(Function<NamedBehaviour, T> mapper) {
+    private List<String> behavioursFor(ExplorationArguments d) {
         return behaviours.stream()
+                         .filter(b -> b.apply(d)
+                                       .test(testedBehaviour.invoke(d)))
+                         .map(NamedBehaviour::name)
+                         .collect(Collectors.toList());
+    }
+
+    <T> Stream<T> behavioursTo(Function<String, T> mapper) {
+        return behaviours.stream()
+                         .map(NamedBehaviour::name)
                          .map(mapper);
     }
 
-    Iterable<ExplorationArguments> dataThatPasses(Behaviour behaviour) {
-        return allData().filter(testBehaviour(behaviour))
-                        .collect(Collectors.toList());
+    Iterable<ExplorationArguments> dataThatPasses(String behaviourName) {
+        return dataThatBehaviours(b -> b.contains(behaviourName));
     }
 
-    Behaviour unknownBehaviour() {
-        return noneOf(behaviours);
+    Iterable<ExplorationArguments> dataThatPassNothing() {
+        return dataThatBehaviours(Collection::isEmpty);
     }
 
-    private Predicate<ExplorationArguments> testBehaviour(Behaviour behaviour) {
-        return (ExplorationArguments explorationArguments) -> {
-            Object behaviourResult = testedBehaviour.invoke(explorationArguments);
-            Predicate<Object> predicate = behaviour.apply(explorationArguments);
-            return predicate.test(behaviourResult);
-        };
-    }
-
-    private Stream<ExplorationArguments> allData() {
-        return data.stream();
+    private List<ExplorationArguments> dataThatBehaviours(Predicate<List<String>> behaviourPredicate) {
+        return map.entrySet()
+                  .stream()
+                  .filter(e -> behaviourPredicate.test(e.getValue()))
+                  .map(Map.Entry::getKey)
+                  .collect(Collectors.toList());
     }
 
     private Stream<?> dataOf(AccessibleMethod method) {

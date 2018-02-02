@@ -29,19 +29,19 @@ public class ExploratoryRunner {
 
     private BehaviourTest unknownBehaviour() {
         return dynamicTest("Unknown behaviour",
-                           assertThat(explorer.dataThatPasses(explorer.unknownBehaviour()))
+                           assertThat(explorer.dataThatPassNothing())
                                .as("At least one data has unknown behaviour")::isEmpty);
     }
 
     private Stream<BehaviourTest> testedBehaviours() {
         return explorer.behavioursTo(
-            behaviour -> dynamicTest(behaviour.name(),
+            behaviour -> dynamicTest(behaviour,
                                      () -> {
                                          Iterable<ExplorationArguments> data = explorer.dataThatPasses(behaviour);
                                          assertThat(data)
                                              .as("no data validates this behaviour")
                                              .isNotEmpty();
-                                         passingCases.accept(behaviour.name(), data);
+                                         passingCases.accept(behaviour, data);
                                      }));
     }
 
