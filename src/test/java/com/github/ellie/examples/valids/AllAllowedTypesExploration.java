@@ -4,7 +4,6 @@ import com.github.ellie.api.DataProvider;
 import com.github.ellie.api.PotentialBehaviour;
 import com.github.ellie.api.TestedBehaviour;
 import com.github.ellie.core.ExplorationArguments;
-import com.github.ellie.junit5.ExploratoryTest;
 import org.assertj.core.api.Assertions;
 
 import java.util.Collection;
@@ -13,7 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class AllAllowedTypesExploration implements ExploratoryTest {
+public class AllAllowedTypesExploration {
 
     @DataProvider
     public Collection<ExplorationArguments> two() {

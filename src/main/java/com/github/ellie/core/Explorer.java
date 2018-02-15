@@ -54,15 +54,15 @@ class Explorer {
                          .map(mapper);
     }
 
-    Iterable<ExplorationArguments> dataThatPasses(String behaviourName) {
+    Collection<ExplorationArguments> dataThatPasses(String behaviourName) {
         return dataThatBehaviours(b -> b.contains(behaviourName));
     }
 
-    Iterable<ExplorationArguments> dataThatPassNothing() {
+    Collection<ExplorationArguments> dataThatPassNothing() {
         return dataThatBehaviours(Collection::isEmpty);
     }
 
-    Iterable<ExplorationArguments> dataThatPassesMultipleBehaviours() {
+    Collection<ExplorationArguments> dataThatPassesMultipleBehaviours() {
         return dataThatBehaviours(c -> c.size() > 1);
     }
 

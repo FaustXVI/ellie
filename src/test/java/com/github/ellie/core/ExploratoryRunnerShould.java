@@ -22,6 +22,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,7 +38,7 @@ import static org.mockito.Mockito.verify;
 
 public class ExploratoryRunnerShould {
 
-    private static final BiConsumer<String, Iterable<ExplorationArguments>> IGNORE_PASSING_CASES_CONSUMER = (l, o) -> {
+    private static final BiConsumer<String, Collection<ExplorationArguments>> IGNORE_PASSING_CASES_CONSUMER = (l, o) -> {
     };
 
     static Stream<Arguments> numberOfBehaviours() {

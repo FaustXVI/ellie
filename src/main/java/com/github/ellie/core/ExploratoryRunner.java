@@ -1,5 +1,6 @@
 package com.github.ellie.core;
 
+import java.util.Collection;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
@@ -10,15 +11,15 @@ public class ExploratoryRunner {
 
 
     private final Explorer explorer;
-    private BiConsumer<String, Iterable<ExplorationArguments>> passingCases;
+    private BiConsumer<String, Collection<ExplorationArguments>> passingCases;
 
-    private ExploratoryRunner(Explorer explorer, BiConsumer<String, Iterable<ExplorationArguments>> passingCases) {
+    private ExploratoryRunner(Explorer explorer, BiConsumer<String, Collection<ExplorationArguments>> passingCases) {
         this.explorer = explorer;
         this.passingCases = passingCases;
     }
 
     public static Stream<BehaviourTest> generateTestsFor(Object testInstance,
-                                                         BiConsumer<String, Iterable<ExplorationArguments>>
+                                                         BiConsumer<String, Collection<ExplorationArguments>>
                                                              passingCases) {
         Explorer explorer = new Explorer(testInstance);
         return new ExploratoryRunner(explorer, passingCases).tests();
@@ -44,7 +45,7 @@ public class ExploratoryRunner {
         return explorer.behavioursTo(
             behaviour -> dynamicTest(behaviour,
                                      () -> {
-                                         Iterable<ExplorationArguments> data = explorer.dataThatPasses(behaviour);
+                                         Collection<ExplorationArguments> data = explorer.dataThatPasses(behaviour);
                                          assertThat(data)
                                              .as("no data validates this behaviour")
                                              .isNotEmpty();

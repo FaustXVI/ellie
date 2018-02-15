@@ -4,13 +4,12 @@ import com.github.ellie.api.DataProvider;
 import com.github.ellie.api.PotentialBehaviour;
 import com.github.ellie.api.TestedBehaviour;
 import com.github.ellie.core.ExplorationArguments;
-import com.github.ellie.junit5.ExploratoryTest;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class MultipleExplorationArgumentsExploration implements ExploratoryTest {
+public class MultipleExplorationArgumentsExploration {
 
     @DataProvider
     public Collection<ExplorationArguments> numbers() {

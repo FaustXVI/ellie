@@ -1,7 +1,6 @@
 package com.github.ellie.examples.valids;
 
 import com.github.ellie.api.DataProvider;
-import com.github.ellie.junit5.ExploratoryTest;
 import com.github.ellie.api.PotentialBehaviour;
 import com.github.ellie.api.TestedBehaviour;
 
@@ -10,7 +9,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class TwoDataProviderExploration implements ExploratoryTest {
+public class TwoDataProviderExploration {
 
     @DataProvider
     public Collection<Integer> two() {
