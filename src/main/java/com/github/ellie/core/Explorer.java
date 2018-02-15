@@ -1,5 +1,7 @@
 package com.github.ellie.core;
 
+import org.opentest4j.TestAbortedException;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -99,7 +101,7 @@ class Explorer {
                     Consumer<Object> consumer = (Consumer<Object>) m.invoke(explorationArguments);
                     consumer.accept(o);
                     return true;
-                } catch (AssertionError e) {
+                } catch (AssertionError | TestAbortedException e) {
                     return false;
                 }
             };

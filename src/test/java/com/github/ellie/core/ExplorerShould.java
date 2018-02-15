@@ -9,6 +9,7 @@ import com.github.ellie.examples.invalids.NotPredicateExploration;
 import com.github.ellie.examples.invalids.TwoBehaviourExploration;
 import com.github.ellie.examples.valids.AllAllowedTypesExploration;
 import com.github.ellie.examples.valids.AllWrongSuppositionExploration;
+import com.github.ellie.examples.valids.AllWrongSuppositionWithAssumtionsExploration;
 import com.github.ellie.examples.valids.AllWrongSuppositionWithConsumersExploration;
 import com.github.ellie.examples.valids.DataMatchesMultipleSuppositionExploration;
 import com.github.ellie.examples.valids.OneSuppositionExploration;
@@ -23,6 +24,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 class ExplorerShould {
 
@@ -107,16 +109,21 @@ class ExplorerShould {
     static Stream<Arguments> allWrong() {
         return Stream.of(
             Arguments.of(new AllWrongSuppositionExploration()),
-            Arguments.of(new AllWrongSuppositionWithConsumersExploration())
+            Arguments.of(new AllWrongSuppositionWithConsumersExploration()),
+            Arguments.of(new AllWrongSuppositionWithAssumtionsExploration())
         );
     }
 
     @ParameterizedTest
     @MethodSource("allWrong")
     void givesEmptyDataIfNonePassesPredicate(Object testInstance) {
-        Explorer explorer = new Explorer(testInstance);
-        explorer.behavioursTo(explorer::dataThatPasses)
-                .forEach(r -> assertThat(r).isEmpty());
+        try {
+            Explorer explorer = new Explorer(testInstance);
+            explorer.behavioursTo(explorer::dataThatPasses)
+                    .forEach(r -> assertThat(r).isEmpty());
+        } catch (Throwable e) {
+            fail("No exception should bubble up");
+        }
     }
 
     @Test
