@@ -21,6 +21,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,10 +31,10 @@ import static org.assertj.core.api.Assertions.fail;
 class ExplorerShould {
 
     @Test
-    void givesDataThatPassGivenBehaviour() {
+    void giveDataThatPassGivenBehaviour() {
         OneSuppositionExploration testInstance = new OneSuppositionExploration();
         Explorer explorer = new Explorer(testInstance);
-        assertThat(explorer.dataThatPasses("times2_is4"))
+        assertThat(explorer.dataByBehaviour().get("times2_is4"))
             .extracting(ExplorationArguments::get)
             .containsOnly(args(2));
     }
@@ -47,7 +49,7 @@ class ExplorerShould {
 
     @ParameterizedTest
     @MethodSource("perfectExplorations")
-    void unknownBehaviourIsEmptyWhenPerfectSupposition(Object testInstance) {
+    void haveNoDataThatPassesNothingWhenPerfectSupposition(Object testInstance) {
         Explorer explorer = new Explorer(testInstance);
         assertThat(explorer.dataThatPassNothing()).isEmpty();
     }
@@ -55,14 +57,15 @@ class ExplorerShould {
 
     @ParameterizedTest
     @MethodSource("perfectExplorations")
-    void groupsDataByBehaviour(Object testInstance) {
+    void groupDataByBehaviour(Object testInstance) {
         Explorer explorer = new Explorer(testInstance);
-        explorer.behavioursTo(explorer::dataThatPasses)
-                .forEach(r -> assertThat(r).isNotEmpty());
+        Map<String, Collection<ExplorationArguments>> dataByBehaviour = explorer.dataByBehaviour();
+        assertThat(dataByBehaviour).isNotEmpty();
+        assertThat(dataByBehaviour.values()).allMatch(c -> !c.isEmpty());
     }
 
     @Test
-    void unknownBehaviourValidatesNoPredicate() {
+    void haveUnknownBehaviourContainingExamplesThatPassesNothing() {
         Explorer explorer = new Explorer(new AllWrongSuppositionExploration());
 
         assertThat(explorer.dataThatPassNothing())
@@ -119,8 +122,9 @@ class ExplorerShould {
     void givesEmptyDataIfNonePassesPredicate(Object testInstance) {
         try {
             Explorer explorer = new Explorer(testInstance);
-            explorer.behavioursTo(explorer::dataThatPasses)
-                    .forEach(r -> assertThat(r).isEmpty());
+            assertThat(explorer.dataByBehaviour()
+                               .values())
+                .allMatch(Collection::isEmpty);
         } catch (Throwable e) {
             fail("No exception should bubble up");
         }

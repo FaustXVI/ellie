@@ -42,15 +42,17 @@ public class ExploratoryRunner {
     }
 
     private Stream<BehaviourTest> testedBehaviours() {
-        return explorer.behavioursTo(
-            behaviour -> dynamicTest(behaviour,
-                                     () -> {
-                                         Collection<ExplorationArguments> data = explorer.dataThatPasses(behaviour);
-                                         assertThat(data)
-                                             .as("no data validates this behaviour")
-                                             .isNotEmpty();
-                                         passingCases.accept(behaviour, data);
-                                     }));
+        return explorer.dataByBehaviour()
+                       .entrySet()
+                       .stream()
+                       .map(behaviour -> dynamicTest(behaviour.getKey(),
+                                                     () -> {
+                                                         Collection<ExplorationArguments> data = behaviour.getValue();
+                                                         assertThat(data)
+                                                             .as("no data validates this behaviour")
+                                                             .isNotEmpty();
+                                                         passingCases.accept(behaviour.getKey(), data);
+                                                     }));
     }
 
 }

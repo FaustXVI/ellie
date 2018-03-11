@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,7 +17,7 @@ import static java.util.stream.Collectors.toMap;
 class Explorer {
     private final AccessibleMethod testedBehaviour;
     private final List<NamedBehaviour> behaviours;
-    private final Map<ExplorationArguments, List<String>> map;
+    private final Map<ExplorationArguments, List<String>> dataToBehaviours;
 
     Explorer(Object testInstance) {
         MethodFinder methodFinder = new MethodFinder(testInstance);
@@ -36,8 +35,8 @@ class Explorer {
                                                       .collect(Collectors.toList());
 
 
-        map = data.stream()
-                  .collect(toMap(identity(), this::behavioursFor));
+        dataToBehaviours = data.stream()
+                               .collect(toMap(identity(), this::behavioursFor));
     }
 
     private List<String> behavioursFor(ExplorationArguments d) {
@@ -48,14 +47,10 @@ class Explorer {
                          .collect(Collectors.toList());
     }
 
-    <T> Stream<T> behavioursTo(Function<String, T> mapper) {
+    Map<String, Collection<ExplorationArguments>> dataByBehaviour() {
         return behaviours.stream()
                          .map(NamedBehaviour::name)
-                         .map(mapper);
-    }
-
-    Collection<ExplorationArguments> dataThatPasses(String behaviourName) {
-        return dataThatBehaviours(b -> b.contains(behaviourName));
+                         .collect(toMap(identity(), n -> dataThatBehaviours(b -> b.contains(n))));
     }
 
     Collection<ExplorationArguments> dataThatPassNothing() {
@@ -67,11 +62,11 @@ class Explorer {
     }
 
     private List<ExplorationArguments> dataThatBehaviours(Predicate<List<String>> behaviourPredicate) {
-        return map.entrySet()
-                  .stream()
-                  .filter(e -> behaviourPredicate.test(e.getValue()))
-                  .map(Map.Entry::getKey)
-                  .collect(Collectors.toList());
+        return dataToBehaviours.entrySet()
+                               .stream()
+                               .filter(e -> behaviourPredicate.test(e.getValue()))
+                               .map(Map.Entry::getKey)
+                               .collect(Collectors.toList());
     }
 
     private Stream<?> dataOf(AccessibleMethod method) {
