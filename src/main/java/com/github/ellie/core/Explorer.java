@@ -11,22 +11,26 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static com.github.ellie.core.PostConditionOutput.FAIL;
+import static com.github.ellie.core.PostConditionOutput.PASS;
 import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toMap;
 
 class Explorer {
-    private final AccessibleMethod testedBehaviour;
-    private final List<NamedBehaviour> behaviours;
-    private final Map<ExplorationArguments, List<String>> dataToBehaviours;
+    private final AccessibleMethod exploredCode;
+    private final List<NamedBehaviour> postConditions;
+    private final Map<ExplorationArguments, Map<String, PostConditionOutput>> dataToPostConditionsResults;
 
     Explorer(Object testInstance) {
         MethodFinder methodFinder = new MethodFinder(testInstance);
-        this.testedBehaviour = methodFinder.testedBehaviour();
+        this.exploredCode = methodFinder.testedBehaviour();
 
-        this.behaviours = methodFinder.behaviours()
-                                      .stream()
-                                      .map(NamedBehaviour::new)
-                                      .collect(Collectors.toList());
+        this.postConditions = methodFinder.postConditions()
+                                          .stream()
+                                          .map(NamedBehaviour::new)
+                                          .collect(Collectors.toList());
 
         List<ExplorationArguments> data = methodFinder.dataProviders()
                                                       .stream()
@@ -35,38 +39,50 @@ class Explorer {
                                                       .collect(Collectors.toList());
 
 
-        dataToBehaviours = data.stream()
-                               .collect(toMap(identity(), this::behavioursFor));
+        dataToPostConditionsResults = data.stream()
+                                          .collect(toMap(identity(), this::testPostConditions));
     }
 
-    private List<String> behavioursFor(ExplorationArguments d) {
-        return behaviours.stream()
-                         .filter(b -> b.apply(d)
-                                       .test(testedBehaviour.invoke(d)))
-                         .map(NamedBehaviour::name)
-                         .collect(Collectors.toList());
+    private Map<String, PostConditionOutput> testPostConditions(ExplorationArguments d) {
+        return postConditions.stream()
+                             .collect(toMap(NamedBehaviour::name, b -> b.apply(d)
+                                                                    .test(exploredCode.invoke(d))));
     }
 
-    Map<String, Collection<ExplorationArguments>> dataByBehaviour() {
-        return behaviours.stream()
-                         .map(NamedBehaviour::name)
-                         .collect(toMap(identity(), n -> dataThatBehaviours(b -> b.contains(n))));
+    Map<String, TestResult> resultByBehaviour() {
+        return postConditions.stream()
+                             .map(NamedBehaviour::name)
+                             .collect(toMap(identity(), this::resultsFor));
     }
 
     Collection<ExplorationArguments> dataThatPassNothing() {
-        return dataThatBehaviours(Collection::isEmpty);
+        return dataThatBehaviours(b -> b.values()
+                                        .stream()
+                                        .noneMatch(r -> r == PASS));
     }
 
     Collection<ExplorationArguments> dataThatPassesMultipleBehaviours() {
-        return dataThatBehaviours(c -> c.size() > 1);
+        return dataThatBehaviours(c -> c.values()
+                                        .stream()
+                                        .filter(r -> r == PASS)
+                                        .count() > 1);
     }
 
-    private List<ExplorationArguments> dataThatBehaviours(Predicate<List<String>> behaviourPredicate) {
-        return dataToBehaviours.entrySet()
-                               .stream()
-                               .filter(e -> behaviourPredicate.test(e.getValue()))
-                               .map(Map.Entry::getKey)
-                               .collect(Collectors.toList());
+    private TestResult resultsFor(String behaviourName) {
+        return new TestResult(
+            dataToPostConditionsResults.entrySet()
+                                       .stream()
+                                       .collect(groupingBy(e -> e.getValue()
+                                                                 .get(behaviourName),
+                                                           mapping(Map.Entry::getKey, Collectors.toList()))));
+    }
+
+    private List<ExplorationArguments> dataThatBehaviours(Predicate<Map<String, PostConditionOutput>> postConditionPredicate) {
+        return dataToPostConditionsResults.entrySet()
+                                          .stream()
+                                          .filter(e -> postConditionPredicate.test(e.getValue()))
+                                          .map(Map.Entry::getKey)
+                                          .collect(Collectors.toList());
     }
 
     private Stream<?> dataOf(AccessibleMethod method) {
@@ -88,23 +104,24 @@ class Explorer {
         }
 
         @Override
-        public Predicate<Object> apply(ExplorationArguments explorationArguments) {
+        public BehaviourExecutable apply(ExplorationArguments explorationArguments) {
             if (m.returnsAnyOf(Predicate.class))
-                return (Predicate<Object>) m.invoke(explorationArguments);
+                return (o) -> ((Predicate<Object>) m.invoke(explorationArguments)).test(o) ? PASS : FAIL;
             return (o) -> {
                 try {
                     Consumer<Object> consumer = (Consumer<Object>) m.invoke(explorationArguments);
                     consumer.accept(o);
-                    return true;
+                    return PASS;
                 } catch (AssertionError | TestAbortedException e) {
-                    return false;
+                    return FAIL;
                 }
             };
         }
 
         public String name() {
-            return testedBehaviour.name() + "_" + m.name();
+            return exploredCode.name() + "_" + m.name();
         }
 
     }
+
 }

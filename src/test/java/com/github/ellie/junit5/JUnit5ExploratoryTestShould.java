@@ -1,11 +1,12 @@
 package com.github.ellie.junit5;
 
 import com.github.ellie.api.DataProvider;
-import com.github.ellie.api.PotentialBehaviour;
+import com.github.ellie.api.PostCondition;
 import com.github.ellie.api.TestedBehaviour;
 import com.github.ellie.core.BehaviourTest;
 import com.github.ellie.core.ExplorationArguments;
 import com.github.ellie.core.ExploratoryRunner;
+import com.github.ellie.core.TestResult;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 
@@ -13,10 +14,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static com.github.ellie.core.PostConditionOutput.PASS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class JUnit5ExploratoryTestShould {
@@ -33,7 +36,7 @@ public class JUnit5ExploratoryTestShould {
             return n * 2;
         }
 
-        @PotentialBehaviour
+        @PostCondition
         public Predicate<Integer> isGreater(int n) {
             return i -> i > n;
         }
@@ -57,9 +60,9 @@ public class JUnit5ExploratoryTestShould {
     void prettyPrintsArguments() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         System.setOut(new PrintStream(out));
-        BiConsumer<String, Collection<ExplorationArguments>> printer =
+        BiConsumer<String, TestResult> printer =
             new PerfectJunit5().passingCasesConsumer();
-        printer.accept("test", List.of(ExplorationArguments.of(1, "arg1"), ExplorationArguments.of(2, "arg2")));
+        printer.accept("test", new TestResult(Map.of(PASS, List.of(ExplorationArguments.of(1, "arg1"), ExplorationArguments.of(2, "arg2")))));
         assertThat(out.toString()).isEqualTo(  "    static Stream<Arguments> test() {\n"
                                              + "        return Stream.of(\n"
                                              + "            Arguments.of(1, \"arg1\"),\n"

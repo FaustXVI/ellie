@@ -22,7 +22,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,7 +37,7 @@ import static org.mockito.Mockito.verify;
 
 public class ExploratoryRunnerShould {
 
-    private static final BiConsumer<String, Collection<ExplorationArguments>> IGNORE_PASSING_CASES_CONSUMER = (l, o) -> {
+    private static final BiConsumer<String, TestResult> IGNORE_PASSING_CASES_CONSUMER = (l, o) -> {
     };
 
     static Stream<Arguments> numberOfBehaviours() {
@@ -52,8 +51,8 @@ public class ExploratoryRunnerShould {
 
     @ParameterizedTest
     @MethodSource("numberOfBehaviours")
-    void createsOneNodePerPotentialBehaviorAndOneMoreForUndefinedBehaviourAndMultiple(Object testInstance,
-                                                                           int numberOfBehaviours) {
+    void createOneNodePerPotentialBehaviorAndTwoMoreForUndefinedBehaviourAndMultiple(Object testInstance,
+                                                                                     int numberOfBehaviours) {
         Stream<BehaviourTest> behaviours = generateTestsFor(testInstance);
         assertThat(behaviours).hasSize(numberOfBehaviours + 2);
     }
@@ -68,11 +67,11 @@ public class ExploratoryRunnerShould {
 
     @ParameterizedTest
     @MethodSource("methodNames")
-    void namesNodesWithActionAndSupposedBehaviour(Object testInstance, String actionName,
-                                                  List<String> behaviourNames) {
+    void nameNodesWithActionAndSupposedBehaviour(Object testInstance, String actionName,
+                                                 List<String> behaviourNames) {
         Stream<BehaviourTest> behaviours = generateTestsFor(testInstance);
 
-        assertThat(behaviours).extracting(b->b.name)
+        assertThat(behaviours).extracting(b -> b.name)
                               .containsAll(behaviourNames.stream()
                                                          .map(behaviourName -> actionName + "_" + behaviourName)
                                                          .collect(Collectors.toList()))
@@ -89,10 +88,10 @@ public class ExploratoryRunnerShould {
 
     @ParameterizedTest
     @MethodSource("testInstances")
-    void addsUnknownBehaviourLast(Object testInstance) {
+    void addUnknownBehaviourLast(Object testInstance) {
         Stream<BehaviourTest> behaviours = generateTestsFor(testInstance);
 
-        assertThat(behaviours).extracting(b->b.name)
+        assertThat(behaviours).extracting(b -> b.name)
                               .last()
                               .isEqualTo("Unknown behaviour");
     }
@@ -103,19 +102,19 @@ public class ExploratoryRunnerShould {
     void addsMultipleBehaviourSecondLast(Object testInstance) {
         List<BehaviourTest> behaviours = generateTestsFor(testInstance).collect(Collectors.toList());
 
-        assertThat(behaviours).extracting(b->b.name)
+        assertThat(behaviours).extracting(b -> b.name)
                               .element(behaviours.size() - 2)
-                              .isEqualTo("Match multiple behaviours");
+                              .isEqualTo("Match multiple postConditions");
     }
 
     @Test
-    void testsEachBehavioursWithEachData() {
+    void testEachBehavioursWithEachData() {
         OneSuppositionExploration testInstance = Mockito.spy(new OneSuppositionExploration());
         generateTestsFor(testInstance)
             .forEach(t -> {
                 try {
                     t.test
-                     .run();
+                        .run();
                 } catch (Throwable throwable) {
                     //test result is not the concern here
                 }
@@ -148,25 +147,29 @@ public class ExploratoryRunnerShould {
 
 
     @Test
-    void callsConsumerWithDataThatPassesPotentialBehaviour() {
-        Map<String, Iterable<ExplorationArguments>> dataThatPass = new HashMap<>();
+    void callsConsumerWithTestResultAfterRun() {
+        Map<String, TestResult> testResults = new HashMap<>();
         OneSuppositionExploration testInstance = new OneSuppositionExploration();
 
-        ExploratoryRunner.generateTestsFor(testInstance, dataThatPass::put)
+        ExploratoryRunner.generateTestsFor(testInstance, testResults::put)
                          .forEach(t -> {
                              try {
                                  t.test
-                                  .run();
+                                     .run();
                              } catch (Throwable throwable) {
                                  //test result is not the concern here
                              }
                          });
 
         String passingSupposition = "times2_is4";
-        assertThat(dataThatPass).containsOnlyKeys(passingSupposition);
-        assertThat(dataThatPass.get(passingSupposition))
+        assertThat(testResults).containsOnlyKeys(passingSupposition);
+        TestResult testResult = testResults.get(passingSupposition);
+        assertThat(testResult.passingData())
             .extracting(ExplorationArguments::get)
             .containsExactly(new Object[]{2});
+        assertThat(testResult.failingData())
+            .extracting(ExplorationArguments::get)
+            .containsExactly(new Object[]{4});
     }
 
 
@@ -243,7 +246,7 @@ public class ExploratoryRunnerShould {
 
         Assertions.assertThatThrownBy(multipleBehaviourTestOf(behaviours)::run)
                   .isInstanceOf(AssertionError.class)
-                  .hasMessageContaining("one data has many behaviours")
+                  .hasMessageContaining("one data has many postConditions")
                   .hasMessageContaining("2");
     }
 
@@ -274,13 +277,13 @@ public class ExploratoryRunnerShould {
     private Runnable firstTestOf(Stream<BehaviourTest> behaviours) {
         return behaviours.findFirst()
                          .orElseThrow(() -> new AssertionError("Should have at least one behaviour but got none"))
-                         .test;
+            .test;
     }
 
     private Runnable unknownBehaviourTestOf(Stream<BehaviourTest> behaviours) {
         return behaviours.collect(Collectors.toCollection(LinkedList::new))
                          .getLast()
-                         .test;
+            .test;
     }
 
     private Runnable multipleBehaviourTestOf(Stream<BehaviourTest> behaviours) {

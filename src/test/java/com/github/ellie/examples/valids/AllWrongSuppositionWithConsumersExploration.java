@@ -1,7 +1,7 @@
 package com.github.ellie.examples.valids;
 
 import com.github.ellie.api.DataProvider;
-import com.github.ellie.api.PotentialBehaviour;
+import com.github.ellie.api.PostCondition;
 import com.github.ellie.api.TestedBehaviour;
 import org.assertj.core.api.Assertions;
 
@@ -21,7 +21,7 @@ public class AllWrongSuppositionWithConsumersExploration {
         return n * 2;
     }
 
-    @PotentialBehaviour
+    @PostCondition
     public Consumer<Integer> is0(int n) {
         return i -> Assertions.assertThat(i).isEqualTo(0);
     }

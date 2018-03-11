@@ -1,7 +1,7 @@
 package com.github.ellie.examples.invalids;
 
 import com.github.ellie.api.DataProvider;
-import com.github.ellie.api.PotentialBehaviour;
+import com.github.ellie.api.PostCondition;
 import com.github.ellie.api.TestedBehaviour;
 
 import java.util.Collection;
@@ -19,7 +19,7 @@ public class NotPredicateExploration {
         return n * 2;
     }
 
-    @PotentialBehaviour
+    @PostCondition
     public int times3(Integer n) {
         return n * 3;
     }

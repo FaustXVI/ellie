@@ -1,7 +1,7 @@
 package com.github.ellie.examples.valids;
 
 import com.github.ellie.api.DataProvider;
-import com.github.ellie.api.PotentialBehaviour;
+import com.github.ellie.api.PostCondition;
 import com.github.ellie.api.TestedBehaviour;
 
 import java.util.Collection;
@@ -20,12 +20,12 @@ public class TwoSuppositionExploration {
         return n * 3;
     }
 
-    @PotentialBehaviour
+    @PostCondition
     public Predicate<Integer> is6(int n) {
         return i -> i == 6;
     }
 
-    @PotentialBehaviour
+    @PostCondition
     public Predicate<Integer> is16(int n) {
         return i -> i == 16;
     }

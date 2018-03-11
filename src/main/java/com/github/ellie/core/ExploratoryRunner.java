@@ -1,6 +1,5 @@
 package com.github.ellie.core;
 
-import java.util.Collection;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
@@ -11,15 +10,15 @@ public class ExploratoryRunner {
 
 
     private final Explorer explorer;
-    private BiConsumer<String, Collection<ExplorationArguments>> passingCases;
+    private BiConsumer<String, TestResult> passingCases;
 
-    private ExploratoryRunner(Explorer explorer, BiConsumer<String, Collection<ExplorationArguments>> passingCases) {
+    private ExploratoryRunner(Explorer explorer, BiConsumer<String, TestResult> passingCases) {
         this.explorer = explorer;
         this.passingCases = passingCases;
     }
 
     public static Stream<BehaviourTest> generateTestsFor(Object testInstance,
-                                                         BiConsumer<String, Collection<ExplorationArguments>>
+                                                         BiConsumer<String, TestResult>
                                                              passingCases) {
         Explorer explorer = new Explorer(testInstance);
         return new ExploratoryRunner(explorer, passingCases).tests();
@@ -31,8 +30,8 @@ public class ExploratoryRunner {
     }
 
     private BehaviourTest multipleBehaviours() {
-        return dynamicTest("Match multiple behaviours", assertThat(explorer.dataThatPassesMultipleBehaviours())
-            .as("At least one data has many behaviours")::isEmpty);
+        return dynamicTest("Match multiple postConditions", assertThat(explorer.dataThatPassesMultipleBehaviours())
+            .as("At least one data has many postConditions")::isEmpty);
     }
 
     private BehaviourTest unknownBehaviour() {
@@ -42,16 +41,16 @@ public class ExploratoryRunner {
     }
 
     private Stream<BehaviourTest> testedBehaviours() {
-        return explorer.dataByBehaviour()
+        return explorer.resultByBehaviour()
                        .entrySet()
                        .stream()
                        .map(behaviour -> dynamicTest(behaviour.getKey(),
                                                      () -> {
-                                                         Collection<ExplorationArguments> data = behaviour.getValue();
-                                                         assertThat(data)
+                                                         TestResult testResult = behaviour.getValue();
+                                                         assertThat(testResult.passingData())
                                                              .as("no data validates this behaviour")
                                                              .isNotEmpty();
-                                                         passingCases.accept(behaviour.getKey(), data);
+                                                         passingCases.accept(behaviour.getKey(), testResult);
                                                      }));
     }
 

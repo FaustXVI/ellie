@@ -1,7 +1,7 @@
 package com.github.ellie.core;
 
 import com.github.ellie.api.DataProvider;
-import com.github.ellie.api.PotentialBehaviour;
+import com.github.ellie.api.PostCondition;
 import com.github.ellie.api.TestedBehaviour;
 
 import java.lang.annotation.Annotation;
@@ -49,11 +49,11 @@ class MethodFinder {
         return dataMethods;
     }
 
-    List<AccessibleMethod> behaviours() {
-        List<AccessibleMethod> potentialBehaviours = findMethodsAnnotatedWith(PotentialBehaviour.class);
-        assertThat(potentialBehaviours).as(
-            PotentialBehaviour.class.getSimpleName() + " methods return type should be predicate or consumer")
+    List<AccessibleMethod> postConditions() {
+        List<AccessibleMethod> postConditions = findMethodsAnnotatedWith(PostCondition.class);
+        assertThat(postConditions).as(
+            PostCondition.class.getSimpleName() + " methods return type should be predicate or consumer")
                                        .allMatch(m -> m.returnsAnyOf(Predicate.class, Consumer.class));
-        return potentialBehaviours;
+        return postConditions;
     }
 }

@@ -1,7 +1,7 @@
 package com.github.ellie.examples.valids;
 
 import com.github.ellie.api.DataProvider;
-import com.github.ellie.api.PotentialBehaviour;
+import com.github.ellie.api.PostCondition;
 import com.github.ellie.api.TestedBehaviour;
 import org.junit.jupiter.api.Assumptions;
 
@@ -21,7 +21,7 @@ public class AllWrongSuppositionWithAssumtionsExploration {
         return n * 2;
     }
 
-    @PotentialBehaviour
+    @PostCondition
     public Consumer<Integer> is0(int n) {
         return i -> Assumptions.assumeTrue(n < 2);
     }

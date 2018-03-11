@@ -1,7 +1,7 @@
 package com.github.ellie.core;
 
 import com.github.ellie.api.DataProvider;
-import com.github.ellie.api.PotentialBehaviour;
+import com.github.ellie.api.PostCondition;
 import com.github.ellie.api.TestedBehaviour;
 import com.github.ellie.examples.invalids.NoDataExploration;
 import com.github.ellie.examples.invalids.NotIterableDataExploration;
@@ -31,12 +31,17 @@ import static org.assertj.core.api.Assertions.fail;
 class ExplorerShould {
 
     @Test
-    void giveDataThatPassGivenBehaviour() {
+    void giveTestResultForBehaviourBehaviour() {
         OneSuppositionExploration testInstance = new OneSuppositionExploration();
         Explorer explorer = new Explorer(testInstance);
-        assertThat(explorer.dataByBehaviour().get("times2_is4"))
+        TestResult testResult = explorer.resultByBehaviour()
+                                        .get("times2_is4");
+        assertThat(testResult.passingData())
             .extracting(ExplorationArguments::get)
             .containsOnly(args(2));
+        assertThat(testResult.failingData())
+            .extracting(ExplorationArguments::get)
+            .containsOnly(args(4));
     }
 
     static Stream<Arguments> perfectExplorations() {
@@ -57,11 +62,12 @@ class ExplorerShould {
 
     @ParameterizedTest
     @MethodSource("perfectExplorations")
-    void groupDataByBehaviour(Object testInstance) {
+    void groupResultsByBehaviour(Object testInstance) {
         Explorer explorer = new Explorer(testInstance);
-        Map<String, Collection<ExplorationArguments>> dataByBehaviour = explorer.dataByBehaviour();
+        Map<String, TestResult> dataByBehaviour = explorer.resultByBehaviour();
         assertThat(dataByBehaviour).isNotEmpty();
-        assertThat(dataByBehaviour.values()).allMatch(c -> !c.isEmpty());
+        assertThat(dataByBehaviour.values()).allMatch(c -> !c.passingData()
+                                                             .isEmpty());
     }
 
     @Test
@@ -106,7 +112,7 @@ class ExplorerShould {
         Assertions.assertThatThrownBy(() -> new Explorer(new NotPredicateExploration()))
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("should be predicate or consumer")
-                  .hasMessageContaining(PotentialBehaviour.class.getSimpleName());
+                  .hasMessageContaining(PostCondition.class.getSimpleName());
     }
 
     static Stream<Arguments> allWrong() {
@@ -119,12 +125,17 @@ class ExplorerShould {
 
     @ParameterizedTest
     @MethodSource("allWrong")
-    void givesEmptyDataIfNonePassesPredicate(Object testInstance) {
+    void givesEmptyPassingDataIfNonePassesPredicate(Object testInstance) {
         try {
             Explorer explorer = new Explorer(testInstance);
-            assertThat(explorer.dataByBehaviour()
-                               .values())
+            Collection<TestResult> testResults = explorer.resultByBehaviour()
+                                                         .values();
+            assertThat(testResults)
+                .extracting(TestResult::passingData)
                 .allMatch(Collection::isEmpty);
+            assertThat(testResults)
+                .extracting(TestResult::failingData)
+                .allMatch(c -> !c.isEmpty());
         } catch (Throwable e) {
             fail("No exception should bubble up");
         }

@@ -1,12 +1,11 @@
 package com.github.ellie.junit5;
 
-import com.github.ellie.core.ExplorationArguments;
 import com.github.ellie.core.ExploratoryRunner;
+import com.github.ellie.core.TestResult;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -20,9 +19,9 @@ public interface ExploratoryTest {
                                 .map(t -> DynamicTest.dynamicTest(t.name, t.test::run));
     }
 
-    default BiConsumer<String, Collection<ExplorationArguments>> passingCasesConsumer() {
+    default BiConsumer<String, TestResult> passingCasesConsumer() {
         return (s, l) -> {
-            Stream<String> arguments = l.stream()
+            Stream<String> arguments = l.passingData().stream()
                                            .map(args -> Arrays.stream(args.get())
                                                               .map(o->{
 if(o instanceof String) return "\""+o+"\"";
