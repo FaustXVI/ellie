@@ -118,13 +118,12 @@ class ExplorerShould {
     static Stream<Arguments> allWrong() {
         return Stream.of(
             Arguments.of(new AllWrongSuppositionExploration()),
-            Arguments.of(new AllWrongSuppositionWithConsumersExploration()),
-            Arguments.of(new AllWrongSuppositionWithAssumtionsExploration())
+            Arguments.of(new AllWrongSuppositionWithConsumersExploration())
         );
     }
 
     @ParameterizedTest
-    @MethodSource("allWrong")
+    @MethodSource({"allWrong","wrongAssumptions"})
     void givesEmptyPassingDataIfNonePassesPredicate(Object testInstance) {
         try {
             Explorer explorer = new Explorer(testInstance);
@@ -133,10 +132,43 @@ class ExplorerShould {
             assertThat(testResults)
                 .extracting(TestResult::passingData)
                 .allMatch(Collection::isEmpty);
+        } catch (Exception e) {
+            fail("No exception should bubble up");
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("allWrong")
+    void givesNonEmptyFailingDataIfNonePassesPredicate(Object testInstance) {
+        try {
+            Explorer explorer = new Explorer(testInstance);
+            Collection<TestResult> testResults = explorer.resultByBehaviour()
+                                                         .values();
             assertThat(testResults)
                 .extracting(TestResult::failingData)
                 .allMatch(c -> !c.isEmpty());
-        } catch (Throwable e) {
+        } catch (Exception e) {
+            fail("No exception should bubble up");
+        }
+    }
+
+    static Stream<Arguments> wrongAssumptions() {
+        return Stream.of(
+            Arguments.of(new AllWrongSuppositionWithAssumtionsExploration())
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("wrongAssumptions")
+    void givesNonEmptyIgnoredDataIfNonePassesAssumptions(Object testInstance) {
+        try {
+            Explorer explorer = new Explorer(testInstance);
+            Collection<TestResult> testResults = explorer.resultByBehaviour()
+                                                         .values();
+            assertThat(testResults)
+                .extracting(TestResult::ignoredData)
+                .allMatch(c -> !c.isEmpty());
+        } catch (Exception e) {
             fail("No exception should bubble up");
         }
     }

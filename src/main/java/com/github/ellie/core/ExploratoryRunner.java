@@ -3,7 +3,7 @@ package com.github.ellie.core;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.BehaviourTest.dynamicTest;
+import static com.github.ellie.core.PostConditionTest.postConditionTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ExploratoryRunner {
@@ -17,35 +17,34 @@ public class ExploratoryRunner {
         this.passingCases = passingCases;
     }
 
-    public static Stream<BehaviourTest> generateTestsFor(Object testInstance,
-                                                         BiConsumer<String, TestResult>
+    public static Stream<PostConditionTest> generateTestsFor(Object testInstance,
+                                                             BiConsumer<String, TestResult>
                                                              passingCases) {
         Explorer explorer = new Explorer(testInstance);
         return new ExploratoryRunner(explorer, passingCases).tests();
     }
 
-    private Stream<BehaviourTest> tests() {
-        return Stream.concat(Stream.concat(testedBehaviours(), Stream.of(multipleBehaviours())),
-                             Stream.of(unknownBehaviour()));
+    private Stream<PostConditionTest> tests() {
+        return Stream.concat(testedBehaviours(), Stream.of(multipleBehaviours(),unknownBehaviour()));
     }
 
-    private BehaviourTest multipleBehaviours() {
-        return dynamicTest("Match multiple postConditions", assertThat(explorer.dataThatPassesMultipleBehaviours())
-            .as("At least one data has many postConditions")::isEmpty);
+    private PostConditionTest multipleBehaviours() {
+        return postConditionTest("Match multiple post-conditions", assertThat(explorer.dataThatPassesMultipleBehaviours())
+            .as("At least one data has many post-conditions")::isEmpty);
     }
 
-    private BehaviourTest unknownBehaviour() {
-        return dynamicTest("Unknown behaviour",
-                           assertThat(explorer.dataThatPassNothing())
-                               .as("At least one data has unknown behaviour")::isEmpty);
+    private PostConditionTest unknownBehaviour() {
+        return postConditionTest("Unknown post-condition",
+                                 assertThat(explorer.dataThatPassNothing())
+                               .as("At least one data has unknown post-condition")::isEmpty);
     }
 
-    private Stream<BehaviourTest> testedBehaviours() {
+    private Stream<PostConditionTest> testedBehaviours() {
         return explorer.resultByBehaviour()
                        .entrySet()
                        .stream()
-                       .map(behaviour -> dynamicTest(behaviour.getKey(),
-                                                     () -> {
+                       .map(behaviour -> postConditionTest(behaviour.getKey(),
+                                                           () -> {
                                                          TestResult testResult = behaviour.getValue();
                                                          assertThat(testResult.passingData())
                                                              .as("no data validates this behaviour")

@@ -53,7 +53,7 @@ public class ExploratoryRunnerShould {
     @MethodSource("numberOfBehaviours")
     void createOneNodePerPotentialBehaviorAndTwoMoreForUndefinedBehaviourAndMultiple(Object testInstance,
                                                                                      int numberOfBehaviours) {
-        Stream<BehaviourTest> behaviours = generateTestsFor(testInstance);
+        Stream<PostConditionTest> behaviours = generateTestsFor(testInstance);
         assertThat(behaviours).hasSize(numberOfBehaviours + 2);
     }
 
@@ -69,7 +69,7 @@ public class ExploratoryRunnerShould {
     @MethodSource("methodNames")
     void nameNodesWithActionAndSupposedBehaviour(Object testInstance, String actionName,
                                                  List<String> behaviourNames) {
-        Stream<BehaviourTest> behaviours = generateTestsFor(testInstance);
+        Stream<PostConditionTest> behaviours = generateTestsFor(testInstance);
 
         assertThat(behaviours).extracting(b -> b.name)
                               .containsAll(behaviourNames.stream()
@@ -89,22 +89,22 @@ public class ExploratoryRunnerShould {
     @ParameterizedTest
     @MethodSource("testInstances")
     void addUnknownBehaviourLast(Object testInstance) {
-        Stream<BehaviourTest> behaviours = generateTestsFor(testInstance);
+        Stream<PostConditionTest> behaviours = generateTestsFor(testInstance);
 
         assertThat(behaviours).extracting(b -> b.name)
                               .last()
-                              .isEqualTo("Unknown behaviour");
+                              .isEqualTo("Unknown post-condition");
     }
 
 
     @ParameterizedTest
     @MethodSource("testInstances")
     void addsMultipleBehaviourSecondLast(Object testInstance) {
-        List<BehaviourTest> behaviours = generateTestsFor(testInstance).collect(Collectors.toList());
+        List<PostConditionTest> behaviours = generateTestsFor(testInstance).collect(Collectors.toList());
 
         assertThat(behaviours).extracting(b -> b.name)
                               .element(behaviours.size() - 2)
-                              .isEqualTo("Match multiple postConditions");
+                              .isEqualTo("Match multiple post-conditions");
     }
 
     @Test
@@ -182,8 +182,17 @@ public class ExploratoryRunnerShould {
 
     @ParameterizedTest
     @MethodSource("allWrong")
+    void passPotentialBehaviourIfALeastOneDataValidatesPredicate(Object testInstance) {
+        Stream<PostConditionTest> behaviours = generateTestsFor(testInstance);
+        Assertions.assertThatThrownBy(firstTestOf(behaviours)::run)
+                  .isInstanceOf(AssertionError.class)
+                  .hasMessageContaining("no data validates this behaviour");
+    }
+
+    @ParameterizedTest
+    @MethodSource("allWrong")
     void failPotentialBehaviourIfNotDataValidatesPredicate(Object testInstance) {
-        Stream<BehaviourTest> behaviours = generateTestsFor(testInstance);
+        Stream<PostConditionTest> behaviours = generateTestsFor(testInstance);
 
         Assertions.assertThatThrownBy(firstTestOf(behaviours)::run)
                   .isInstanceOf(AssertionError.class)
@@ -202,7 +211,7 @@ public class ExploratoryRunnerShould {
     @ParameterizedTest
     @MethodSource("perfectExplorations")
     void passUnknownBehaviourIfAllDataValidatesAtLeastPredicate(Object testInstance) {
-        Stream<BehaviourTest> behaviours =
+        Stream<PostConditionTest> behaviours =
             generateTestsFor(testInstance);
 
         try {
@@ -215,11 +224,11 @@ public class ExploratoryRunnerShould {
     @ParameterizedTest
     @MethodSource("perfectExplorations")
     void passAllTestsIfPerfectComprehension(Object testInstance) {
-        List<BehaviourTest> behaviours =
+        List<PostConditionTest> behaviours =
             generateTestsFor(testInstance).collect(Collectors.toList());
 
         try {
-            for (BehaviourTest behaviour : behaviours) {
+            for (PostConditionTest behaviour : behaviours) {
                 behaviour.test.run();
             }
         } catch (Throwable throwable) {
@@ -229,24 +238,24 @@ public class ExploratoryRunnerShould {
 
     @Test
     void failUnknownBehaviourIfAtLeastOneDataValidatesAnyPredicateAndLogIt() {
-        Stream<BehaviourTest> behaviours =
+        Stream<PostConditionTest> behaviours =
             generateTestsFor(new AllWrongSuppositionExploration());
 
         Assertions.assertThatThrownBy(unknownBehaviourTestOf(behaviours)::run)
                   .isInstanceOf(AssertionError.class)
-                  .hasMessageContaining("one data has unknown behaviour")
+                  .hasMessageContaining("one data has unknown post-condition")
                   .hasMessageContaining("2")
                   .hasMessageContaining("4");
     }
 
     @Test
     void failMultipleBehaviourIfAtLeastOneDataValidatesMultiplePredicateAndLogIt() {
-        Stream<BehaviourTest> behaviours =
+        Stream<PostConditionTest> behaviours =
             generateTestsFor(new DataMatchesMultipleSuppositionExploration());
 
         Assertions.assertThatThrownBy(multipleBehaviourTestOf(behaviours)::run)
                   .isInstanceOf(AssertionError.class)
-                  .hasMessageContaining("one data has many postConditions")
+                  .hasMessageContaining("one data has many post-conditions")
                   .hasMessageContaining("2");
     }
 
@@ -274,24 +283,24 @@ public class ExploratoryRunnerShould {
                   .isInstanceOf(AssertionError.class);
     }
 
-    private Runnable firstTestOf(Stream<BehaviourTest> behaviours) {
+    private Runnable firstTestOf(Stream<PostConditionTest> behaviours) {
         return behaviours.findFirst()
                          .orElseThrow(() -> new AssertionError("Should have at least one behaviour but got none"))
             .test;
     }
 
-    private Runnable unknownBehaviourTestOf(Stream<BehaviourTest> behaviours) {
+    private Runnable unknownBehaviourTestOf(Stream<PostConditionTest> behaviours) {
         return behaviours.collect(Collectors.toCollection(LinkedList::new))
                          .getLast()
             .test;
     }
 
-    private Runnable multipleBehaviourTestOf(Stream<BehaviourTest> behaviours) {
-        List<BehaviourTest> bs = behaviours.collect(Collectors.toList());
+    private Runnable multipleBehaviourTestOf(Stream<PostConditionTest> behaviours) {
+        List<PostConditionTest> bs = behaviours.collect(Collectors.toList());
         return bs.get(bs.size() - 2).test;
     }
 
-    private static Stream<BehaviourTest> generateTestsFor(Object testInstance) {
+    private static Stream<PostConditionTest> generateTestsFor(Object testInstance) {
         return ExploratoryRunner.generateTestsFor(testInstance, IGNORE_PASSING_CASES_CONSUMER);
     }
 

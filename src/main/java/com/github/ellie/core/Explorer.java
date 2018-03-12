@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static com.github.ellie.core.PostConditionOutput.FAIL;
+import static com.github.ellie.core.PostConditionOutput.IGNORED;
 import static com.github.ellie.core.PostConditionOutput.PASS;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.groupingBy;
@@ -112,8 +113,10 @@ class Explorer {
                     Consumer<Object> consumer = (Consumer<Object>) m.invoke(explorationArguments);
                     consumer.accept(o);
                     return PASS;
-                } catch (AssertionError | TestAbortedException e) {
+                } catch (AssertionError e) {
                     return FAIL;
+                } catch (TestAbortedException e) {
+                    return IGNORED;
                 }
             };
         }
