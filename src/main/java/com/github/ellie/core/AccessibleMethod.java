@@ -1,6 +1,8 @@
 package com.github.ellie.core;
 
 
+import org.opentest4j.TestAbortedException;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -23,6 +25,9 @@ class AccessibleMethod {
         try {
             return method.invoke(instance, explorationArguments.get());
         } catch (IllegalAccessException | InvocationTargetException e) {
+            if(e.getCause() instanceof TestAbortedException){
+                throw (TestAbortedException) e.getCause();
+            }
             throw new RuntimeException(e);
         }
     }

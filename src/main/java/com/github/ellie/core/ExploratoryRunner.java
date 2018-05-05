@@ -19,38 +19,49 @@ public class ExploratoryRunner {
 
     public static Stream<PostConditionTest> generateTestsFor(Object testInstance,
                                                              BiConsumer<String, TestResult>
-                                                             passingCases) {
+                                                                 passingCases) {
+        return exploratoryRunnerFor(testInstance, passingCases).tests();
+    }
+
+    static ExploratoryRunner exploratoryRunnerFor(Object testInstance,
+                                                  BiConsumer<String, TestResult> passingCases) {
         Explorer explorer = new Explorer(testInstance);
-        return new ExploratoryRunner(explorer, passingCases).tests();
+        return new ExploratoryRunner(explorer, passingCases);
     }
 
-    private Stream<PostConditionTest> tests() {
-        return Stream.concat(testedBehaviours(), Stream.of(multipleBehaviours(),unknownBehaviour()));
+    Stream<PostConditionTest> tests() {
+        return Stream.concat(testedBehaviours(),
+                             Stream.of(multipleBehaviours(), unknownBehaviour(), perfectDefinition()));
     }
 
-    private PostConditionTest multipleBehaviours() {
-        return postConditionTest("Match multiple post-conditions", assertThat(explorer.dataThatPassesMultipleBehaviours())
-            .as("At least one data has many post-conditions")::isEmpty);
+    PostConditionTest multipleBehaviours() {
+        return postConditionTest("Match multiple post-conditions",
+                                 assertThat(explorer.dataThatPassesMultipleBehaviours())
+                                     .as("At least one data has many post-conditions")::isEmpty);
     }
 
-    private PostConditionTest unknownBehaviour() {
+    PostConditionTest unknownBehaviour() {
         return postConditionTest("Unknown post-condition",
                                  assertThat(explorer.dataThatPassNothing())
-                               .as("At least one data has unknown post-condition")::isEmpty);
+                                     .as("At least one data has unknown post-condition")::isEmpty);
     }
 
-    private Stream<PostConditionTest> testedBehaviours() {
+    Stream<PostConditionTest> testedBehaviours() {
         return explorer.resultByBehaviour()
                        .entrySet()
                        .stream()
                        .map(behaviour -> postConditionTest(behaviour.getKey(),
                                                            () -> {
-                                                         TestResult testResult = behaviour.getValue();
-                                                         assertThat(testResult.passingData())
-                                                             .as("no data validates this behaviour")
-                                                             .isNotEmpty();
-                                                         passingCases.accept(behaviour.getKey(), testResult);
-                                                     }));
+                                                               TestResult testResult = behaviour.getValue();
+                                                               assertThat(testResult.passingData())
+                                                                   .as("no data validates this behaviour")
+                                                                   .isNotEmpty();
+                                                               passingCases.accept(behaviour.getKey(), testResult);
+                                                           }));
     }
 
+    public PostConditionTest perfectDefinition() {
+        return postConditionTest("Perfect definition", assertThat(explorer.dataThatFailedOnce())
+            .as("one data has failed at least one behaviour")::isEmpty);
+    }
 }

@@ -11,6 +11,7 @@ import com.github.ellie.examples.valids.DataMatchesMultipleSuppositionExploratio
 import com.github.ellie.examples.valids.MultipleExplorationArgumentsExploration;
 import com.github.ellie.examples.valids.OneSuppositionExploration;
 import com.github.ellie.examples.valids.PerfectSuppositionExploration;
+import com.github.ellie.examples.valids.PerfectSuppositionWithAssumtionsExploration;
 import com.github.ellie.examples.valids.ProtectedMethodsExploration;
 import com.github.ellie.examples.valids.TwoDataProviderExploration;
 import com.github.ellie.examples.valids.TwoSuppositionExploration;
@@ -23,7 +24,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -51,10 +51,10 @@ public class ExploratoryRunnerShould {
 
     @ParameterizedTest
     @MethodSource("numberOfBehaviours")
-    void createOneNodePerPotentialBehaviorAndTwoMoreForUndefinedBehaviourAndMultiple(Object testInstance,
+    void createOneNodePerPotentialBehaviorAndThreeMoreForUndefinedBehaviourAndMultipleAndPerfect(Object testInstance,
                                                                                      int numberOfBehaviours) {
-        Stream<PostConditionTest> behaviours = generateTestsFor(testInstance);
-        assertThat(behaviours).hasSize(numberOfBehaviours + 2);
+        Stream<PostConditionTest> behaviours = exploratoryRunnerFor(testInstance).tests();
+        assertThat(behaviours).hasSize(numberOfBehaviours + 3);
     }
 
 
@@ -69,7 +69,7 @@ public class ExploratoryRunnerShould {
     @MethodSource("methodNames")
     void nameNodesWithActionAndSupposedBehaviour(Object testInstance, String actionName,
                                                  List<String> behaviourNames) {
-        Stream<PostConditionTest> behaviours = generateTestsFor(testInstance);
+        Stream<PostConditionTest> behaviours = exploratoryRunnerFor(testInstance).testedBehaviours();
 
         assertThat(behaviours).extracting(b -> b.name)
                               .containsAll(behaviourNames.stream()
@@ -88,37 +88,49 @@ public class ExploratoryRunnerShould {
 
     @ParameterizedTest
     @MethodSource("testInstances")
-    void addUnknownBehaviourLast(Object testInstance) {
-        Stream<PostConditionTest> behaviours = generateTestsFor(testInstance);
+    void addUnknownBehaviourSecondLast(Object testInstance) {
+        List<PostConditionTest> behaviours = exploratoryRunnerFor(testInstance).tests()
+                                                                               .collect(Collectors.toList());
 
         assertThat(behaviours).extracting(b -> b.name)
-                              .last()
+                              .element(behaviours.size() - 2)
                               .isEqualTo("Unknown post-condition");
+    }
+
+    @ParameterizedTest
+    @MethodSource("testInstances")
+    void addPerfectDefinitionLast(Object testInstance) {
+        List<PostConditionTest> behaviours = exploratoryRunnerFor(testInstance).tests()
+                                                                               .collect(Collectors.toList());
+
+        assertThat(behaviours).extracting(b -> b.name)
+                              .element(behaviours.size() - 1)
+                              .isEqualTo("Perfect definition");
     }
 
 
     @ParameterizedTest
     @MethodSource("testInstances")
-    void addsMultipleBehaviourSecondLast(Object testInstance) {
-        List<PostConditionTest> behaviours = generateTestsFor(testInstance).collect(Collectors.toList());
+    void addsMultipleBehaviourThirdLast(Object testInstance) {
+        List<PostConditionTest> behaviours = exploratoryRunnerFor(testInstance).tests()
+                                                                               .collect(Collectors.toList());
 
         assertThat(behaviours).extracting(b -> b.name)
-                              .element(behaviours.size() - 2)
+                              .element(behaviours.size() - 3)
                               .isEqualTo("Match multiple post-conditions");
     }
 
     @Test
     void testEachBehavioursWithEachData() {
         OneSuppositionExploration testInstance = Mockito.spy(new OneSuppositionExploration());
-        generateTestsFor(testInstance)
-            .forEach(t -> {
-                try {
-                    t.test
-                        .run();
-                } catch (Throwable throwable) {
-                    //test result is not the concern here
-                }
-            });
+        exploratoryRunnerFor(testInstance).testedBehaviours()
+                                          .forEach(t -> {
+                                              try {
+                                                  t.test.run();
+                                              } catch (Throwable throwable) {
+                                                  //test result is not the concern here
+                                              }
+                                          });
         verify(testInstance).numbers();
         verify(testInstance, atLeast(1)).times2(2);
         verify(testInstance, atLeast(1)).times2(4);
@@ -129,14 +141,14 @@ public class ExploratoryRunnerShould {
     @Test
     void combinesAllDataProviderMethods() {
         TwoDataProviderExploration testInstance = Mockito.spy(new TwoDataProviderExploration());
-        generateTestsFor(testInstance)
-            .forEach(t -> {
-                try {
-                    t.test.run();
-                } catch (Throwable throwable) {
-                    //test result is not the concern here
-                }
-            });
+        exploratoryRunnerFor(testInstance).testedBehaviours()
+                                          .forEach(t -> {
+                                              try {
+                                                  t.test.run();
+                                              } catch (Throwable throwable) {
+                                                  //test result is not the concern here
+                                              }
+                                          });
         verify(testInstance).two();
         verify(testInstance).four();
         verify(testInstance, atLeast(1)).times2(2);
@@ -180,21 +192,22 @@ public class ExploratoryRunnerShould {
         );
     }
 
-    @ParameterizedTest
-    @MethodSource("allWrong")
-    void passPotentialBehaviourIfALeastOneDataValidatesPredicate(Object testInstance) {
-        Stream<PostConditionTest> behaviours = generateTestsFor(testInstance);
-        Assertions.assertThatThrownBy(firstTestOf(behaviours)::run)
-                  .isInstanceOf(AssertionError.class)
-                  .hasMessageContaining("no data validates this behaviour");
+    @Test
+    void passPotentialBehaviourIfALeastOneDataValidatesPredicate() {
+        Stream<PostConditionTest> behaviours = exploratoryRunnerFor(new OneSuppositionExploration()).testedBehaviours();
+        try {
+            behaviours.forEach(t -> t.test.run());
+        } catch (AssertionError e) {
+            fail("No exception should be thrown");
+        }
     }
 
     @ParameterizedTest
     @MethodSource("allWrong")
     void failPotentialBehaviourIfNotDataValidatesPredicate(Object testInstance) {
-        Stream<PostConditionTest> behaviours = generateTestsFor(testInstance);
+        Stream<PostConditionTest> behaviours = exploratoryRunnerFor(testInstance).testedBehaviours();
 
-        Assertions.assertThatThrownBy(firstTestOf(behaviours)::run)
+        Assertions.assertThatThrownBy(() -> behaviours.forEach(t -> t.test.run()))
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("no data validates this behaviour");
     }
@@ -203,6 +216,7 @@ public class ExploratoryRunnerShould {
     static Stream<Arguments> perfectExplorations() {
         return Stream.of(
             Arguments.of(new PerfectSuppositionExploration()),
+            Arguments.of(new PerfectSuppositionWithAssumtionsExploration()),
             Arguments.of(new AllAllowedTypesExploration()),
             Arguments.of(new ProtectedMethodsExploration())
         );
@@ -211,11 +225,8 @@ public class ExploratoryRunnerShould {
     @ParameterizedTest
     @MethodSource("perfectExplorations")
     void passUnknownBehaviourIfAllDataValidatesAtLeastPredicate(Object testInstance) {
-        Stream<PostConditionTest> behaviours =
-            generateTestsFor(testInstance);
-
         try {
-            unknownBehaviourTestOf(behaviours).run();
+            exploratoryRunnerFor(testInstance).unknownBehaviour().test.run();
         } catch (Throwable throwable) {
             fail("All behaviour are found, no unknown behaviour should be left", throwable);
         }
@@ -225,7 +236,8 @@ public class ExploratoryRunnerShould {
     @MethodSource("perfectExplorations")
     void passAllTestsIfPerfectComprehension(Object testInstance) {
         List<PostConditionTest> behaviours =
-            generateTestsFor(testInstance).collect(Collectors.toList());
+            exploratoryRunnerFor(testInstance).tests()
+                                              .collect(Collectors.toList());
 
         try {
             for (PostConditionTest behaviour : behaviours) {
@@ -238,10 +250,10 @@ public class ExploratoryRunnerShould {
 
     @Test
     void failUnknownBehaviourIfAtLeastOneDataValidatesAnyPredicateAndLogIt() {
-        Stream<PostConditionTest> behaviours =
-            generateTestsFor(new AllWrongSuppositionExploration());
+        PostConditionTest behaviour =
+            exploratoryRunnerFor(new AllWrongSuppositionExploration()).unknownBehaviour();
 
-        Assertions.assertThatThrownBy(unknownBehaviourTestOf(behaviours)::run)
+        Assertions.assertThatThrownBy(behaviour.test::run)
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("one data has unknown post-condition")
                   .hasMessageContaining("2")
@@ -250,10 +262,10 @@ public class ExploratoryRunnerShould {
 
     @Test
     void failMultipleBehaviourIfAtLeastOneDataValidatesMultiplePredicateAndLogIt() {
-        Stream<PostConditionTest> behaviours =
-            generateTestsFor(new DataMatchesMultipleSuppositionExploration());
+        PostConditionTest behaviour =
+            exploratoryRunnerFor(new DataMatchesMultipleSuppositionExploration()).multipleBehaviours();
 
-        Assertions.assertThatThrownBy(multipleBehaviourTestOf(behaviours)::run)
+        Assertions.assertThatThrownBy(behaviour.test::run)
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("one data has many post-conditions")
                   .hasMessageContaining("2");
@@ -261,47 +273,55 @@ public class ExploratoryRunnerShould {
 
     @Test
     void throwsAnExceptionIfMoreThanOneBehaviourIsExplored() {
-        Assertions.assertThatThrownBy(() -> generateTestsFor(new TwoBehaviourExploration()))
+        Assertions.assertThatThrownBy(() -> exploratoryRunnerFor(new TwoBehaviourExploration()).tests())
                   .isInstanceOf(AssertionError.class);
     }
 
     @Test
     void throwsAnExceptionIfNoDataIsGiven() {
-        Assertions.assertThatThrownBy(() -> generateTestsFor(new NoDataExploration()))
+        Assertions.assertThatThrownBy(() -> exploratoryRunnerFor(new NoDataExploration()).tests())
                   .isInstanceOf(AssertionError.class);
     }
 
     @Test
     void throwsAnExceptionIfDataIsNotIterableOrStream() {
-        Assertions.assertThatThrownBy(() -> generateTestsFor(new NotIterableDataExploration()))
+        Assertions.assertThatThrownBy(() -> exploratoryRunnerFor(new NotIterableDataExploration()).tests())
                   .isInstanceOf(AssertionError.class);
     }
 
     @Test
     void throwsAnExceptionIfPotentialBehaviourIsNotPredicateOrConsumer() {
-        Assertions.assertThatThrownBy(() -> generateTestsFor(new NotPredicateExploration()))
+        Assertions.assertThatThrownBy(() -> exploratoryRunnerFor(new NotPredicateExploration()).tests())
                   .isInstanceOf(AssertionError.class);
     }
 
-    private Runnable firstTestOf(Stream<PostConditionTest> behaviours) {
-        return behaviours.findFirst()
-                         .orElseThrow(() -> new AssertionError("Should have at least one behaviour but got none"))
-            .test;
+    @Test
+    void failPerfecytDefinitionIfAtLeastOneDataFailedOnePredicate() {
+        PostConditionTest behaviour =
+            exploratoryRunnerFor(new AllWrongSuppositionExploration()).perfectDefinition();
+
+        Assertions.assertThatThrownBy(behaviour.test::run)
+                  .isInstanceOf(AssertionError.class)
+                  .hasMessageContaining("one data has failed at least one behaviour")
+                  .hasMessageContaining("2")
+                  .hasMessageContaining("4");
     }
 
-    private Runnable unknownBehaviourTestOf(Stream<PostConditionTest> behaviours) {
-        return behaviours.collect(Collectors.toCollection(LinkedList::new))
-                         .getLast()
-            .test;
+    @ParameterizedTest
+    @MethodSource("perfectExplorations")
+    void passPerfecytDefinitionIfNoDataFailedAnyPredicate(Object testInstance) {
+        PostConditionTest behaviour =
+            exploratoryRunnerFor(testInstance).perfectDefinition();
+
+        try {
+            behaviour.test.run();
+        } catch (Exception e) {
+            fail("Perfect supposition passes perfect definition");
+        }
     }
 
-    private Runnable multipleBehaviourTestOf(Stream<PostConditionTest> behaviours) {
-        List<PostConditionTest> bs = behaviours.collect(Collectors.toList());
-        return bs.get(bs.size() - 2).test;
-    }
-
-    private static Stream<PostConditionTest> generateTestsFor(Object testInstance) {
-        return ExploratoryRunner.generateTestsFor(testInstance, IGNORE_PASSING_CASES_CONSUMER);
+    private static ExploratoryRunner exploratoryRunnerFor(Object testInstance) {
+        return ExploratoryRunner.exploratoryRunnerFor(testInstance, IGNORE_PASSING_CASES_CONSUMER);
     }
 
 }

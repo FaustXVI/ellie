@@ -47,7 +47,7 @@ class Explorer {
     private Map<String, PostConditionOutput> testPostConditions(ExplorationArguments d) {
         return postConditions.stream()
                              .collect(toMap(NamedBehaviour::name, b -> b.apply(d)
-                                                                    .test(exploredCode.invoke(d))));
+                                                                        .test(exploredCode.invoke(d))));
     }
 
     Map<String, TestResult> resultByBehaviour() {
@@ -69,6 +69,14 @@ class Explorer {
                                         .count() > 1);
     }
 
+
+    Collection<ExplorationArguments> dataThatFailedOnce() {
+        return dataThatBehaviours(c -> c.values()
+                                        .stream()
+                                        .filter(r -> r == FAIL)
+                                        .count() >= 1);
+    }
+
     private TestResult resultsFor(String behaviourName) {
         return new TestResult(
             dataToPostConditionsResults.entrySet()
@@ -78,7 +86,8 @@ class Explorer {
                                                            mapping(Map.Entry::getKey, Collectors.toList()))));
     }
 
-    private List<ExplorationArguments> dataThatBehaviours(Predicate<Map<String, PostConditionOutput>> postConditionPredicate) {
+    private List<ExplorationArguments> dataThatBehaviours(
+        Predicate<Map<String, PostConditionOutput>> postConditionPredicate) {
         return dataToPostConditionsResults.entrySet()
                                           .stream()
                                           .filter(e -> postConditionPredicate.test(e.getValue()))
@@ -107,7 +116,13 @@ class Explorer {
         @Override
         public BehaviourExecutable apply(ExplorationArguments explorationArguments) {
             if (m.returnsAnyOf(Predicate.class))
-                return (o) -> ((Predicate<Object>) m.invoke(explorationArguments)).test(o) ? PASS : FAIL;
+                return (o) -> {
+                    try {
+                        return ((Predicate<Object>) m.invoke(explorationArguments)).test(o) ? PASS : FAIL;
+                    } catch (TestAbortedException e) {
+                        return IGNORED;
+                    }
+                };
             return (o) -> {
                 try {
                     Consumer<Object> consumer = (Consumer<Object>) m.invoke(explorationArguments);
