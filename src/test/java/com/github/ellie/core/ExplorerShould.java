@@ -15,6 +15,7 @@ import com.github.ellie.examples.valids.DataMatchesMultipleSuppositionExploratio
 import com.github.ellie.examples.valids.OneSuppositionExploration;
 import com.github.ellie.examples.valids.PerfectSuppositionExploration;
 import com.github.ellie.examples.valids.ProtectedMethodsExploration;
+import com.github.ellie.examples.valids.TwoSuppositionExploration;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,13 +23,35 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 class ExplorerShould {
+
+    static Stream<Arguments> methodNames() {
+        return Stream.of(
+            Arguments.of(new OneSuppositionExploration(), "times2", List.of("is4")),
+            Arguments.of(new TwoSuppositionExploration(), "times3", List.of("is6", "is16"))
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("methodNames")
+    void nameNodesWithActionAndSupposedBehaviour(Object testInstance, String actionName,
+                                                 List<String> behaviourNames) {
+        Explorer explorer = new Explorer(testInstance);
+
+        assertThat(explorer.resultByBehaviour().keySet())
+                              .containsAll(behaviourNames.stream()
+                                                         .map(behaviourName -> actionName + "_" + behaviourName)
+                                                         .collect(Collectors.toList()))
+        ;
+    }
 
     @Test
     void giveTestResultForBehaviourBehaviour() {

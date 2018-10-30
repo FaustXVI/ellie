@@ -1,6 +1,6 @@
 package com.github.ellie.core;
 
-public enum PostConditionOutput {
+public enum ConditionOutput {
     PASS,
     IGNORED,
     FAIL;

@@ -11,18 +11,18 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static com.github.ellie.core.PostConditionOutput.FAIL;
-import static com.github.ellie.core.PostConditionOutput.IGNORED;
-import static com.github.ellie.core.PostConditionOutput.PASS;
+import static com.github.ellie.core.ConditionOutput.FAIL;
+import static com.github.ellie.core.ConditionOutput.IGNORED;
+import static com.github.ellie.core.ConditionOutput.PASS;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toMap;
 
-class Explorer {
+class Explorer implements DataAnalyzer {
     private final AccessibleMethod exploredCode;
     private final List<NamedBehaviour> postConditions;
-    private final Map<ExplorationArguments, Map<String, PostConditionOutput>> dataToPostConditionsResults;
+    private final Map<ExplorationArguments, Map<String, ConditionOutput>> dataToPostConditionsResults;
 
     Explorer(Object testInstance) {
         MethodFinder methodFinder = new MethodFinder(testInstance);
@@ -44,7 +44,7 @@ class Explorer {
                                           .collect(toMap(identity(), this::testPostConditions));
     }
 
-    private Map<String, PostConditionOutput> testPostConditions(ExplorationArguments d) {
+    private Map<String, ConditionOutput> testPostConditions(ExplorationArguments d) {
         return postConditions.stream()
                              .collect(toMap(NamedBehaviour::name, b -> b.apply(d)
                                                                         .test(exploredCode.invoke(d))));
@@ -57,23 +57,17 @@ class Explorer {
     }
 
     Collection<ExplorationArguments> dataThatPassNothing() {
-        return dataThatBehaviours(b -> b.values()
-                                        .stream()
-                                        .noneMatch(r -> r == PASS));
+        return dataThatBehaviours(b -> b.noneMatch(r -> r == PASS));
     }
 
     Collection<ExplorationArguments> dataThatPassesMultipleBehaviours() {
-        return dataThatBehaviours(c -> c.values()
-                                        .stream()
-                                        .filter(r -> r == PASS)
+        return dataThatBehaviours(c -> c.filter(r -> r == PASS)
                                         .count() > 1);
     }
 
 
     Collection<ExplorationArguments> dataThatFailedOnce() {
-        return dataThatBehaviours(c -> c.values()
-                                        .stream()
-                                        .filter(r -> r == FAIL)
+        return dataThatBehaviours(c -> c.filter(r -> r == FAIL)
                                         .count() >= 1);
     }
 
@@ -86,11 +80,12 @@ class Explorer {
                                                            mapping(Map.Entry::getKey, Collectors.toList()))));
     }
 
-    private List<ExplorationArguments> dataThatBehaviours(
-        Predicate<Map<String, PostConditionOutput>> postConditionPredicate) {
+    @Override
+    public List<ExplorationArguments> dataThatBehaviours(
+        Predicate<Stream< ConditionOutput>> postConditionPredicate) {
         return dataToPostConditionsResults.entrySet()
                                           .stream()
-                                          .filter(e -> postConditionPredicate.test(e.getValue()))
+                                          .filter(e -> postConditionPredicate.test(e.getValue().values().stream()))
                                           .map(Map.Entry::getKey)
                                           .collect(Collectors.toList());
     }

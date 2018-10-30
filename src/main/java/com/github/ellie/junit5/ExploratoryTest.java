@@ -1,6 +1,6 @@
 package com.github.ellie.junit5;
 
-import com.github.ellie.core.ExploratoryRunner;
+import com.github.ellie.core.RunnerBuilder;
 import com.github.ellie.core.TestResult;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -15,8 +15,8 @@ public interface ExploratoryTest {
 
     @TestFactory
     default Stream<? extends DynamicTest> generatedTests() {
-        return ExploratoryRunner.generateTestsFor(this, passingCasesConsumer())
-                                .map(t -> DynamicTest.dynamicTest(t.name, t.test::run));
+        return RunnerBuilder.generateTestsFor(this, passingCasesConsumer())
+                            .map(t -> DynamicTest.dynamicTest(t.name, t.test::run));
     }
 
     default BiConsumer<String, TestResult> passingCasesConsumer() {

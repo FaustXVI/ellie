@@ -3,9 +3,9 @@ package com.github.ellie.junit5;
 import com.github.ellie.api.DataProvider;
 import com.github.ellie.api.PostCondition;
 import com.github.ellie.api.TestedBehaviour;
-import com.github.ellie.core.PostConditionTest;
+import com.github.ellie.core.ConditionTest;
 import com.github.ellie.core.ExplorationArguments;
-import com.github.ellie.core.ExploratoryRunner;
+import com.github.ellie.core.RunnerBuilder;
 import com.github.ellie.core.TestResult;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static com.github.ellie.core.PostConditionOutput.PASS;
+import static com.github.ellie.core.ConditionOutput.PASS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class JUnit5ExploratoryTestShould {
@@ -47,11 +47,11 @@ public class JUnit5ExploratoryTestShould {
         PerfectJunit5 junit5Test = new PerfectJunit5();
         List<? extends DynamicTest> tests = junit5Test.generatedTests()
                                                       .collect(Collectors.toList());
-        List<PostConditionTest> explorations = explorationOf(junit5Test);
+        List<ConditionTest> explorations = explorationOf(junit5Test);
         assertThat(tests).hasSameSizeAs(explorations);
         for (int i = 0; i < tests.size(); i++) {
             DynamicTest test = tests.get(i);
-            PostConditionTest exploration = explorations.get(i);
+            ConditionTest exploration = explorations.get(i);
             assertThat(test.getDisplayName()).isEqualTo(exploration.name);
         }
     }
@@ -71,9 +71,9 @@ public class JUnit5ExploratoryTestShould {
                                              + "    }\n");
     }
 
-    private List<PostConditionTest> explorationOf(PerfectJunit5 junit5Test) {
-        return ExploratoryRunner.generateTestsFor(junit5Test, (a, b) -> {
+    private List<ConditionTest> explorationOf(PerfectJunit5 junit5Test) {
+        return RunnerBuilder.generateTestsFor(junit5Test, (a, b) -> {
         })
-                                .collect(Collectors.toList());
+                            .collect(Collectors.toList());
     }
 }

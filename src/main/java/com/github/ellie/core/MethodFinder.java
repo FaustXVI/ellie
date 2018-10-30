@@ -21,7 +21,7 @@ class MethodFinder {
         this.testInstance = testInstance;
     }
 
-    List<AccessibleMethod> findMethodsAnnotatedWith(Class<? extends Annotation> annotationClass) {
+    private List<AccessibleMethod> findMethodsAnnotatedWith(Class<? extends Annotation> annotationClass) {
         return Arrays.stream(testInstance.getClass()
                                          .getDeclaredMethods())
                      .filter(m -> m.getAnnotation(annotationClass) != null)
