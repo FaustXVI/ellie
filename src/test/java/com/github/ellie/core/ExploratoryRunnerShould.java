@@ -42,22 +42,25 @@ public class ExploratoryRunnerShould {
 
     private static Stream<Arguments> passingResults() {
         return Stream.of(
-            Arguments.of(Map.of("b1", PASSING_RESULTS)),
-            Arguments.of(Map.of("b1", PASSING_RESULTS, "b2", PASSING_RESULTS))
+            Arguments.of(Map.of("passing", PASSING_RESULTS)),
+            Arguments.of(Map.of("passing", PASSING_RESULTS,
+                                "passing again", PASSING_RESULTS))
         );
     }
 
     private static Stream<Arguments> failingResults() {
         return Stream.of(
-            Arguments.of(Map.of("b1", FAILING_RESULTS)),
-            Arguments.of(Map.of("b1", FAILING_RESULTS, "b2", FAILING_RESULTS))
+            Arguments.of(Map.of("failing", FAILING_RESULTS)),
+            Arguments.of(Map.of("failing", FAILING_RESULTS,
+                                "failing again", FAILING_RESULTS))
         );
     }
 
     private static Stream<Arguments> mixtedResults() {
         return Stream.of(
-            Arguments.of(Map.of("b1", MIXTED_RESULTS)),
-            Arguments.of(Map.of("b1", MIXTED_RESULTS, "b2", MIXTED_RESULTS))
+            Arguments.of(Map.of("mixted", MIXTED_RESULTS)),
+            Arguments.of(Map.of("mixted", MIXTED_RESULTS,
+                                "mixted again", MIXTED_RESULTS))
         );
     }
 
