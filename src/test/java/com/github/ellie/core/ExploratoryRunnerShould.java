@@ -88,8 +88,7 @@ public class ExploratoryRunnerShould {
         behaviours.forEach(t -> {
             try {
                 t.test.run();
-            } catch (Throwable throwable) {
-                //test result is not the concern here
+            } catch (AssertionError ignored) {
             }
         });
 
