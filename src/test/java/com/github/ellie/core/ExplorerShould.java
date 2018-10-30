@@ -15,12 +15,14 @@ import com.github.ellie.examples.valids.DataMatchesMultipleSuppositionExploratio
 import com.github.ellie.examples.valids.OneSuppositionExploration;
 import com.github.ellie.examples.valids.PerfectSuppositionExploration;
 import com.github.ellie.examples.valids.ProtectedMethodsExploration;
+import com.github.ellie.examples.valids.TwoDataProviderExploration;
 import com.github.ellie.examples.valids.TwoSuppositionExploration;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mockito;
 
 import java.util.Collection;
 import java.util.List;
@@ -30,6 +32,8 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.verify;
 
 class ExplorerShould {
 
@@ -200,6 +204,33 @@ class ExplorerShould {
     void givesDataThatPassesMultiplePredicates() {
         Explorer explorer = new Explorer(new DataMatchesMultipleSuppositionExploration());
         assertThat(explorer.dataThatPassesMultipleBehaviours()).isNotEmpty();
+    }
+
+    @Test
+    void testEachBehavioursWithEachData() {
+        OneSuppositionExploration testInstance = Mockito.spy(new OneSuppositionExploration());
+
+        new Explorer(testInstance);
+
+        verify(testInstance).numbers();
+        verify(testInstance, atLeast(1)).times2(2);
+        verify(testInstance, atLeast(1)).times2(4);
+        verify(testInstance, atLeast(1)).is4(2);
+        verify(testInstance, atLeast(1)).is4(4);
+    }
+
+    @Test
+    void combinesAllDataProviderMethods() {
+        TwoDataProviderExploration testInstance = Mockito.spy(new TwoDataProviderExploration());
+
+        new Explorer(testInstance);
+
+        verify(testInstance).two();
+        verify(testInstance).four();
+        verify(testInstance, atLeast(1)).times2(2);
+        verify(testInstance, atLeast(1)).times2(4);
+        verify(testInstance, atLeast(1)).is4(2);
+        verify(testInstance, atLeast(1)).is4(4);
     }
 
 }
