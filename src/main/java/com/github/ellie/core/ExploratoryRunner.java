@@ -12,11 +12,11 @@ public class ExploratoryRunner implements Runner {
 
 
     private final Explorer explorer;
-    private BiConsumer<String, TestResult> passingCases;
+    private BiConsumer<String, TestResult> resultConsumer;
 
-    ExploratoryRunner(Explorer explorer, BiConsumer<String, TestResult> passingCases) {
+    ExploratoryRunner(Explorer explorer, BiConsumer<String, TestResult> resultConsumer) {
         this.explorer = explorer;
-        this.passingCases = passingCases;
+        this.resultConsumer = resultConsumer;
     }
 
     @Override
@@ -27,10 +27,13 @@ public class ExploratoryRunner implements Runner {
                        .map(behaviour -> postConditionTest(behaviour.getKey(),
                                                            () -> {
                                                                TestResult testResult = behaviour.getValue();
-                                                               assertThat(testResult.passingData())
-                                                                   .as("no data validates this behaviour")
-                                                                   .isNotEmpty();
-                                                               passingCases.accept(behaviour.getKey(), testResult);
+                                                               try {
+                                                                   assertThat(testResult.passingData())
+                                                                       .as("no data validates this behaviour")
+                                                                       .isNotEmpty();
+                                                               } finally {
+                                                                   resultConsumer.accept(behaviour.getKey(), testResult);
+                                                               }
                                                            }));
     }
 

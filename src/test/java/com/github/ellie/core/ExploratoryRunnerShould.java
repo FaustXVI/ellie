@@ -75,7 +75,7 @@ public class ExploratoryRunnerShould {
 
 
     @ParameterizedTest
-    @MethodSource({"passingResults", "mixtedResults"})
+    @MethodSource({"passingResults", "mixtedResults", "failingResults"})
     void callsConsumerWithTestResultAfterRun(Map<String, TestResult> results) {
         Map<String, TestResult> testResults = new HashMap<>();
         when(explorer.resultByBehaviour()).thenReturn(results);
