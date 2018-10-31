@@ -7,6 +7,6 @@ public class RunnerBuilder {
     public static Stream<ConditionTest> generateTestsFor(Object testInstance,
                                                          BiConsumer<String, TestResult>
                                                                  passingCases) {
-        return new ExploratoryRunner(new Explorer(testInstance), passingCases).tests();
+        return new ExploratoryRunner(new Explorer(new InstanceParser(testInstance)), passingCases).tests();
     }
 }

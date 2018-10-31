@@ -16,14 +16,14 @@ class AccessibleMethod {
         this.instance = instance;
     }
 
-    public Object invoke() {
-        return invoke(ExplorationArguments.of());
+    public <T> T invoke() {
+        return (T) invoke(ExplorationArguments.of());
     }
 
-    public Object invoke(ExplorationArguments explorationArguments) {
+    public <T> T invoke(ExplorationArguments explorationArguments) {
         method.setAccessible(true);
         try {
-            return method.invoke(instance, explorationArguments.get());
+            return (T) method.invoke(instance, explorationArguments.get());
         } catch (IllegalAccessException | InvocationTargetException e) {
             if(e.getCause() instanceof TestAbortedException){
                 throw (TestAbortedException) e.getCause();

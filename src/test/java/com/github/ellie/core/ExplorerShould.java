@@ -11,7 +11,6 @@ import com.github.ellie.examples.valids.AllAllowedTypesExploration;
 import com.github.ellie.examples.valids.AllWrongSuppositionExploration;
 import com.github.ellie.examples.valids.AllWrongSuppositionWithAssumtionsExploration;
 import com.github.ellie.examples.valids.AllWrongSuppositionWithConsumersExploration;
-import com.github.ellie.examples.valids.DataMatchesMultipleSuppositionExploration;
 import com.github.ellie.examples.valids.OneSuppositionExploration;
 import com.github.ellie.examples.valids.PerfectSuppositionExploration;
 import com.github.ellie.examples.valids.ProtectedMethodsExploration;
@@ -48,7 +47,7 @@ class ExplorerShould {
     @MethodSource("methodNames")
     void nameNodesWithActionAndSupposedBehaviour(Object testInstance, String actionName,
                                                  List<String> behaviourNames) {
-        Explorer explorer = new Explorer(testInstance);
+        Explorer explorer = new Explorer(new InstanceParser(testInstance));
 
         assertThat(explorer.resultByBehaviour().keySet())
                               .containsAll(behaviourNames.stream()
@@ -60,7 +59,7 @@ class ExplorerShould {
     @Test
     void giveTestResultForBehaviourBehaviour() {
         OneSuppositionExploration testInstance = new OneSuppositionExploration();
-        Explorer explorer = new Explorer(testInstance);
+        Explorer explorer = new Explorer(new InstanceParser(testInstance));
         TestResult testResult = explorer.resultByBehaviour()
                                         .get("times2_is4");
         assertThat(testResult.passingData())
@@ -79,31 +78,15 @@ class ExplorerShould {
         );
     }
 
-    @ParameterizedTest
-    @MethodSource("perfectExplorations")
-    void haveNoDataThatPassesNothingWhenPerfectSupposition(Object testInstance) {
-        Explorer explorer = new Explorer(testInstance);
-        assertThat(explorer.dataThatPassNothing()).isEmpty();
-    }
-
 
     @ParameterizedTest
     @MethodSource("perfectExplorations")
     void groupResultsByBehaviour(Object testInstance) {
-        Explorer explorer = new Explorer(testInstance);
+        Explorer explorer = new Explorer(new InstanceParser(testInstance));
         Map<String, TestResult> dataByBehaviour = explorer.resultByBehaviour();
         assertThat(dataByBehaviour).isNotEmpty();
         assertThat(dataByBehaviour.values()).allMatch(c -> !c.passingData()
                                                              .isEmpty());
-    }
-
-    @Test
-    void haveUnknownBehaviourContainingExamplesThatPassesNothing() {
-        Explorer explorer = new Explorer(new AllWrongSuppositionExploration());
-
-        assertThat(explorer.dataThatPassNothing())
-            .extracting(ExplorationArguments::get)
-            .contains(args(2), args(4));
     }
 
     private Object[] args(Object... ns) {
@@ -112,7 +95,7 @@ class ExplorerShould {
 
     @Test
     void throwsAnExceptionIfMoreThanOneBehaviourIsExplored() {
-        Assertions.assertThatThrownBy(() -> new Explorer(new TwoBehaviourExploration()))
+        Assertions.assertThatThrownBy(() -> new Explorer(new InstanceParser(new TwoBehaviourExploration())))
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("only one method")
                   .hasMessageContaining(TestedBehaviour.class.getSimpleName());
@@ -120,7 +103,7 @@ class ExplorerShould {
 
     @Test
     void throwsAnExceptionIfNoDataIsGiven() {
-        Assertions.assertThatThrownBy(() -> new Explorer(new NoDataExploration()))
+        Assertions.assertThatThrownBy(() -> new Explorer(new InstanceParser(new NoDataExploration())))
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("no data found")
                   .hasMessageContaining(DataProvider.class.getSimpleName());
@@ -128,7 +111,7 @@ class ExplorerShould {
 
     @Test
     void throwsAnExceptionIfDataIsNotIterableOrStream() {
-        Assertions.assertThatThrownBy(() -> new Explorer(new NotIterableDataExploration()))
+        Assertions.assertThatThrownBy(() -> new Explorer(new InstanceParser(new NotIterableDataExploration())))
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("should be iterable or stream")
                   .hasMessageContaining(DataProvider.class.getSimpleName());
@@ -136,7 +119,7 @@ class ExplorerShould {
 
     @Test
     void throwsAnExceptionIfPotentialBehaviourIsNotPredicateOrConsumer() {
-        Assertions.assertThatThrownBy(() -> new Explorer(new NotPredicateExploration()))
+        Assertions.assertThatThrownBy(() -> new Explorer(new InstanceParser(new NotPredicateExploration())))
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("should be predicate or consumer")
                   .hasMessageContaining(PostCondition.class.getSimpleName());
@@ -153,7 +136,7 @@ class ExplorerShould {
     @MethodSource({"allWrong","wrongAssumptions"})
     void givesEmptyPassingDataIfNonePassesPredicate(Object testInstance) {
         try {
-            Explorer explorer = new Explorer(testInstance);
+            Explorer explorer = new Explorer(new InstanceParser(testInstance));
             Collection<TestResult> testResults = explorer.resultByBehaviour()
                                                          .values();
             assertThat(testResults)
@@ -168,7 +151,7 @@ class ExplorerShould {
     @MethodSource("allWrong")
     void givesNonEmptyFailingDataIfNonePassesPredicate(Object testInstance) {
         try {
-            Explorer explorer = new Explorer(testInstance);
+            Explorer explorer = new Explorer(new InstanceParser(testInstance));
             Collection<TestResult> testResults = explorer.resultByBehaviour()
                                                          .values();
             assertThat(testResults)
@@ -189,7 +172,7 @@ class ExplorerShould {
     @MethodSource("wrongAssumptions")
     void givesNonEmptyIgnoredDataIfNonePassesAssumptions(Object testInstance) {
         try {
-            Explorer explorer = new Explorer(testInstance);
+            Explorer explorer = new Explorer(new InstanceParser(testInstance));
             Collection<TestResult> testResults = explorer.resultByBehaviour()
                                                          .values();
             assertThat(testResults)
@@ -201,16 +184,10 @@ class ExplorerShould {
     }
 
     @Test
-    void givesDataThatPassesMultiplePredicates() {
-        Explorer explorer = new Explorer(new DataMatchesMultipleSuppositionExploration());
-        assertThat(explorer.dataThatPassesMultipleBehaviours()).isNotEmpty();
-    }
-
-    @Test
     void testEachBehavioursWithEachData() {
         OneSuppositionExploration testInstance = Mockito.spy(new OneSuppositionExploration());
 
-        new Explorer(testInstance);
+        new Explorer(new InstanceParser(testInstance));
 
         verify(testInstance).numbers();
         verify(testInstance, atLeast(1)).times2(2);
@@ -223,7 +200,7 @@ class ExplorerShould {
     void combinesAllDataProviderMethods() {
         TwoDataProviderExploration testInstance = Mockito.spy(new TwoDataProviderExploration());
 
-        new Explorer(testInstance);
+        new Explorer(new InstanceParser(testInstance));
 
         verify(testInstance).two();
         verify(testInstance).four();
