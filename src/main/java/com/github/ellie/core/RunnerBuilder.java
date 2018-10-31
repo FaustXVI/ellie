@@ -6,7 +6,12 @@ import java.util.stream.Stream;
 public class RunnerBuilder {
     public static Stream<ConditionTest> generateTestsFor(Object testInstance,
                                                          BiConsumer<String, TestResult>
-                                                                 passingCases) {
-        return new ExploratoryRunner(new Explorer(new InstanceParser(testInstance)), passingCases).tests();
+                                                             passingCases) {
+        return
+            new MultipleBehaviourRunner(
+                new UnkownBehaviourRunner(
+                    new ExploratoryRunner(new Explorer(new InstanceParser(testInstance)), passingCases)
+                )
+            ).tests();
     }
 }
