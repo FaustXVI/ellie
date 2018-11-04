@@ -35,6 +35,7 @@ class Explorer implements DataAnalyzer {
                              .collect(toMap(ExecutableCondition::name, b -> b.testWith(d)));
     }
 
+    // TODO move to exploration results and make explorer object disappear
     Map<String, TestResult> resultByBehaviour() {
         return explorationResults.resultByBehaviour();
     }
