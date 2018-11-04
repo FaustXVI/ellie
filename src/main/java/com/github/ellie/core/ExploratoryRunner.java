@@ -10,18 +10,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ExploratoryRunner implements Runner {
 
-
-    private final Explorer explorer;
+    private final ExplorationResults results;
     private BiConsumer<String, TestResult> resultConsumer;
 
-    ExploratoryRunner(Explorer explorer, BiConsumer<String, TestResult> resultConsumer) {
-        this.explorer = explorer;
+    ExploratoryRunner(ExplorationResults results, BiConsumer<String, TestResult> resultConsumer) {
+        this.results = results;
         this.resultConsumer = resultConsumer;
     }
 
+    // TODO transform into a pure function from results to test
     @Override
     public Stream<ConditionTest> tests() {
-        return explorer.resultByBehaviour()
+        return results.resultByBehaviour()
                        .entrySet()
                        .stream()
                        .map(behaviour -> postConditionTest(behaviour.getKey(),
@@ -41,6 +41,6 @@ public class ExploratoryRunner implements Runner {
     @Override
     public List<ExplorationArguments> dataThatBehaviours(
         Predicate<Stream<ConditionOutput>> postConditionPredicate) {
-        return explorer.dataThatBehaviours(postConditionPredicate);
+        return results.dataThatBehaviours(postConditionPredicate);
     }
 }

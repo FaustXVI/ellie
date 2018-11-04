@@ -16,17 +16,17 @@ import java.util.stream.Stream;
 public class AllAllowedTypesExploration {
 
     @DataProvider
-    public Collection<ExplorationArguments> two() {
+    public Collection<ExplorationArguments> twoAndFour() {
         return List.of(ExplorationArguments.of(2, 4));
     }
 
     @DataProvider
-    public Stream<ExplorationArguments> four() {
+    public Stream<ExplorationArguments> twentyAndFourty() {
         return Stream.of(ExplorationArguments.of(20, 40));
     }
 
     @TestedBehaviour
-    public int times2(int a, int b) {
+    public int add(int a, int b) {
         return a + b;
     }
 
