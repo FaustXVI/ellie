@@ -11,7 +11,7 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toMap;
 
-class ExplorationResults implements DataAnalyzer {
+class ExplorationResults {
     private final Map<ExplorationArguments, Map<String, ConditionOutput>> dataToPostConditionsResults;
 
     ExplorationResults(
@@ -40,8 +40,7 @@ class ExplorationResults implements DataAnalyzer {
     }
 
 
-    @Override
-    public List<ExplorationArguments> dataThatBehaviours(
+    List<ExplorationArguments> dataThatBehaviours(
         Predicate<Stream<ConditionOutput>> postConditionPredicate) {
         return dataToPostConditionsResults.entrySet()
                                           .stream()

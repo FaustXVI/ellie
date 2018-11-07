@@ -21,10 +21,12 @@ class MultipleBehaviourRunnerShould {
 
     private Runner otherRunner;
     private Runner exploratoryRunner;
+    private ExplorationResults results;
 
     @BeforeEach
     void createRunner() {
         otherRunner = mock(Runner.class);
+        results = mock(ExplorationResults.class);
         exploratoryRunner = new MultipleBehaviourRunner(otherRunner);
     }
 
@@ -32,15 +34,15 @@ class MultipleBehaviourRunnerShould {
     void keepsOtherRunnerTests() {
         ConditionTest test = ConditionTest.postConditionTest("test", () -> {
         });
-        Mockito.when(otherRunner.tests())
+        Mockito.when(otherRunner.tests(results))
                .thenReturn(Stream.of(test));
 
-        assertThat(exploratoryRunner.tests()).contains(test);
+        assertThat(exploratoryRunner.tests(results)).contains(test);
     }
 
     @Test
     void addsMultipleBehaviourLast() {
-        assertThat(exploratoryRunner.tests()).extracting(b -> b.name)
+        assertThat(exploratoryRunner.tests(results)).extracting(b -> b.name)
                                              .last()
                                              .isEqualTo("Match multiple post-conditions");
     }
@@ -48,10 +50,10 @@ class MultipleBehaviourRunnerShould {
 
     @Test
     void failsIfAtLeastOneDataPassesManyTimes() {
-        when(otherRunner.dataThatBehaviours(Mockito.any())).then(filterFrom(
+        when(results.dataThatBehaviours(Mockito.any())).then(filterFrom(
             Map.of(ExplorationArguments.of(2), Stream.of(ConditionOutput.PASS, ConditionOutput.PASS))));
 
-        Assertions.assertThatThrownBy(() -> this.exploratoryRunner.tests()
+        Assertions.assertThatThrownBy(() -> this.exploratoryRunner.tests(results)
                                                                   .forEach(t -> t.test.run()))
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("one data has many post-conditions")
@@ -60,14 +62,14 @@ class MultipleBehaviourRunnerShould {
 
     @Test
     void passesIfNoDataPassesManyTimes() {
-        when(otherRunner.dataThatBehaviours(Mockito.any())).then(filterFrom(
+        when(results.dataThatBehaviours(Mockito.any())).then(filterFrom(
             Map.of(ExplorationArguments.of(1), Stream.of(ConditionOutput.PASS),
                    ExplorationArguments.of(2), Stream.of(ConditionOutput.FAIL),
                    ExplorationArguments.of(3), Stream.of(ConditionOutput.IGNORED))
         ));
 
         try {
-            exploratoryRunner.tests()
+            exploratoryRunner.tests(results)
                              .forEach(t -> t.test.run());
         } catch (Exception e) {
             fail("No data passes many post conditions");

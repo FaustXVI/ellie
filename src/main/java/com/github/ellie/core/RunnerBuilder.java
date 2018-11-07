@@ -13,8 +13,8 @@ public class RunnerBuilder {
         ExplorationResults results = explore(instanceParser.data(), instanceParser.executablePostConditions());
         return new MultipleBehaviourRunner(
                 new UnkownBehaviourRunner(
-                        new ExploratoryRunner(results, passingCases)
+                        new ExploratoryRunner(passingCases)
                 )
-        ).tests();
+        ).tests(results);
     }
 }

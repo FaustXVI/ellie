@@ -1,7 +1,6 @@
 package com.github.ellie.core;
 
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.PASS;
@@ -16,24 +15,19 @@ public class MultipleBehaviourRunner implements Runner {
     }
 
     @Override
-    public Stream<ConditionTest> tests() {
-        return Stream.concat(runner.tests(),
-                             dataThatPassesMultiplePostConditions());
+    public Stream<ConditionTest> tests(ExplorationResults results) {
+        return Stream.concat(runner.tests(results),
+                             dataThatPassesMultiplePostConditions(results));
     }
 
-    private Stream<ConditionTest> dataThatPassesMultiplePostConditions() {
-        return Stream.of(ConditionTest.postConditionTest("Match multiple post-conditions",                                  assertThat(dataThatPassesMultipleBehaviours())
+    private Stream<ConditionTest> dataThatPassesMultiplePostConditions(ExplorationResults results) {
+        return Stream.of(ConditionTest.postConditionTest("Match multiple post-conditions",                                  assertThat(dataThatPassesMultipleBehaviours(results))
             .as("At least one data has many post-conditions")::isEmpty));
     }
 
-    private List<ExplorationArguments> dataThatPassesMultipleBehaviours() {
-        return dataThatBehaviours(c -> c.filter(r -> r == PASS)
+    private List<ExplorationArguments> dataThatPassesMultipleBehaviours(ExplorationResults results) {
+        return results.dataThatBehaviours(c -> c.filter(r -> r == PASS)
                                         .count() > 1);
     }
 
-    @Override
-    public List<ExplorationArguments> dataThatBehaviours(
-        Predicate<Stream<ConditionOutput>> postConditionPredicate) {
-        return runner.dataThatBehaviours(postConditionPredicate);
-    }
 }

@@ -37,7 +37,7 @@ public class ExploratoryRunnerShould {
     @BeforeEach
     void createRunner() {
         results = mock(ExplorationResults.class);
-        exploratoryRunner = new ExploratoryRunner(results, IGNORE_PASSING_CASES_CONSUMER);
+        exploratoryRunner = new ExploratoryRunner(IGNORE_PASSING_CASES_CONSUMER);
     }
 
     private static Stream<Arguments> passingResults() {
@@ -69,7 +69,7 @@ public class ExploratoryRunnerShould {
     void createsOneTestPerPostCondition(Map<String, TestResult> results) {
         when(this.results.resultByBehaviour()).thenReturn(results);
 
-        Stream<ConditionTest> behaviours = exploratoryRunner.tests();
+        Stream<ConditionTest> behaviours = exploratoryRunner.tests(this.results);
 
         assertThat(behaviours).hasSize(results.size())
                 .extracting(c -> c.name)
@@ -83,7 +83,7 @@ public class ExploratoryRunnerShould {
         Map<String, TestResult> testResults = new HashMap<>();
         when(this.results.resultByBehaviour()).thenReturn(results);
 
-        Stream<ConditionTest> behaviours = new ExploratoryRunner(this.results, testResults::put).tests();
+        Stream<ConditionTest> behaviours = new ExploratoryRunner(testResults::put).tests(this.results);
 
         behaviours.forEach(t -> {
             try {
@@ -100,7 +100,7 @@ public class ExploratoryRunnerShould {
     @MethodSource({"passingResults", "mixtedResults"})
     void passIfALeastOneDataPasses(Map<String, TestResult> results) {
         when(this.results.resultByBehaviour()).thenReturn(results);
-        Stream<ConditionTest> behaviours = exploratoryRunner.tests();
+        Stream<ConditionTest> behaviours = exploratoryRunner.tests(this.results);
         try {
             behaviours.forEach(t -> t.test.run());
         } catch (AssertionError e) {
@@ -112,7 +112,7 @@ public class ExploratoryRunnerShould {
     @MethodSource("failingResults")
     void failPotentialBehaviourIfNotDataValidatesPredicate(Map<String, TestResult> results) {
         when(this.results.resultByBehaviour()).thenReturn(results);
-        Stream<ConditionTest> behaviours = exploratoryRunner.tests();
+        Stream<ConditionTest> behaviours = exploratoryRunner.tests(this.results);
 
         Assertions.assertThatThrownBy(() -> behaviours.forEach(t -> t.test.run()))
                 .isInstanceOf(AssertionError.class)

@@ -1,7 +1,5 @@
 package com.github.ellie.core;
 
-import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.PASS;
@@ -16,18 +14,14 @@ public class UnkownBehaviourRunner implements Runner {
     }
 
     @Override
-    public Stream<ConditionTest> tests() {
-        return Stream.concat(otherRunner.tests(), Stream.of(dataWithUnknownBehaviour()));
+    public Stream<ConditionTest> tests(ExplorationResults results) {
+        return Stream.concat(otherRunner.tests(results), Stream.of(dataWithUnknownBehaviour(results)));
     }
 
-    private ConditionTest dataWithUnknownBehaviour() {
+    private ConditionTest dataWithUnknownBehaviour(ExplorationResults results) {
         return postConditionTest("Unknown post-condition",
-                                 assertThat(dataThatBehaviours(b -> b.noneMatch(r -> r == PASS)))
+                                 assertThat(results.dataThatBehaviours(b -> b.noneMatch(r -> r == PASS)))
                                      .as("At least one data has unknown post-condition")::isEmpty);
     }
 
-    @Override
-    public List<ExplorationArguments> dataThatBehaviours(Predicate<Stream<ConditionOutput>> postConditionPredicate) {
-        return otherRunner.dataThatBehaviours(postConditionPredicate);
-    }
 }
