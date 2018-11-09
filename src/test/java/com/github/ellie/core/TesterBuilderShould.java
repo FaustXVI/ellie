@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class RunnerBuilderShould {
+class TesterBuilderShould {
     static final BiConsumer<String, TestResult> IGNORE_RESULTS_CONSUMER = (l, o) -> {
     };
 

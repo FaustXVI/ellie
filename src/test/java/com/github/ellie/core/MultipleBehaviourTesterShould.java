@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.FAIL;
 import static com.github.ellie.core.ConditionOutput.PASS;
-import static com.github.ellie.core.RunnerBuilderShould.IGNORE_RESULTS_CONSUMER;
+import static com.github.ellie.core.TesterBuilderShould.IGNORE_RESULTS_CONSUMER;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class MultipleBehaviourRunnerShould {
+class MultipleBehaviourTesterShould {
 
     public static final Map<ExplorationArguments, Stream<ConditionOutput>>
         NO_MULTIPLE_PASS = Map.of(ExplorationArguments.of(1), Stream.of(PASS),
@@ -31,23 +31,23 @@ class MultipleBehaviourRunnerShould {
                                   ExplorationArguments.of(3), Stream.of(ConditionOutput.IGNORED));
     public static final Map<ExplorationArguments, Stream<ConditionOutput>>
         MULTIPLE_PASS = Map.of(ExplorationArguments.of(2), Stream.of(PASS, PASS));
-    private Runner otherRunner;
-    private MultipleBehaviourRunner multipleBehaviourRunner;
+    private Tester otherTester;
+    private MultipleBehaviourTester multipleBehaviourRunner;
     private ExplorationResults results;
 
     @BeforeEach
     void createRunner() {
-        otherRunner = mock(Runner.class);
+        otherTester = mock(Tester.class);
         results = mock(ExplorationResults.class);
         when(results.dataThatBehaviours(Mockito.any())).thenReturn(new TestResult(Map.of()));
-        multipleBehaviourRunner = new MultipleBehaviourRunner(otherRunner);
+        multipleBehaviourRunner = new MultipleBehaviourTester(otherTester);
     }
 
     @Test
     void keepsOtherRunnerTests() {
         ConditionTest test = ConditionTest.postConditionTest("test", () -> {
         });
-        Mockito.when(otherRunner.tests(results, IGNORE_RESULTS_CONSUMER))
+        Mockito.when(otherTester.tests(results, IGNORE_RESULTS_CONSUMER))
                .thenReturn(Stream.of(test));
 
         assertThat(multipleBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)).contains(test);

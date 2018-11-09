@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 import static com.github.ellie.core.ConditionTest.postConditionTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ExploratoryRunner implements Runner {
+public class ExploratoryTester implements Tester {
 
     @Override
     public Stream<ConditionTest> tests(ExplorationResults results, BiConsumer<String, TestResult> resultConsumer) {

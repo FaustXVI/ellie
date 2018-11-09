@@ -7,16 +7,16 @@ import static com.github.ellie.core.ConditionOutput.PASS;
 import static com.github.ellie.core.ConditionTest.postConditionTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class UnkownBehaviourRunner implements Runner {
-    private Runner otherRunner;
+public class UnkownBehaviourTester implements Tester {
+    private Tester otherTester;
 
-    public UnkownBehaviourRunner(Runner otherRunner) {
-        this.otherRunner = otherRunner;
+    public UnkownBehaviourTester(Tester otherTester) {
+        this.otherTester = otherTester;
     }
 
     @Override
     public Stream<ConditionTest> tests(ExplorationResults results, BiConsumer<String, TestResult> resultConsumer) {
-        return Stream.concat(otherRunner.tests(results,resultConsumer), Stream.of(dataWithUnknownBehaviour(results,resultConsumer)));
+        return Stream.concat(otherTester.tests(results, resultConsumer), Stream.of(dataWithUnknownBehaviour(results, resultConsumer)));
     }
 
     private ConditionTest dataWithUnknownBehaviour(ExplorationResults results,

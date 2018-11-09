@@ -6,17 +6,17 @@ import java.util.stream.Stream;
 import static com.github.ellie.core.ConditionOutput.PASS;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MultipleBehaviourRunner implements Runner {
+public class MultipleBehaviourTester implements Tester {
 
-    private final Runner runner;
+    private final Tester tester;
 
-    public MultipleBehaviourRunner(Runner runner) {
-        this.runner = runner;
+    public MultipleBehaviourTester(Tester tester) {
+        this.tester = tester;
     }
 
     @Override
     public Stream<ConditionTest> tests(ExplorationResults results, BiConsumer<String, TestResult> resultConsumer) {
-        return Stream.concat(runner.tests(results, resultConsumer),
+        return Stream.concat(tester.tests(results, resultConsumer),
                              dataThatPassesMultiplePostConditions(results, resultConsumer));
     }
 

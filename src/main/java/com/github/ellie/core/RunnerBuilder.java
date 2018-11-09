@@ -11,9 +11,9 @@ public class RunnerBuilder {
                                                                  passingCases) {
         final InstanceParser instanceParser = new InstanceParser(testInstance);
         ExplorationResults results = explore(instanceParser.data(), instanceParser.executablePostConditions());
-        return new MultipleBehaviourRunner(
-                new UnkownBehaviourRunner(
-                        new ExploratoryRunner()
+        return new MultipleBehaviourTester(
+                new UnkownBehaviourTester(
+                        new ExploratoryTester()
                 )
         ).tests(results,passingCases);
     }

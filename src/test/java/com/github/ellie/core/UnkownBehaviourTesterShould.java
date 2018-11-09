@@ -10,31 +10,31 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.RunnerBuilderShould.IGNORE_RESULTS_CONSUMER;
+import static com.github.ellie.core.TesterBuilderShould.IGNORE_RESULTS_CONSUMER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class UnkownBehaviourRunnerShould {
+class UnkownBehaviourTesterShould {
 
-    private Runner otherRunner;
-    private UnkownBehaviourRunner unkownBehaviourRunner;
+    private Tester otherTester;
+    private UnkownBehaviourTester unkownBehaviourRunner;
     private ExplorationResults results;
 
     @BeforeEach
     void createRunner() {
-        otherRunner = mock(Runner.class);
+        otherTester = mock(Tester.class);
         results = mock(ExplorationResults.class);
         when(results.dataThatBehaviours(Mockito.any())).thenReturn(new TestResult(Map.of()));
-        unkownBehaviourRunner = new UnkownBehaviourRunner(otherRunner);
+        unkownBehaviourRunner = new UnkownBehaviourTester(otherTester);
     }
 
     @Test
     void keepsOtherRunnerTests() {
         ConditionTest test = ConditionTest.postConditionTest("test", () -> {
         });
-        Mockito.when(otherRunner.tests(results,IGNORE_RESULTS_CONSUMER))
+        Mockito.when(otherTester.tests(results, IGNORE_RESULTS_CONSUMER))
                .thenReturn(Stream.of(test));
 
         assertThat(unkownBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)).contains(test);
@@ -95,7 +95,7 @@ class UnkownBehaviourRunnerShould {
     }
 
     private Answer<TestResult> filterFrom(Map<ExplorationArguments, Stream<ConditionOutput>> data) {
-        return MultipleBehaviourRunnerShould.filterFrom(data);
+        return MultipleBehaviourTesterShould.filterFrom(data);
     }
 
 

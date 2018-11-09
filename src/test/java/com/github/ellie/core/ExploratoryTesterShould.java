@@ -14,13 +14,13 @@ import java.util.stream.Stream;
 import static com.github.ellie.core.ConditionOutput.FAIL;
 import static com.github.ellie.core.ConditionOutput.IGNORED;
 import static com.github.ellie.core.ConditionOutput.PASS;
-import static com.github.ellie.core.RunnerBuilderShould.IGNORE_RESULTS_CONSUMER;
+import static com.github.ellie.core.TesterBuilderShould.IGNORE_RESULTS_CONSUMER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ExploratoryRunnerShould {
+public class ExploratoryTesterShould {
 
     private static final TestResult PASSING_RESULTS = new TestResult(Map.of(PASS, List.of(ExplorationArguments.of(1))));
     private static final TestResult FAILING_RESULTS = new TestResult(Map.of(FAIL, List.of(ExplorationArguments.of(2))));
@@ -31,12 +31,12 @@ public class ExploratoryRunnerShould {
     ));
 
     private ExplorationResults results;
-    private Runner exploratoryRunner;
+    private Tester exploratoryTester;
 
     @BeforeEach
     void createRunner() {
         results = mock(ExplorationResults.class);
-        exploratoryRunner = new ExploratoryRunner();
+        exploratoryTester = new ExploratoryTester();
     }
 
     private static Stream<Arguments> passingResults() {
@@ -69,7 +69,7 @@ public class ExploratoryRunnerShould {
         when(this.results.resultByBehaviour()).thenReturn(results);
 
         Stream<ConditionTest> behaviours =
-            exploratoryRunner.tests(this.results, IGNORE_RESULTS_CONSUMER);
+            exploratoryTester.tests(this.results, IGNORE_RESULTS_CONSUMER);
 
         assertThat(behaviours).hasSize(results.size())
                               .extracting(c -> c.name)
@@ -83,7 +83,7 @@ public class ExploratoryRunnerShould {
         Map<String, TestResult> testResults = new HashMap<>();
         when(this.results.resultByBehaviour()).thenReturn(results);
 
-        Stream<ConditionTest> behaviours = new ExploratoryRunner().tests(this.results, testResults::put);
+        Stream<ConditionTest> behaviours = new ExploratoryTester().tests(this.results, testResults::put);
 
         behaviours.forEach(t -> {
             try {
@@ -100,7 +100,7 @@ public class ExploratoryRunnerShould {
     @MethodSource({"passingResults", "mixtedResults"})
     void passIfALeastOneDataPasses(Map<String, TestResult> results) {
         when(this.results.resultByBehaviour()).thenReturn(results);
-        Stream<ConditionTest> behaviours = exploratoryRunner.tests(this.results,
+        Stream<ConditionTest> behaviours = exploratoryTester.tests(this.results,
                                                                    IGNORE_RESULTS_CONSUMER);
         try {
             behaviours.forEach(t -> t.test.run());
@@ -113,7 +113,7 @@ public class ExploratoryRunnerShould {
     @MethodSource("failingResults")
     void failPotentialBehaviourIfNotDataValidatesPredicate(Map<String, TestResult> results) {
         when(this.results.resultByBehaviour()).thenReturn(results);
-        Stream<ConditionTest> behaviours = exploratoryRunner.tests(this.results,
+        Stream<ConditionTest> behaviours = exploratoryTester.tests(this.results,
                                                                    IGNORE_RESULTS_CONSUMER);
 
         Assertions.assertThatThrownBy(() -> behaviours.forEach(t -> t.test.run()))
