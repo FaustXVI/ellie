@@ -16,18 +16,25 @@ public class MultipleBehaviourRunner implements Runner {
 
     @Override
     public Stream<ConditionTest> tests(ExplorationResults results, BiConsumer<String, TestResult> resultConsumer) {
-        return Stream.concat(runner.tests(results,resultConsumer),
-                             dataThatPassesMultiplePostConditions(results));
+        return Stream.concat(runner.tests(results, resultConsumer),
+                             dataThatPassesMultiplePostConditions(results, resultConsumer));
     }
 
-    private Stream<ConditionTest> dataThatPassesMultiplePostConditions(ExplorationResults results) {
-        return Stream.of(ConditionTest.postConditionTest("Match multiple post-conditions",                                  assertThat(dataThatPassesMultipleBehaviours(results).passingData())
-            .as("At least one data has many post-conditions")::isEmpty));
+    private Stream<ConditionTest> dataThatPassesMultiplePostConditions(ExplorationResults results,
+                                                                       BiConsumer<String, TestResult> resultConsumer) {
+        return Stream.of(ConditionTest.postConditionTest("Match multiple post-conditions", () -> {
+            TestResult testResult = dataThatPassesMultipleBehaviours(results);
+            resultConsumer.accept("Match multiple post-conditions", testResult);
+            assertThat(
+                testResult.passingData())
+                .as("At least one data has many post-conditions")
+                .isEmpty();
+        }));
     }
 
     private TestResult dataThatPassesMultipleBehaviours(ExplorationResults results) {
         return results.dataThatBehaviours(c -> c.filter(r -> r == PASS)
-                                        .count() > 1);
+                                                .count() > 1);
     }
 
 }

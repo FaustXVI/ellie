@@ -7,6 +7,7 @@ import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import static com.github.ellie.core.RunnerBuilderShould.IGNORE_RESULTS_CONSUMER;
@@ -18,7 +19,7 @@ import static org.mockito.Mockito.when;
 class UnkownBehaviourRunnerShould {
 
     private Runner otherRunner;
-    private Runner exploratoryRunner;
+    private UnkownBehaviourRunner unkownBehaviourRunner;
     private ExplorationResults results;
 
     @BeforeEach
@@ -26,7 +27,7 @@ class UnkownBehaviourRunnerShould {
         otherRunner = mock(Runner.class);
         results = mock(ExplorationResults.class);
         when(results.dataThatBehaviours(Mockito.any())).thenReturn(new TestResult(Map.of()));
-        exploratoryRunner = new UnkownBehaviourRunner(otherRunner);
+        unkownBehaviourRunner = new UnkownBehaviourRunner(otherRunner);
     }
 
     @Test
@@ -36,14 +37,33 @@ class UnkownBehaviourRunnerShould {
         Mockito.when(otherRunner.tests(results,IGNORE_RESULTS_CONSUMER))
                .thenReturn(Stream.of(test));
 
-        assertThat(exploratoryRunner.tests(results,IGNORE_RESULTS_CONSUMER)).contains(test);
+        assertThat(unkownBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)).contains(test);
+    }
+
+    @Test
+    void callsConsumerWithResults() {
+        TestResult testResult = new TestResult(Map.of());
+        when(results.dataThatBehaviours(Mockito.any()))
+            .thenReturn(testResult);
+
+        AtomicBoolean consumerExecuted = new AtomicBoolean(false);
+
+        unkownBehaviourRunner.tests(results, (a, b) -> {
+            assertThat(a).isEqualTo("Unknown post-condition");
+            assertThat(b).isSameAs(testResult);
+            consumerExecuted.set(true);
+        }).forEach(ct -> ct.test.run());
+
+        if (!consumerExecuted.get()) {
+            fail("Consumer should be called");
+        }
     }
 
     @Test
     void addsUnknownBehaviourLast() {
-        assertThat(exploratoryRunner.tests(results,IGNORE_RESULTS_CONSUMER)).extracting(b -> b.name)
-                                             .last()
-                                             .isEqualTo("Unknown post-condition");
+        assertThat(unkownBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)).extracting(b -> b.name)
+                                                                                 .last()
+                                                                                 .isEqualTo("Unknown post-condition");
     }
 
 
@@ -52,8 +72,8 @@ class UnkownBehaviourRunnerShould {
         when(results.dataThatBehaviours(Mockito.any())).then(filterFrom(
             Map.of(ExplorationArguments.of(2), Stream.of(ConditionOutput.FAIL))));
 
-        Assertions.assertThatThrownBy(() -> this.exploratoryRunner.tests(results,IGNORE_RESULTS_CONSUMER)
-                                                                  .forEach(t -> t.test.run()))
+        Assertions.assertThatThrownBy(() -> this.unkownBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)
+                                                                      .forEach(t -> t.test.run()))
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("At least one data has unknown post-condition")
                   .hasMessageContaining("2");
@@ -67,8 +87,8 @@ class UnkownBehaviourRunnerShould {
         )));
 
         try {
-            exploratoryRunner.tests(results,IGNORE_RESULTS_CONSUMER)
-                             .forEach(t -> t.test.run());
+            unkownBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)
+                                 .forEach(t -> t.test.run());
         } catch (Exception e) {
             fail("All data passes something");
         }

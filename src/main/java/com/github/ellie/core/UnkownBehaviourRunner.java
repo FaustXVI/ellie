@@ -16,14 +16,21 @@ public class UnkownBehaviourRunner implements Runner {
 
     @Override
     public Stream<ConditionTest> tests(ExplorationResults results, BiConsumer<String, TestResult> resultConsumer) {
-        return Stream.concat(otherRunner.tests(results,resultConsumer), Stream.of(dataWithUnknownBehaviour(results)));
+        return Stream.concat(otherRunner.tests(results,resultConsumer), Stream.of(dataWithUnknownBehaviour(results,resultConsumer)));
     }
 
-    private ConditionTest dataWithUnknownBehaviour(ExplorationResults results) {
+    private ConditionTest dataWithUnknownBehaviour(ExplorationResults results,
+                                                   BiConsumer<String, TestResult> resultConsumer) {
         return postConditionTest("Unknown post-condition",
-                                 assertThat(results.dataThatBehaviours(b -> b.noneMatch(r -> r == PASS))
-                                 .passingData())
-                                     .as("At least one data has unknown post-condition")::isEmpty);
+                                 () -> {
+                                     TestResult result =
+                                         results.dataThatBehaviours(b -> b.noneMatch(r -> r == PASS));
+                                     resultConsumer.accept("Unknown post-condition", result);
+                                     assertThat(result
+                                                       .passingData())
+                                         .as("At least one data has unknown post-condition")
+                                         .isEmpty();
+                                 });
     }
 
 }

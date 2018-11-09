@@ -17,13 +17,10 @@ public class ExploratoryRunner implements Runner {
                           behaviour.getKey(),
                           () -> {
                               TestResult testResult = behaviour.getValue();
-                              try {
-                                  assertThat(testResult.passingData())
-                                      .as("no data validates this behaviour")
-                                      .isNotEmpty();
-                              } finally {
-                                  resultConsumer.accept(behaviour.getKey(), testResult);
-                              }
+                              resultConsumer.accept(behaviour.getKey(), testResult);
+                              assertThat(testResult.passingData())
+                                  .as("no data validates this behaviour")
+                                  .isNotEmpty();
                           }));
     }
 

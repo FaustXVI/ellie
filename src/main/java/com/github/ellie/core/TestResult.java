@@ -8,6 +8,7 @@ import java.util.Map;
 import static com.github.ellie.core.ConditionOutput.FAIL;
 import static com.github.ellie.core.ConditionOutput.IGNORED;
 import static com.github.ellie.core.ConditionOutput.PASS;
+import static java.util.Collections.unmodifiableCollection;
 
 public class TestResult {
     private final Collection<ExplorationArguments> passes;
@@ -15,9 +16,9 @@ public class TestResult {
     private final Collection<ExplorationArguments> ignored;
 
     public TestResult(Map<ConditionOutput,List<ExplorationArguments>> testResults) {
-        this.passes = testResults.getOrDefault(PASS, Collections.emptyList());
-        this.failing = testResults.getOrDefault(FAIL, Collections.emptyList());
-        this.ignored = testResults.getOrDefault(IGNORED,Collections.emptyList());
+        this.passes = unmodifiableCollection(testResults.getOrDefault(PASS, Collections.emptyList()));
+        this.failing = unmodifiableCollection(testResults.getOrDefault(FAIL, Collections.emptyList()));
+        this.ignored = unmodifiableCollection(testResults.getOrDefault(IGNORED,Collections.emptyList()));
     }
 
 

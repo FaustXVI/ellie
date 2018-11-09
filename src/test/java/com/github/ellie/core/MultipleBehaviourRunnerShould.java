@@ -8,6 +8,7 @@ import org.mockito.stubbing.Answer;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -24,8 +25,14 @@ import static org.mockito.Mockito.when;
 
 class MultipleBehaviourRunnerShould {
 
+    public static final Map<ExplorationArguments, Stream<ConditionOutput>>
+        NO_MULTIPLE_PASS = Map.of(ExplorationArguments.of(1), Stream.of(PASS),
+                                  ExplorationArguments.of(2), Stream.of(ConditionOutput.FAIL),
+                                  ExplorationArguments.of(3), Stream.of(ConditionOutput.IGNORED));
+    public static final Map<ExplorationArguments, Stream<ConditionOutput>>
+        MULTIPLE_PASS = Map.of(ExplorationArguments.of(2), Stream.of(PASS, PASS));
     private Runner otherRunner;
-    private Runner exploratoryRunner;
+    private MultipleBehaviourRunner multipleBehaviourRunner;
     private ExplorationResults results;
 
     @BeforeEach
@@ -33,34 +40,55 @@ class MultipleBehaviourRunnerShould {
         otherRunner = mock(Runner.class);
         results = mock(ExplorationResults.class);
         when(results.dataThatBehaviours(Mockito.any())).thenReturn(new TestResult(Map.of()));
-        exploratoryRunner = new MultipleBehaviourRunner(otherRunner);
+        multipleBehaviourRunner = new MultipleBehaviourRunner(otherRunner);
     }
 
     @Test
     void keepsOtherRunnerTests() {
         ConditionTest test = ConditionTest.postConditionTest("test", () -> {
         });
-        Mockito.when(otherRunner.tests(results,IGNORE_RESULTS_CONSUMER))
+        Mockito.when(otherRunner.tests(results, IGNORE_RESULTS_CONSUMER))
                .thenReturn(Stream.of(test));
 
-        assertThat(exploratoryRunner.tests(results,IGNORE_RESULTS_CONSUMER)).contains(test);
+        assertThat(multipleBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)).contains(test);
     }
 
     @Test
     void addsMultipleBehaviourLast() {
-        assertThat(exploratoryRunner.tests(results,IGNORE_RESULTS_CONSUMER)).extracting(b -> b.name)
-                                                    .last()
-                                                    .isEqualTo("Match multiple post-conditions");
+        assertThat(multipleBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER))
+            .extracting(b -> b.name)
+            .last()
+            .isEqualTo(
+                "Match multiple "
+                + "post-conditions");
     }
 
 
     @Test
-    void failsIfAtLeastOneDataPassesManyTimes() {
-        when(results.dataThatBehaviours(Mockito.any())).then(filterFrom(
-            Map.of(ExplorationArguments.of(2), Stream.of(PASS, PASS))));
+    void callsConsumerWithResults() {
+        TestResult testResult = new TestResult(Map.of());
+        when(results.dataThatBehaviours(Mockito.any()))
+            .thenReturn(testResult);
 
-        Assertions.assertThatThrownBy(() -> this.exploratoryRunner.tests(results,IGNORE_RESULTS_CONSUMER)
-                                                                  .forEach(t -> t.test.run()))
+        AtomicBoolean consumerExecuted = new AtomicBoolean(false);
+
+        multipleBehaviourRunner.tests(results, (a, b) -> {
+            assertThat(a).isEqualTo("Match multiple post-conditions");
+            assertThat(b).isSameAs(testResult);
+            consumerExecuted.set(true);
+        }).forEach(ct -> ct.test.run());
+
+        if (!consumerExecuted.get()) {
+            fail("Consumer should be called");
+        }
+    }
+
+    @Test
+    void failsIfAtLeastOneDataPassesManyTimes() {
+        when(results.dataThatBehaviours(Mockito.any())).then(filterFrom(MULTIPLE_PASS));
+
+        Assertions.assertThatThrownBy(() -> this.multipleBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)
+                                                                        .forEach(t -> t.test.run()))
                   .isInstanceOf(AssertionError.class)
                   .hasMessageContaining("one data has many post-conditions")
                   .hasMessageContaining("2");
@@ -68,15 +96,12 @@ class MultipleBehaviourRunnerShould {
 
     @Test
     void passesIfNoDataPassesManyTimes() {
-        when(results.dataThatBehaviours(Mockito.any())).then(filterFrom(
-            Map.of(ExplorationArguments.of(1), Stream.of(PASS),
-                   ExplorationArguments.of(2), Stream.of(ConditionOutput.FAIL),
-                   ExplorationArguments.of(3), Stream.of(ConditionOutput.IGNORED))
-        ));
+        when(results.dataThatBehaviours(Mockito.any()))
+            .then(filterFrom(NO_MULTIPLE_PASS));
 
         try {
-            exploratoryRunner.tests(results,IGNORE_RESULTS_CONSUMER)
-                             .forEach(t -> t.test.run());
+            multipleBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)
+                                   .forEach(t -> t.test.run());
         } catch (Exception e) {
             fail("No data passes many post conditions");
         }
@@ -92,7 +117,7 @@ class MultipleBehaviourRunnerShould {
                         e -> predicate.test(e.getValue()) ? PASS
                                                           : FAIL,
                         mapping(Map.Entry::getKey,
-                                           toList())
+                                toList())
                     ));
             return new TestResult(results);
         };
