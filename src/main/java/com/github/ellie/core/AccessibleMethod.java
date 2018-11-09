@@ -16,11 +16,11 @@ class AccessibleMethod {
         this.instance = instance;
     }
 
-    public <T> T invoke() {
-        return (T) invoke(ExplorationArguments.of());
+    <T> T invoke() {
+        return invoke(ExplorationArguments.of());
     }
 
-    public <T> T invoke(ExplorationArguments explorationArguments) {
+    <T> T invoke(ExplorationArguments explorationArguments) {
         method.setAccessible(true);
         try {
             return (T) method.invoke(instance, explorationArguments.get());
@@ -36,7 +36,7 @@ class AccessibleMethod {
         return method.getName();
     }
 
-    public boolean returnsAnyOf(Class<?>... classes) {
+    boolean returnsAnyOf(Class<?>... classes) {
         return Arrays.stream(classes)
                      .anyMatch(c -> c.isAssignableFrom(method.getReturnType()));
     }

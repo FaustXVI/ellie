@@ -1,9 +1,8 @@
 package com.github.ellie.core;
 
-import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.function.Function.identity;
@@ -32,32 +31,28 @@ class ExplorationResults {
 
 
     private TestResult resultsFor(String behaviourName) {
-        return new TestResult(
-            dataToPostConditionsResults.entrySet()
-                                       .stream()
-                                       .collect(groupingBy(e -> e.getValue()
-                                                                 .get(behaviourName),
-                                                           mapping(Map.Entry::getKey, Collectors.toList()))));
+        return testResultsWhere(e -> e.getValue()
+                                      .get(behaviourName));
     }
-
 
     TestResult dataThatBehaviours(
         Predicate<Stream<ConditionOutput>> postConditionPredicate) {
-        Map<ConditionOutput, List<ExplorationArguments>> results = dataToPostConditionsResults
-            .entrySet()
-            .stream()
-            .collect(
-                Collectors.groupingBy(
-                    e -> ConditionOutput.fromPredicate(postConditionPredicate)
-                                        .apply(
-                                            e.getValue()
-                                             .values()
-                                             .stream()),
-                    mapping(
-                        Map.Entry::getKey,
-                        toList())
-                ));
-        return new TestResult(results);
+        return testResultsWhere(e ->
+                                    ConditionOutput.fromPredicate(postConditionPredicate)
+                                                   .apply(e.getValue()
+                                                           .values()
+                                                           .stream()));
+    }
+
+    private TestResult testResultsWhere(
+        Function<Map.Entry<ExplorationArguments, Map<String, ConditionOutput>>, ConditionOutput> conditionOutputFunction) {
+        return new TestResult(
+            dataToPostConditionsResults
+                .entrySet()
+                .stream()
+                .collect(groupingBy(
+                    conditionOutputFunction,
+                    mapping(Map.Entry::getKey, toList()))));
     }
 
 }
