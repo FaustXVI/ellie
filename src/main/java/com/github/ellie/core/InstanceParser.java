@@ -3,7 +3,6 @@ package com.github.ellie.core;
 import com.github.ellie.api.DataProvider;
 import com.github.ellie.api.PostCondition;
 import com.github.ellie.api.TestedBehaviour;
-import org.opentest4j.TestAbortedException;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -14,9 +13,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static com.github.ellie.core.ConditionOutput.FAIL;
-import static com.github.ellie.core.ConditionOutput.IGNORED;
-import static com.github.ellie.core.ConditionOutput.PASS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class InstanceParser {
@@ -103,18 +99,13 @@ class InstanceParser {
 
         @Override
         public ConditionOutput testWith(ExplorationArguments explorationArguments) {
-            try {
                 Predicate<Object> predicate;
                 if (postConditionSupplier.returnsAnyOf(Consumer.class)) {
                     predicate = asPredicate(postConditionSupplier.invoke(explorationArguments));
                 } else {
                     predicate = postConditionSupplier.invoke(explorationArguments);
                 }
-                return predicate.test(behaviourMethod.invoke(explorationArguments)) ? PASS
-                                                                                    : FAIL;
-            } catch (TestAbortedException e) {
-                return IGNORED;
-            }
+                return ConditionOutput.fromPredicate(predicate).apply(behaviourMethod.invoke(explorationArguments));
         }
 
         private static Predicate<Object> asPredicate(Consumer<Object> consumer) {

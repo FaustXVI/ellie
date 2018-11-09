@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 class ExplorationResults {
@@ -40,15 +41,23 @@ class ExplorationResults {
     }
 
 
-    List<ExplorationArguments> dataThatBehaviours(
+    TestResult dataThatBehaviours(
         Predicate<Stream<ConditionOutput>> postConditionPredicate) {
-        return dataToPostConditionsResults.entrySet()
-                                          .stream()
-                                          .filter(e -> postConditionPredicate.test(e.getValue()
-                                                                                    .values()
-                                                                                    .stream()))
-                                          .map(Map.Entry::getKey)
-                                          .collect(Collectors.toList());
+        Map<ConditionOutput, List<ExplorationArguments>> results = dataToPostConditionsResults
+            .entrySet()
+            .stream()
+            .collect(
+                Collectors.groupingBy(
+                    e -> ConditionOutput.fromPredicate(postConditionPredicate)
+                                        .apply(
+                                            e.getValue()
+                                             .values()
+                                             .stream()),
+                    mapping(
+                        Map.Entry::getKey,
+                        toList())
+                ));
+        return new TestResult(results);
     }
 
 }

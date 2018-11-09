@@ -1,5 +1,6 @@
 package com.github.ellie.core;
 
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.PASS;
@@ -14,13 +15,14 @@ public class UnkownBehaviourRunner implements Runner {
     }
 
     @Override
-    public Stream<ConditionTest> tests(ExplorationResults results) {
-        return Stream.concat(otherRunner.tests(results), Stream.of(dataWithUnknownBehaviour(results)));
+    public Stream<ConditionTest> tests(ExplorationResults results, BiConsumer<String, TestResult> resultConsumer) {
+        return Stream.concat(otherRunner.tests(results,resultConsumer), Stream.of(dataWithUnknownBehaviour(results)));
     }
 
     private ConditionTest dataWithUnknownBehaviour(ExplorationResults results) {
         return postConditionTest("Unknown post-condition",
-                                 assertThat(results.dataThatBehaviours(b -> b.noneMatch(r -> r == PASS)))
+                                 assertThat(results.dataThatBehaviours(b -> b.noneMatch(r -> r == PASS))
+                                 .passingData())
                                      .as("At least one data has unknown post-condition")::isEmpty);
     }
 
