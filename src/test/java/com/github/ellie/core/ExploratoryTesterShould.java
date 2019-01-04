@@ -1,5 +1,7 @@
 package com.github.ellie.core;
 
+import com.github.ellie.core.asserters.ExploratoryTester;
+import com.github.ellie.core.asserters.Tester;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -68,9 +70,9 @@ public class ExploratoryTesterShould {
     @ParameterizedTest
     @MethodSource({"passingResults", "failingResults", "mixtedResults"})
     void createsOneTestPerPostCondition(Map<String, TestResult> results) {
-        when(this.results.resultByBehaviour()).thenReturn(results);
+        when(this.results.resultByPostConditions()).thenReturn(results);
 
-        Stream<ConditionTest> behaviours =
+        Stream<Exploration> behaviours =
             exploratoryTester.tests(this.results, IGNORE_RESULTS_CONSUMER);
 
         assertThat(behaviours).hasSize(results.size())
@@ -83,9 +85,9 @@ public class ExploratoryTesterShould {
     @MethodSource({"passingResults", "mixtedResults", "failingResults"})
     void callsConsumerWithTestResultAfterRun(Map<String, TestResult> results) {
         Map<String, TestResult> testResults = new HashMap<>();
-        when(this.results.resultByBehaviour()).thenReturn(results);
+        when(this.results.resultByPostConditions()).thenReturn(results);
 
-        Stream<ConditionTest> behaviours = new ExploratoryTester().tests(this.results, testResults::put);
+        Stream<Exploration> behaviours = new ExploratoryTester().tests(this.results, testResults::put);
 
         behaviours.forEach(t -> {
             try {
@@ -101,8 +103,8 @@ public class ExploratoryTesterShould {
     @ParameterizedTest
     @MethodSource({"passingResults", "mixtedResults"})
     void passIfALeastOneDataPasses(Map<String, TestResult> results) {
-        when(this.results.resultByBehaviour()).thenReturn(results);
-        Stream<ConditionTest> behaviours = exploratoryTester.tests(this.results,
+        when(this.results.resultByPostConditions()).thenReturn(results);
+        Stream<Exploration> behaviours = exploratoryTester.tests(this.results,
                                                                    IGNORE_RESULTS_CONSUMER);
         try {
             behaviours.forEach(t -> t.test.run());
@@ -114,8 +116,8 @@ public class ExploratoryTesterShould {
     @ParameterizedTest
     @MethodSource("failingResults")
     void failPotentialBehaviourIfNotDataValidatesPredicate(Map<String, TestResult> results) {
-        when(this.results.resultByBehaviour()).thenReturn(results);
-        Stream<ConditionTest> behaviours = exploratoryTester.tests(this.results,
+        when(this.results.resultByPostConditions()).thenReturn(results);
+        Stream<Exploration> behaviours = exploratoryTester.tests(this.results,
                                                                    IGNORE_RESULTS_CONSUMER);
 
         Assertions.assertThatThrownBy(() -> behaviours.forEach(t -> t.test.run()))

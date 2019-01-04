@@ -20,23 +20,27 @@ public class ExplorationResults {
     }
 
 
-    Map<String, TestResult> resultByBehaviour() {
+    public Map<String, TestResult> resultByPostConditions() {
+        return postConditionsNames()
+                                          .collect(toMap(identity(), this::resultsFor));
+    }
+
+    private Stream<String> postConditionsNames() {
         return dataToPostConditionsResults.values()
                                           .stream()
                                           .flatMap(m -> m.keySet()
                                                          .stream())
-                                          .distinct()
-                                          .collect(toMap(identity(), this::resultsFor));
+                                          .distinct();
     }
 
 
-    private TestResult resultsFor(String behaviourName) {
+    private TestResult resultsFor(String postConditionName) {
         return testResultsWhere(e -> e.getValue()
-                                      .get(behaviourName));
+                                      .get(postConditionName));
     }
 
-    TestResult dataThatBehaviours(
-        Predicate<Stream<ConditionOutput>> postConditionPredicate) {
+    public TestResult dataThatPostConditions(
+            Predicate<Stream<ConditionOutput>> postConditionPredicate) {
         return testResultsWhere(e ->
                                     ConditionOutput.fromPredicate(postConditionPredicate)
                                                    .apply(e.getValue()

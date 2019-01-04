@@ -32,7 +32,7 @@ class ExplorerShould {
         ExplorationResults results = explore(List.of(ExplorationArguments.of(2)),
                 names.stream().map(this::conditionThatPasses).collect(Collectors.toList()));
 
-        assertThat(results.resultByBehaviour().keySet())
+        assertThat(results.resultByPostConditions().keySet())
                 .containsAll(names);
     }
 
@@ -44,7 +44,7 @@ class ExplorerShould {
         ExplorationResults results = explore(List.of(two, four, ignore),
                 List.of(condition("argIs2", i -> i == two ? PASS : i == ignore ? IGNORED : FAIL),
                         condition("argIs4", i -> i == four ? PASS : i == ignore ? IGNORED : FAIL)));
-        Map<String, TestResult> resultByBehaviour = results.resultByBehaviour();
+        Map<String, TestResult> resultByBehaviour = results.resultByPostConditions();
 
         TestResult argIs2 = resultByBehaviour.get("argIs2");
         assertThat(argIs2.passingData()).containsOnly(two);

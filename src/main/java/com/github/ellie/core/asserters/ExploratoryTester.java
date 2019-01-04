@@ -1,19 +1,23 @@
-package com.github.ellie.core;
+package com.github.ellie.core.asserters;
+
+import com.github.ellie.core.Exploration;
+import com.github.ellie.core.ExplorationResults;
+import com.github.ellie.core.TestResult;
 
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.ConditionTest.postConditionTest;
+import static com.github.ellie.core.Exploration.exploration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ExploratoryTester implements Tester {
 
     @Override
-    public Stream<ConditionTest> tests(ExplorationResults results, BiConsumer<String, TestResult> resultConsumer) {
-        return results.resultByBehaviour()
+    public Stream<Exploration> tests(ExplorationResults results, BiConsumer<String, TestResult> resultConsumer) {
+        return results.resultByPostConditions()
                       .entrySet()
                       .stream()
-                      .map(behaviour -> postConditionTest(
+                      .map(behaviour -> exploration(
                           behaviour.getKey(),
                           () -> {
                               TestResult testResult = behaviour.getValue();

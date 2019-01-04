@@ -1,4 +1,8 @@
-package com.github.ellie.core;
+package com.github.ellie.core.asserters;
+
+import com.github.ellie.core.Exploration;
+import com.github.ellie.core.ExplorationResults;
+import com.github.ellie.core.TestResult;
 
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
@@ -15,14 +19,14 @@ public class MultipleBehaviourTester implements Tester {
     }
 
     @Override
-    public Stream<ConditionTest> tests(ExplorationResults results, BiConsumer<String, TestResult> resultConsumer) {
+    public Stream<Exploration> tests(ExplorationResults results, BiConsumer<String, TestResult> resultConsumer) {
         return Stream.concat(tester.tests(results, resultConsumer),
                              dataThatPassesMultiplePostConditions(results, resultConsumer));
     }
 
-    private Stream<ConditionTest> dataThatPassesMultiplePostConditions(ExplorationResults results,
-                                                                       BiConsumer<String, TestResult> resultConsumer) {
-        return Stream.of(ConditionTest.postConditionTest("Match multiple post-conditions", () -> {
+    private Stream<Exploration> dataThatPassesMultiplePostConditions(ExplorationResults results,
+                                                                     BiConsumer<String, TestResult> resultConsumer) {
+        return Stream.of(Exploration.exploration("Match multiple post-conditions", () -> {
             TestResult testResult = dataThatPassesMultipleBehaviours(results);
             resultConsumer.accept("Match multiple post-conditions", testResult);
             assertThat(
@@ -33,7 +37,7 @@ public class MultipleBehaviourTester implements Tester {
     }
 
     private TestResult dataThatPassesMultipleBehaviours(ExplorationResults results) {
-        return results.dataThatBehaviours(c -> c.filter(r -> r == PASS)
+        return results.dataThatPostConditions(c -> c.filter(r -> r == PASS)
                                                 .count() > 1);
     }
 

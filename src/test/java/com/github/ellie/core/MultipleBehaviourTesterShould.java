@@ -1,5 +1,7 @@
 package com.github.ellie.core;
 
+import com.github.ellie.core.asserters.MultipleBehaviourTester;
+import com.github.ellie.core.asserters.Tester;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,13 +41,13 @@ class MultipleBehaviourTesterShould {
     void createRunner() {
         otherTester = mock(Tester.class);
         results = mock(ExplorationResults.class);
-        when(results.dataThatBehaviours(Mockito.any())).thenReturn(new TestResult(Map.of()));
+        when(results.dataThatPostConditions(Mockito.any())).thenReturn(new TestResult(Map.of()));
         multipleBehaviourRunner = new MultipleBehaviourTester(otherTester);
     }
 
     @Test
     void keepsOtherRunnerTests() {
-        ConditionTest test = ConditionTest.postConditionTest("test", () -> {
+        Exploration test = Exploration.exploration("test", () -> {
         });
         Mockito.when(otherTester.tests(results, IGNORE_RESULTS_CONSUMER))
                .thenReturn(Stream.of(test));
@@ -67,7 +69,7 @@ class MultipleBehaviourTesterShould {
     @Test
     void callsConsumerWithResults() {
         TestResult testResult = new TestResult(Map.of());
-        when(results.dataThatBehaviours(Mockito.any()))
+        when(results.dataThatPostConditions(Mockito.any()))
             .thenReturn(testResult);
 
         AtomicBoolean consumerExecuted = new AtomicBoolean(false);
@@ -85,7 +87,7 @@ class MultipleBehaviourTesterShould {
 
     @Test
     void failsIfAtLeastOneDataPassesManyTimes() {
-        when(results.dataThatBehaviours(Mockito.any())).then(filterFrom(MULTIPLE_PASS));
+        when(results.dataThatPostConditions(Mockito.any())).then(filterFrom(MULTIPLE_PASS));
 
         Assertions.assertThatThrownBy(() -> this.multipleBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)
                                                                         .forEach(t -> t.test.run()))
@@ -96,7 +98,7 @@ class MultipleBehaviourTesterShould {
 
     @Test
     void passesIfNoDataPassesManyTimes() {
-        when(results.dataThatBehaviours(Mockito.any()))
+        when(results.dataThatPostConditions(Mockito.any()))
             .then(filterFrom(NO_MULTIPLE_PASS));
 
         try {

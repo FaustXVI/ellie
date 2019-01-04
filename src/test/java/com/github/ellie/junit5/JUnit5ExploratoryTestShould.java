@@ -3,7 +3,7 @@ package com.github.ellie.junit5;
 import com.github.ellie.junit5.annotations.DataProvider;
 import com.github.ellie.junit5.annotations.PostCondition;
 import com.github.ellie.junit5.annotations.TestedBehaviour;
-import com.github.ellie.core.ConditionTest;
+import com.github.ellie.core.Exploration;
 import com.github.ellie.core.ExplorationArguments;
 import com.github.ellie.core.TestResult;
 import org.junit.jupiter.api.DynamicTest;
@@ -46,11 +46,11 @@ public class JUnit5ExploratoryTestShould {
         PerfectJunit5 junit5Test = new PerfectJunit5();
         List<? extends DynamicTest> tests = junit5Test.generatedTests()
                                                       .collect(Collectors.toList());
-        List<ConditionTest> explorations = explorationOf(junit5Test);
+        List<Exploration> explorations = explorationOf(junit5Test);
         assertThat(tests).hasSameSizeAs(explorations);
         for (int i = 0; i < tests.size(); i++) {
             DynamicTest test = tests.get(i);
-            ConditionTest exploration = explorations.get(i);
+            Exploration exploration = explorations.get(i);
             assertThat(test.getDisplayName()).isEqualTo(exploration.name);
         }
     }
@@ -70,7 +70,7 @@ public class JUnit5ExploratoryTestShould {
                                              + "    }\n");
     }
 
-    private List<ConditionTest> explorationOf(PerfectJunit5 junit5Test) {
+    private List<Exploration> explorationOf(PerfectJunit5 junit5Test) {
         return RunnerBuilder.generateTestsFor(junit5Test, (a, b) -> {
         })
                             .collect(Collectors.toList());
