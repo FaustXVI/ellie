@@ -1,5 +1,7 @@
 package com.github.ellie.core;
 
+import com.github.ellie.core.ExplorableCondition.Name;
+
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -12,20 +14,20 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 public class ExplorationResults {
-    private final Map<ExplorationArguments, Map<String, ConditionOutput>> dataToPostConditionsResults;
+    private final Map<ExplorationArguments, Map<Name, ConditionOutput>> dataToPostConditionsResults;
 
     ExplorationResults(
-        Map<ExplorationArguments, Map<String, ConditionOutput>> dataToPostConditionsResults) {
+        Map<ExplorationArguments, Map<Name, ConditionOutput>> dataToPostConditionsResults) {
         this.dataToPostConditionsResults = dataToPostConditionsResults;
     }
 
 
-    public Map<String, TestResult> resultByPostConditions() {
+    public Map<Name, TestResult> resultByPostConditions() {
         return postConditionsNames()
                                           .collect(toMap(identity(), this::resultsFor));
     }
 
-    private Stream<String> postConditionsNames() {
+    private Stream<Name> postConditionsNames() {
         return dataToPostConditionsResults.values()
                                           .stream()
                                           .flatMap(m -> m.keySet()
@@ -34,7 +36,7 @@ public class ExplorationResults {
     }
 
 
-    private TestResult resultsFor(String postConditionName) {
+    private TestResult resultsFor(Name postConditionName) {
         return testResultsWhere(e -> e.getValue()
                                       .get(postConditionName));
     }
@@ -49,7 +51,7 @@ public class ExplorationResults {
     }
 
     private TestResult testResultsWhere(
-        Function<Map.Entry<ExplorationArguments, Map<String, ConditionOutput>>, ConditionOutput> conditionOutputFunction) {
+        Function<Map.Entry<ExplorationArguments, Map<Name, ConditionOutput>>, ConditionOutput> conditionOutputFunction) {
         return new TestResult(
             dataToPostConditionsResults
                 .entrySet()

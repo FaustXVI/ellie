@@ -15,7 +15,7 @@ public interface ExploratoryTest {
     @TestFactory
     default Stream<? extends DynamicTest> generatedTests() {
         return RunnerBuilder.generateTestsFor(this, passingCasesConsumer())
-                            .map(t -> DynamicTest.dynamicTest(t.name, t.test::run));
+                            .map(t -> DynamicTest.dynamicTest(t.name.value, t.test::run));
     }
 
     default BiConsumer<String, TestResult> passingCasesConsumer() {

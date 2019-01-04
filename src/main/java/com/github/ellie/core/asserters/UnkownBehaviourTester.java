@@ -1,5 +1,7 @@
 package com.github.ellie.core.asserters;
 
+import com.github.ellie.core.ExplorableCondition;
+import com.github.ellie.core.ExplorableCondition.Name;
 import com.github.ellie.core.Exploration;
 import com.github.ellie.core.ExplorationResults;
 import com.github.ellie.core.TestResult;
@@ -25,7 +27,7 @@ public class UnkownBehaviourTester implements Tester {
 
     private Exploration dataWithUnknownBehaviour(ExplorationResults results,
                                                  BiConsumer<String, TestResult> resultConsumer) {
-        return exploration("Unknown post-exploration",
+        return exploration(new Name("Unknown post-exploration"),
                                  () -> {
                                      TestResult result =
                                          results.dataThatPostConditions(b -> b.noneMatch(r -> r == PASS));

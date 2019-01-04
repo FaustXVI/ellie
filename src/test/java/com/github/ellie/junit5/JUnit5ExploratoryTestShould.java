@@ -51,7 +51,7 @@ public class JUnit5ExploratoryTestShould {
         for (int i = 0; i < tests.size(); i++) {
             DynamicTest test = tests.get(i);
             Exploration exploration = explorations.get(i);
-            assertThat(test.getDisplayName()).isEqualTo(exploration.name);
+            assertThat(test.getDisplayName()).isEqualTo(exploration.name.value);
         }
     }
 

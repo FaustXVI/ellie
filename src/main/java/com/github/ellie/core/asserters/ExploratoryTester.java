@@ -21,7 +21,7 @@ public class ExploratoryTester implements Tester {
                           behaviour.getKey(),
                           () -> {
                               TestResult testResult = behaviour.getValue();
-                              resultConsumer.accept(behaviour.getKey(), testResult);
+                              resultConsumer.accept(behaviour.getKey().value, testResult);
                               assertThat(testResult.passingData())
                                   .as("no data validates this behaviour")
                                   .isNotEmpty();

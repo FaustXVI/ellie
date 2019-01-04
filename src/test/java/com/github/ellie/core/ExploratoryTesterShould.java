@@ -1,5 +1,6 @@
 package com.github.ellie.core;
 
+import com.github.ellie.core.ExplorableCondition.Name;
 import com.github.ellie.core.asserters.ExploratoryTester;
 import com.github.ellie.core.asserters.Tester;
 import org.assertj.core.api.Assertions;
@@ -29,9 +30,9 @@ public class ExploratoryTesterShould {
     private static final TestResult PASSING_RESULTS = new TestResult(Map.of(PASS, List.of(ExplorationArguments.of(1))));
     private static final TestResult FAILING_RESULTS = new TestResult(Map.of(FAIL, List.of(ExplorationArguments.of(2))));
     private static final TestResult MIXTED_RESULTS = new TestResult(Map.of(
-        PASS, List.of(ExplorationArguments.of(1)),
-        FAIL, List.of(ExplorationArguments.of(2)),
-        IGNORED, List.of(ExplorationArguments.of(3))
+            PASS, List.of(ExplorationArguments.of(1)),
+            FAIL, List.of(ExplorationArguments.of(2)),
+            IGNORED, List.of(ExplorationArguments.of(3))
     ));
 
     private ExplorationResults results;
@@ -45,49 +46,49 @@ public class ExploratoryTesterShould {
 
     private static Stream<Arguments> passingResults() {
         return Stream.of(
-            Arguments.of(Map.of("passing", PASSING_RESULTS)),
-            Arguments.of(Map.of("passing", PASSING_RESULTS,
-                                "passing again", PASSING_RESULTS))
+                Arguments.of(Map.of(new Name("passing"), PASSING_RESULTS)),
+                Arguments.of(Map.of(new Name("passing"), PASSING_RESULTS,
+                        new Name("passing again"), PASSING_RESULTS))
         );
     }
 
     private static Stream<Arguments> failingResults() {
         return Stream.of(
-            Arguments.of(Map.of("failing", FAILING_RESULTS)),
-            Arguments.of(Map.of("failing", FAILING_RESULTS,
-                                "failing again", FAILING_RESULTS))
+                Arguments.of(Map.of(new Name("failing"), FAILING_RESULTS)),
+                Arguments.of(Map.of(new Name("failing"), FAILING_RESULTS,
+                        new Name("failing again"), FAILING_RESULTS))
         );
     }
 
     private static Stream<Arguments> mixtedResults() {
         return Stream.of(
-            Arguments.of(Map.of("mixted", MIXTED_RESULTS)),
-            Arguments.of(Map.of("mixted", MIXTED_RESULTS,
-                                "mixted again", MIXTED_RESULTS))
+                Arguments.of(Map.of(new Name("mixted"), MIXTED_RESULTS)),
+                Arguments.of(Map.of(new Name("mixted"), MIXTED_RESULTS,
+                        new Name("mixted again"), MIXTED_RESULTS))
         );
     }
 
     @ParameterizedTest
     @MethodSource({"passingResults", "failingResults", "mixtedResults"})
-    void createsOneTestPerPostCondition(Map<String, TestResult> results) {
+    void createsOneTestPerPostCondition(Map<Name, TestResult> results) {
         when(this.results.resultByPostConditions()).thenReturn(results);
 
         Stream<Exploration> behaviours =
-            exploratoryTester.tests(this.results, IGNORE_RESULTS_CONSUMER);
+                exploratoryTester.tests(this.results, IGNORE_RESULTS_CONSUMER);
 
         assertThat(behaviours).hasSize(results.size())
-                              .extracting(c -> c.name)
-                              .containsAll(results.keySet());
+                .extracting(c -> c.name)
+                .containsAll(results.keySet());
     }
 
 
     @ParameterizedTest
     @MethodSource({"passingResults", "mixtedResults", "failingResults"})
-    void callsConsumerWithTestResultAfterRun(Map<String, TestResult> results) {
-        Map<String, TestResult> testResults = new HashMap<>();
+    void callsConsumerWithTestResultAfterRun(Map<Name, TestResult> results) {
+        Map<Name, TestResult> testResults = new HashMap<>();
         when(this.results.resultByPostConditions()).thenReturn(results);
 
-        Stream<Exploration> behaviours = new ExploratoryTester().tests(this.results, testResults::put);
+        Stream<Exploration> behaviours = new ExploratoryTester().tests(this.results, (key, value) -> testResults.put(new Name(key), value));
 
         behaviours.forEach(t -> {
             try {
@@ -102,10 +103,10 @@ public class ExploratoryTesterShould {
 
     @ParameterizedTest
     @MethodSource({"passingResults", "mixtedResults"})
-    void passIfALeastOneDataPasses(Map<String, TestResult> results) {
+    void passIfALeastOneDataPasses(Map<Name, TestResult> results) {
         when(this.results.resultByPostConditions()).thenReturn(results);
         Stream<Exploration> behaviours = exploratoryTester.tests(this.results,
-                                                                   IGNORE_RESULTS_CONSUMER);
+                IGNORE_RESULTS_CONSUMER);
         try {
             behaviours.forEach(t -> t.test.run());
         } catch (AssertionError e) {
@@ -115,14 +116,14 @@ public class ExploratoryTesterShould {
 
     @ParameterizedTest
     @MethodSource("failingResults")
-    void failPotentialBehaviourIfNotDataValidatesPredicate(Map<String, TestResult> results) {
+    void failPotentialBehaviourIfNotDataValidatesPredicate(Map<Name, TestResult> results) {
         when(this.results.resultByPostConditions()).thenReturn(results);
         Stream<Exploration> behaviours = exploratoryTester.tests(this.results,
-                                                                   IGNORE_RESULTS_CONSUMER);
+                IGNORE_RESULTS_CONSUMER);
 
         Assertions.assertThatThrownBy(() -> behaviours.forEach(t -> t.test.run()))
-                  .isInstanceOf(AssertionError.class)
-                  .hasMessageContaining("no data validates this behaviour");
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("no data validates this behaviour");
     }
 
 }

@@ -8,17 +8,10 @@ import static java.util.stream.Collectors.toMap;
 
 public class Explorer {
 
-    public static ExplorationResults explore(List<ExplorationArguments> data, List<ExecutableCondition> postConditions) {
-        Map<ExplorationArguments, Map<String, ConditionOutput>> dataToPostConditionsResults = data.stream()
+    public static ExplorationResults explore(List<ExplorationArguments> data, PostConditions postConditions) {
+        return new ExplorationResults(data.stream()
                 .collect(toMap(identity(),
-                        d -> testPostConditions(d, postConditions)));
-        return new ExplorationResults(dataToPostConditionsResults);
-    }
-
-    private static Map<String, ConditionOutput> testPostConditions(ExplorationArguments d,
-                                                                   List<ExecutableCondition> postConditions) {
-        return postConditions.stream()
-                .collect(toMap(ExecutableCondition::name, b -> b.testWith(d)));
+                        postConditions::exploreWith)));
     }
 
 }

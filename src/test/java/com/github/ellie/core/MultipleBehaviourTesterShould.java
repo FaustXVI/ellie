@@ -1,5 +1,6 @@
 package com.github.ellie.core;
 
+import com.github.ellie.core.ExplorableCondition.Name;
 import com.github.ellie.core.asserters.MultipleBehaviourTester;
 import com.github.ellie.core.asserters.Tester;
 import org.assertj.core.api.Assertions;
@@ -47,7 +48,7 @@ class MultipleBehaviourTesterShould {
 
     @Test
     void keepsOtherRunnerTests() {
-        Exploration test = Exploration.exploration("test", () -> {
+        Exploration test = Exploration.exploration(new Name("test"), () -> {
         });
         Mockito.when(otherTester.tests(results, IGNORE_RESULTS_CONSUMER))
                .thenReturn(Stream.of(test));
@@ -58,7 +59,7 @@ class MultipleBehaviourTesterShould {
     @Test
     void addsMultipleBehaviourLast() {
         assertThat(multipleBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER))
-            .extracting(b -> b.name)
+            .extracting(b -> b.name.value)
             .last()
             .isEqualTo(
                 "Match multiple "

@@ -1,10 +1,11 @@
 package com.github.ellie.junit5;
 
+import com.github.ellie.core.PostConditions;
 import com.github.ellie.junit5.annotations.DataProvider;
 import com.github.ellie.junit5.annotations.PostCondition;
 import com.github.ellie.junit5.annotations.TestedBehaviour;
 import com.github.ellie.core.ConditionOutput;
-import com.github.ellie.core.ExecutableCondition;
+import com.github.ellie.core.ExplorableCondition;
 import com.github.ellie.core.ExplorationArguments;
 
 import java.lang.annotation.Annotation;
@@ -80,22 +81,22 @@ class InstanceParser {
         return postConditions;
     }
 
-    List<ExecutableCondition> executablePostConditions() {
+    PostConditions executablePostConditions() {
         AccessibleMethod exploredCode = testedBehaviour();
 
-        return postConditions()
+        return new PostConditions(postConditions()
             .stream()
-            .map(m -> new ExecutablePostCondition(m,
+            .map(m -> new ExplorablePostCondition(m,
                                                   exploredCode))
-            .collect(Collectors.toList());
+            .collect(Collectors.toList()));
     }
 
 
-    private static final class ExecutablePostCondition implements ExecutableCondition {
+    private static final class ExplorablePostCondition implements ExplorableCondition {
         private final AccessibleMethod postConditionSupplier;
         private final AccessibleMethod behaviourMethod;
 
-        private ExecutablePostCondition(AccessibleMethod postConditionSupplier, AccessibleMethod behaviourMethod) {
+        private ExplorablePostCondition(AccessibleMethod postConditionSupplier, AccessibleMethod behaviourMethod) {
             this.postConditionSupplier = postConditionSupplier;
             this.behaviourMethod = behaviourMethod;
         }
@@ -123,8 +124,8 @@ class InstanceParser {
         }
 
         @Override
-        public String name() {
-            return behaviourMethod.name() + "_" + postConditionSupplier.name();
+        public Name name() {
+            return new Name(behaviourMethod.name() + "_" + postConditionSupplier.name());
         }
 
     }

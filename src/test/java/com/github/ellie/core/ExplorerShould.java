@@ -1,5 +1,6 @@
 package com.github.ellie.core;
 
+import com.github.ellie.core.ExplorableCondition.Name;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -30,9 +31,10 @@ class ExplorerShould {
     @MethodSource("methodNames")
     void nameNodesWithActionAndSupposedBehaviour(List<String> names) {
         ExplorationResults results = explore(List.of(ExplorationArguments.of(2)),
-                names.stream().map(this::conditionThatPasses).collect(Collectors.toList()));
+                new PostConditions(names.stream().map(this::conditionThatPasses).collect(Collectors.toList())));
 
         assertThat(results.resultByPostConditions().keySet())
+                .extracting(e->e.value)
                 .containsAll(names);
     }
 
@@ -42,16 +44,16 @@ class ExplorerShould {
         ExplorationArguments four = ExplorationArguments.of(4);
         ExplorationArguments ignore = ExplorationArguments.of(-42);
         ExplorationResults results = explore(List.of(two, four, ignore),
-                List.of(condition("argIs2", i -> i == two ? PASS : i == ignore ? IGNORED : FAIL),
-                        condition("argIs4", i -> i == four ? PASS : i == ignore ? IGNORED : FAIL)));
-        Map<String, TestResult> resultByBehaviour = results.resultByPostConditions();
+                new PostConditions(List.of(condition("argIs2", i -> i == two ? PASS : i == ignore ? IGNORED : FAIL),
+                        condition("argIs4", i -> i == four ? PASS : i == ignore ? IGNORED : FAIL))));
+        Map<Name, TestResult> resultByBehaviour = results.resultByPostConditions();
 
-        TestResult argIs2 = resultByBehaviour.get("argIs2");
+        TestResult argIs2 = resultByBehaviour.get(new Name("argIs2"));
         assertThat(argIs2.passingData()).containsOnly(two);
         assertThat(argIs2.failingData()).containsOnly(four);
         assertThat(argIs2.ignoredData()).containsOnly(ignore);
 
-        TestResult argIs4 = resultByBehaviour.get("argIs4");
+        TestResult argIs4 = resultByBehaviour.get(new Name("argIs4"));
         assertThat(argIs4.passingData()).containsOnly(four);
         assertThat(argIs4.failingData()).containsOnly(two);
         assertThat(argIs4.ignoredData()).containsOnly(ignore);
@@ -62,9 +64,9 @@ class ExplorerShould {
     void testEachBehavioursWithEachData() {
         ExplorationArguments firstInput = ExplorationArguments.of(2);
         ExplorationArguments secondInput = ExplorationArguments.of(4);
-        ExecutableCondition passes = Mockito.spy(conditionThatPasses("test_passes"));
-        ExecutableCondition fails = Mockito.spy(conditionThatFails("test_fails"));
-        explore(List.of(firstInput, secondInput), List.of(passes, fails));
+        ExplorableCondition passes = Mockito.spy(conditionThatPasses("test_passes"));
+        ExplorableCondition fails = Mockito.spy(conditionThatFails("test_fails"));
+        explore(List.of(firstInput, secondInput), new PostConditions(List.of(passes, fails)));
 
         verify(passes).testWith(firstInput);
         verify(passes).testWith(secondInput);
@@ -72,25 +74,25 @@ class ExplorerShould {
         verify(fails).testWith(secondInput);
     }
 
-    private ExecutableCondition condition(String name, Function<ExplorationArguments, ConditionOutput> predicate) {
-        return new ExecutableCondition() {
+    private ExplorableCondition condition(String name, Function<ExplorationArguments, ConditionOutput> predicate) {
+        return new ExplorableCondition() {
             @Override
             public ConditionOutput testWith(ExplorationArguments explorationArguments) {
                 return predicate.apply(explorationArguments);
             }
 
             @Override
-            public String name() {
-                return name;
+            public Name name() {
+                return new Name(name);
             }
         };
     }
 
-    private ExecutableCondition conditionThatPasses(String name) {
+    private ExplorableCondition conditionThatPasses(String name) {
         return condition(name, i -> PASS);
     }
 
-    private ExecutableCondition conditionThatFails(String name) {
+    private ExplorableCondition conditionThatFails(String name) {
         return condition(name, i -> FAIL);
     }
 
