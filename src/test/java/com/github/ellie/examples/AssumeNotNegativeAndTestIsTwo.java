@@ -1,7 +1,7 @@
 package com.github.ellie.examples;
 
-import com.github.ellie.api.PostCondition;
-import com.github.ellie.api.TestedBehaviour;
+import com.github.ellie.junit5.annotations.PostCondition;
+import com.github.ellie.junit5.annotations.TestedBehaviour;
 import org.junit.jupiter.api.Assumptions;
 
 import java.util.function.Predicate;

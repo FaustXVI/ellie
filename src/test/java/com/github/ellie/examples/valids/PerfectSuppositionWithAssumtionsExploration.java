@@ -1,8 +1,8 @@
 package com.github.ellie.examples.valids;
 
-import com.github.ellie.api.DataProvider;
-import com.github.ellie.api.PostCondition;
-import com.github.ellie.api.TestedBehaviour;
+import com.github.ellie.junit5.annotations.DataProvider;
+import com.github.ellie.junit5.annotations.PostCondition;
+import com.github.ellie.junit5.annotations.TestedBehaviour;
 import org.junit.jupiter.api.Assumptions;
 
 import java.util.Collection;

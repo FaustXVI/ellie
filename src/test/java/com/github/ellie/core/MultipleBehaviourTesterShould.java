@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.FAIL;
 import static com.github.ellie.core.ConditionOutput.PASS;
-import static com.github.ellie.core.TesterBuilderShould.IGNORE_RESULTS_CONSUMER;
+import static com.github.ellie.core.ExploratoryTesterShould.IGNORE_RESULTS_CONSUMER;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;

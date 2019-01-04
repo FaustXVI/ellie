@@ -11,7 +11,7 @@ import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-class ExplorationResults {
+public class ExplorationResults {
     private final Map<ExplorationArguments, Map<String, ConditionOutput>> dataToPostConditionsResults;
 
     ExplorationResults(

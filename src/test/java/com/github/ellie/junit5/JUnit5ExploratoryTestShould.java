@@ -1,11 +1,10 @@
 package com.github.ellie.junit5;
 
-import com.github.ellie.api.DataProvider;
-import com.github.ellie.api.PostCondition;
-import com.github.ellie.api.TestedBehaviour;
+import com.github.ellie.junit5.annotations.DataProvider;
+import com.github.ellie.junit5.annotations.PostCondition;
+import com.github.ellie.junit5.annotations.TestedBehaviour;
 import com.github.ellie.core.ConditionTest;
 import com.github.ellie.core.ExplorationArguments;
-import com.github.ellie.core.RunnerBuilder;
 import com.github.ellie.core.TestResult;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;

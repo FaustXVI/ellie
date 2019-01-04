@@ -1,4 +1,4 @@
-package com.github.ellie.api;
+package com.github.ellie.junit5.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,5 +7,5 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DataProvider {
+public @interface TestedBehaviour {
 }

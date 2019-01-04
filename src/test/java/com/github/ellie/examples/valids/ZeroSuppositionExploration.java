@@ -1,7 +1,7 @@
 package com.github.ellie.examples.valids;
 
-import com.github.ellie.api.DataProvider;
-import com.github.ellie.api.TestedBehaviour;
+import com.github.ellie.junit5.annotations.DataProvider;
+import com.github.ellie.junit5.annotations.TestedBehaviour;
 
 import java.util.Collection;
 import java.util.List;

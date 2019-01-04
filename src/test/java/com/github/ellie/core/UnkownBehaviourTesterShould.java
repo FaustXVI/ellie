@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.TesterBuilderShould.IGNORE_RESULTS_CONSUMER;
+import static com.github.ellie.core.ExploratoryTesterShould.IGNORE_RESULTS_CONSUMER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;

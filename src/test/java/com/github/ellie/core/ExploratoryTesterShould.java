@@ -9,12 +9,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.FAIL;
 import static com.github.ellie.core.ConditionOutput.IGNORED;
 import static com.github.ellie.core.ConditionOutput.PASS;
-import static com.github.ellie.core.TesterBuilderShould.IGNORE_RESULTS_CONSUMER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
@@ -22,6 +22,8 @@ import static org.mockito.Mockito.when;
 
 public class ExploratoryTesterShould {
 
+    public static final BiConsumer<String, TestResult> IGNORE_RESULTS_CONSUMER = (l, o) -> {
+    };
     private static final TestResult PASSING_RESULTS = new TestResult(Map.of(PASS, List.of(ExplorationArguments.of(1))));
     private static final TestResult FAILING_RESULTS = new TestResult(Map.of(FAIL, List.of(ExplorationArguments.of(2))));
     private static final TestResult MIXTED_RESULTS = new TestResult(Map.of(

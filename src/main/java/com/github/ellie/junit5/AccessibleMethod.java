@@ -1,6 +1,7 @@
-package com.github.ellie.core;
+package com.github.ellie.junit5;
 
 
+import com.github.ellie.core.ExplorationArguments;
 import org.opentest4j.TestAbortedException;
 
 import java.lang.reflect.InvocationTargetException;

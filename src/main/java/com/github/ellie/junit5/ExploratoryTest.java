@@ -1,6 +1,5 @@
 package com.github.ellie.junit5;
 
-import com.github.ellie.core.RunnerBuilder;
 import com.github.ellie.core.TestResult;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -21,18 +20,20 @@ public interface ExploratoryTest {
 
     default BiConsumer<String, TestResult> passingCasesConsumer() {
         return (s, l) -> {
-            Stream<String> arguments = l.passingData().stream()
-                                           .map(args -> Arrays.stream(args.get())
-                                                              .map(o->{
-if(o instanceof String) return "\""+o+"\"";
-else return o.toString();
-                                                              })
-                                                              .collect(
-                                                                  Collectors.joining(", ", "            Arguments.of(", ")"))
-                                           );
+            Stream<String> arguments = l.passingData()
+                                        .stream()
+                                        .map(args -> Arrays.stream(args.get())
+                                                           .map(o -> {
+                                                               if (o instanceof String) return "\"" + o + "\"";
+                                                               else return o.toString();
+                                                           })
+                                                           .collect(
+                                                               Collectors.joining(", ", "            Arguments.of(",
+                                                                                  ")"))
+                                        );
             String method = arguments
                 .collect(Collectors.joining(",\n", "    static Stream<Arguments> " + s + "() {\n"
-                                                 + "        return Stream.of(\n", "\n        );\n    }"));
+                                                   + "        return Stream.of(\n", "\n        );\n    }"));
             System.out.println(method);
         };
     }

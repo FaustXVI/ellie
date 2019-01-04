@@ -6,9 +6,9 @@ import java.util.Map;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
-class Explorer {
+public class Explorer {
 
-    static ExplorationResults explore(List<ExplorationArguments> data, List<ExecutableCondition> postConditions) {
+    public static ExplorationResults explore(List<ExplorationArguments> data, List<ExecutableCondition> postConditions) {
         Map<ExplorationArguments, Map<String, ConditionOutput>> dataToPostConditionsResults = data.stream()
                 .collect(toMap(identity(),
                         d -> testPostConditions(d, postConditions)));

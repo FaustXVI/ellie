@@ -1,8 +1,11 @@
-package com.github.ellie.core;
+package com.github.ellie.junit5;
 
-import com.github.ellie.api.DataProvider;
-import com.github.ellie.api.PostCondition;
-import com.github.ellie.api.TestedBehaviour;
+import com.github.ellie.junit5.annotations.DataProvider;
+import com.github.ellie.junit5.annotations.PostCondition;
+import com.github.ellie.junit5.annotations.TestedBehaviour;
+import com.github.ellie.core.ConditionOutput;
+import com.github.ellie.core.ExecutableCondition;
+import com.github.ellie.core.ExplorationArguments;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
