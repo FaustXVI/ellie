@@ -2,9 +2,11 @@ package com.github.ellie.core;
 
 import com.github.ellie.core.ExplorableCondition.Name;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -17,8 +19,9 @@ public class PostConditions {
     }
 
 
-    public Map<Name, ConditionOutput> exploreWith(ExplorationArguments d) {
+    public Collection<ExecutedExploration> exploreWith(ExplorationArguments d) {
         return postConditions.stream()
-                .collect(toMap(ExplorableCondition::name, b -> b.testWith(d)));
+                .map(e -> new ExecutedExploration(e.name(), e.testWith(d), d))
+                .collect(Collectors.toList());
     }
 }

@@ -2,63 +2,50 @@ package com.github.ellie.core;
 
 import com.github.ellie.core.ExplorableCondition.Name;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.*;
 
 public class ExplorationResults {
-    private final Map<ExplorationArguments, Map<Name, ConditionOutput>> dataToPostConditionsResults;
+    private final Collection<ExecutedExploration> explorations;
 
-    ExplorationResults(
-        Map<ExplorationArguments, Map<Name, ConditionOutput>> dataToPostConditionsResults) {
-        this.dataToPostConditionsResults = dataToPostConditionsResults;
+    public ExplorationResults(Collection<ExecutedExploration> explorations) {
+        this.explorations = explorations;
     }
 
 
     public Map<Name, TestResult> resultByPostConditions() {
-        return postConditionsNames()
-                                          .collect(toMap(identity(), this::resultsFor));
-    }
-
-    private Stream<Name> postConditionsNames() {
-        return dataToPostConditionsResults.values()
-                                          .stream()
-                                          .flatMap(m -> m.keySet()
-                                                         .stream())
-                                          .distinct();
-    }
-
-
-    private TestResult resultsFor(Name postConditionName) {
-        return testResultsWhere(e -> e.getValue()
-                                      .get(postConditionName));
+        return explorations.stream()
+                .collect(groupingBy(e -> e.name,
+                        collectingAndThen(toList(), TestResult::new)));
     }
 
     public TestResult dataThatPostConditions(
             Predicate<Stream<ConditionOutput>> postConditionPredicate) {
-        return testResultsWhere(e ->
-                                    ConditionOutput.fromPredicate(postConditionPredicate)
-                                                   .apply(e.getValue()
-                                                           .values()
-                                                           .stream()));
+        Map<ExplorationArguments, ConditionOutput> argumentsResults = explorations.stream()
+                .collect(
+                        groupingBy(e -> e.arguments,
+                        applyPredicate(postConditionPredicate)));
+        return new TestResult(argumentsResults.entrySet()
+                .stream()
+                .collect(groupingBy(Map.Entry::getValue,
+                        mapping(Map.Entry::getKey, toList()))));
     }
 
-    private TestResult testResultsWhere(
-        Function<Map.Entry<ExplorationArguments, Map<Name, ConditionOutput>>, ConditionOutput> conditionOutputFunction) {
-        return new TestResult(
-            dataToPostConditionsResults
-                .entrySet()
-                .stream()
-                .collect(groupingBy(
-                    conditionOutputFunction,
-                    mapping(Map.Entry::getKey, toList()))));
+    private static Collector<ExecutedExploration, ?, ConditionOutput> applyPredicate(Predicate<Stream<ConditionOutput>> postConditionPredicate) {
+        Function<Stream<ConditionOutput>, ConditionOutput> fromPredicate = ConditionOutput.fromPredicate(postConditionPredicate);
+        return mapping(e -> e.output,
+                collectingAndThen(toList(), e -> fromPredicate.apply(
+                        e.stream()
+                )));
     }
 
 }

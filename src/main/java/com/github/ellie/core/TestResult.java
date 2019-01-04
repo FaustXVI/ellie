@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.github.ellie.core.ConditionOutput.FAIL;
 import static com.github.ellie.core.ConditionOutput.IGNORED;
@@ -21,7 +22,10 @@ public class TestResult {
         this.ignored = unmodifiableCollection(testResults.getOrDefault(IGNORED,Collections.emptyList()));
     }
 
-
+    public TestResult(List<ExecutedExploration> testResults) {
+        this(testResults.stream()
+                .collect(Collectors.groupingBy(e -> e.output, Collectors.mapping(e -> e.arguments, Collectors.toList()))));
+    }
     public Collection<ExplorationArguments> passingData() {
         return passes;
     }
