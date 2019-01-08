@@ -12,6 +12,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.github.ellie.core.ConditionOutput.fromPredicate;
 import static java.util.stream.Collectors.*;
 
 public class ExplorationResults {
@@ -30,22 +31,24 @@ public class ExplorationResults {
 
     public TestResult dataThatPostConditions(
             Predicate<Stream<ConditionOutput>> postConditionPredicate) {
-        Map<ExplorationArguments, ConditionOutput> argumentsResults = explorations.stream()
-                .collect(
-                        groupingBy(e -> e.arguments,
-                        applyPredicate(postConditionPredicate)));
-        return new TestResult(argumentsResults.entrySet()
-                .stream()
-                .collect(groupingBy(Map.Entry::getValue,
-                        mapping(Map.Entry::getKey, toList()))));
+        Function<List<ConditionOutput>, ConditionOutput> outputFunction
+                = fromPredicate(l -> postConditionPredicate.test(l.stream()));
+        return new TestResult(flipMap(mapDataTo(outputFunction)));
     }
 
-    private static Collector<ExecutedExploration, ?, ConditionOutput> applyPredicate(Predicate<Stream<ConditionOutput>> postConditionPredicate) {
-        Function<Stream<ConditionOutput>, ConditionOutput> fromPredicate = ConditionOutput.fromPredicate(postConditionPredicate);
-        return mapping(e -> e.output,
-                collectingAndThen(toList(), e -> fromPredicate.apply(
-                        e.stream()
-                )));
+    private Map<ExplorationArguments, ConditionOutput> mapDataTo(Function<List<ConditionOutput>, ConditionOutput> outputFunction) {
+        return explorations.stream()
+                .collect(
+                        groupingBy(e -> e.arguments,
+                                collectingAndThen(
+                                        mapping(e -> e.output, toList()), outputFunction)));
+    }
+
+    private <K, V> Map<V, List<K>> flipMap(Map<K, V> argumentsResults) {
+        return argumentsResults.entrySet()
+                .stream()
+                .collect(groupingBy(Map.Entry::getValue,
+                        mapping(Map.Entry::getKey, toList())));
     }
 
 }
