@@ -27,9 +27,9 @@ public class MultipleBehaviourTester implements Tester {
     private Stream<Exploration> dataThatPassesMultiplePostConditions(ExplorationResults results,
                                                                      BiConsumer<String, TestResult> resultConsumer) {
         return Stream.of(Exploration.exploration(new Name("Match multiple post-conditions"), () -> {
-            TestResult testResult = dataThatPassesMultipleBehaviours(results);
+            TestResult testResult = dataThatPassesMaximumOneBehaviour(results);
             resultConsumer.accept("Match multiple post-conditions", testResult);
-            Collection<ExplorationArguments> dataWithMultipleBehaviours = testResult.passingData();
+            Collection<ExplorationArguments> dataWithMultipleBehaviours = testResult.failingData();
             if (dataWithMultipleBehaviours.isEmpty()) {
                 return Optional.empty();
             } else {
@@ -38,9 +38,9 @@ public class MultipleBehaviourTester implements Tester {
         }));
     }
 
-    private TestResult dataThatPassesMultipleBehaviours(ExplorationResults results) {
+    private TestResult dataThatPassesMaximumOneBehaviour(ExplorationResults results) {
         return results.dataThatPostConditions(c -> c.filter(r -> r == PASS)
-                .count() > 1);
+                .count() <= 1);
     }
 
 }

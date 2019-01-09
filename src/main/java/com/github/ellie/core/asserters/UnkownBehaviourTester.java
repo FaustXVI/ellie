@@ -28,9 +28,9 @@ public class UnkownBehaviourTester implements Tester {
         return exploration(new Name("Unknown post-exploration"),
                 () -> {
                     TestResult result =
-                            results.dataThatPostConditions(b -> b.noneMatch(r -> r == PASS));
+                            results.dataThatPostConditions(b -> b.anyMatch(r -> r == PASS));
                     resultConsumer.accept("Unknown post-exploration", result);
-                    Collection<ExplorationArguments> dataWithUnknownBehaviour = result.passingData();
+                    Collection<ExplorationArguments> dataWithUnknownBehaviour = result.failingData();
                     if (dataWithUnknownBehaviour.isEmpty()) {
                         return Optional.empty();
                     } else {
