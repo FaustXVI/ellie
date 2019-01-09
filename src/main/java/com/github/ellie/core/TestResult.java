@@ -16,16 +16,17 @@ public class TestResult {
     private final Collection<ExplorationArguments> failing;
     private final Collection<ExplorationArguments> ignored;
 
-    public TestResult(Map<ConditionOutput,List<ExplorationArguments>> testResults) {
+    public TestResult(Map<ConditionOutput, List<ExplorationArguments>> testResults) {
         this.passes = unmodifiableCollection(testResults.getOrDefault(PASS, Collections.emptyList()));
         this.failing = unmodifiableCollection(testResults.getOrDefault(FAIL, Collections.emptyList()));
-        this.ignored = unmodifiableCollection(testResults.getOrDefault(IGNORED,Collections.emptyList()));
+        this.ignored = unmodifiableCollection(testResults.getOrDefault(IGNORED, Collections.emptyList()));
     }
 
-    public TestResult(List<ExecutedExploration> testResults) {
+    public TestResult(List<ExecutedCondition> testResults) {
         this(testResults.stream()
                 .collect(Collectors.groupingBy(e -> e.output, Collectors.mapping(e -> e.arguments, Collectors.toList()))));
     }
+
     public Collection<ExplorationArguments> passingData() {
         return passes;
     }

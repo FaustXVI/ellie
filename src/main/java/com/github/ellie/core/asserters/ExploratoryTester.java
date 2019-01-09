@@ -22,6 +22,7 @@ public class ExploratoryTester implements Tester {
                           () -> {
                               TestResult testResult = behaviour.getValue();
                               resultConsumer.accept(behaviour.getKey().value, testResult);
+                              // TODO : virer les assertions pour les déplacer dans junit5
                               assertThat(testResult.passingData())
                                   .as("no data validates this behaviour")
                                   .isNotEmpty();

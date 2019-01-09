@@ -2,29 +2,26 @@ package com.github.ellie.core;
 
 import com.github.ellie.core.ExplorableCondition.Name;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.fromPredicate;
 import static java.util.stream.Collectors.*;
 
 public class ExplorationResults {
-    private final Collection<ExecutedExploration> explorations;
+    private final Collection<ExecutedCondition> postConditionsResults;
 
-    public ExplorationResults(Collection<ExecutedExploration> explorations) {
-        this.explorations = explorations;
+    public ExplorationResults(Collection<ExecutedCondition> postConditionsResults) {
+        this.postConditionsResults = postConditionsResults;
     }
 
 
     public Map<Name, TestResult> resultByPostConditions() {
-        return explorations.stream()
+        return postConditionsResults.stream()
                 .collect(groupingBy(e -> e.name,
                         collectingAndThen(toList(), TestResult::new)));
     }
@@ -37,7 +34,7 @@ public class ExplorationResults {
     }
 
     private Map<ExplorationArguments, ConditionOutput> mapDataTo(Function<List<ConditionOutput>, ConditionOutput> outputFunction) {
-        return explorations.stream()
+        return postConditionsResults.stream()
                 .collect(
                         groupingBy(e -> e.arguments,
                                 collectingAndThen(
