@@ -1,6 +1,7 @@
 package com.github.ellie.junit5;
 
 import com.github.ellie.core.TestResult;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
@@ -15,25 +16,28 @@ public interface ExploratoryTest {
     @TestFactory
     default Stream<? extends DynamicTest> generatedTests() {
         return RunnerBuilder.generateTestsFor(this, passingCasesConsumer())
-                            .map(t -> DynamicTest.dynamicTest(t.name.value, t.test::run));
+                .map(t -> DynamicTest.dynamicTest(t.name.value, () -> {
+                    t.test.check().ifPresent(m -> Assertions.assertThat(m.causes)
+                            .as(m.message).isEmpty());
+                }));
     }
 
     default BiConsumer<String, TestResult> passingCasesConsumer() {
         return (s, l) -> {
             Stream<String> arguments = l.passingData()
-                                        .stream()
-                                        .map(args -> Arrays.stream(args.get())
-                                                           .map(o -> {
-                                                               if (o instanceof String) return "\"" + o + "\"";
-                                                               else return o.toString();
-                                                           })
-                                                           .collect(
-                                                               Collectors.joining(", ", "            Arguments.of(",
-                                                                                  ")"))
-                                        );
+                    .stream()
+                    .map(args -> Arrays.stream(args.get())
+                            .map(o -> {
+                                if (o instanceof String) return "\"" + o + "\"";
+                                else return o.toString();
+                            })
+                            .collect(
+                                    Collectors.joining(", ", "            Arguments.of(",
+                                            ")"))
+                    );
             String method = arguments
-                .collect(Collectors.joining(",\n", "    static Stream<Arguments> " + s + "() {\n"
-                                                   + "        return Stream.of(\n", "\n        );\n    }"));
+                    .collect(Collectors.joining(",\n", "    static Stream<Arguments> " + s + "() {\n"
+                            + "        return Stream.of(\n", "\n        );\n    }"));
             System.out.println(method);
         };
     }

@@ -1,17 +1,15 @@
 package com.github.ellie.core.asserters;
 
-import com.github.ellie.core.ExplorableCondition;
+import com.github.ellie.core.*;
 import com.github.ellie.core.ExplorableCondition.Name;
-import com.github.ellie.core.Exploration;
-import com.github.ellie.core.ExplorationResults;
-import com.github.ellie.core.TestResult;
 
+import java.util.Collection;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.PASS;
 import static com.github.ellie.core.Exploration.exploration;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class UnkownBehaviourTester implements Tester {
     private Tester otherTester;
@@ -28,15 +26,17 @@ public class UnkownBehaviourTester implements Tester {
     private Exploration dataWithUnknownBehaviour(ExplorationResults results,
                                                  BiConsumer<String, TestResult> resultConsumer) {
         return exploration(new Name("Unknown post-exploration"),
-                                 () -> {
-                                     TestResult result =
-                                         results.dataThatPostConditions(b -> b.noneMatch(r -> r == PASS));
-                                     resultConsumer.accept("Unknown post-exploration", result);
-                                     assertThat(result
-                                                       .passingData())
-                                         .as("At least one data has unknown post-exploration")
-                                         .isEmpty();
-                                 });
+                () -> {
+                    TestResult result =
+                            results.dataThatPostConditions(b -> b.noneMatch(r -> r == PASS));
+                    resultConsumer.accept("Unknown post-exploration", result);
+                    Collection<ExplorationArguments> dataWithUnknownBehaviour = result.passingData();
+                    if (dataWithUnknownBehaviour.isEmpty()) {
+                        return Optional.empty();
+                    } else {
+                        return Optional.of(new ErrorMessage("At least one data has unknown post-exploration", dataWithUnknownBehaviour));
+                    }
+                });
     }
 
 }

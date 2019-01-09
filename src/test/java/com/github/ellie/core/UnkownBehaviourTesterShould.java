@@ -10,6 +10,7 @@ import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
@@ -35,10 +36,9 @@ class UnkownBehaviourTesterShould {
 
     @Test
     void keepsOtherRunnerTests() {
-        Exploration test = Exploration.exploration(new Name("test"), () -> {
-        });
+        Exploration test = Exploration.exploration(new Name("test"), Optional::empty);
         Mockito.when(otherTester.tests(results, IGNORE_RESULTS_CONSUMER))
-               .thenReturn(Stream.of(test));
+                .thenReturn(Stream.of(test));
 
         assertThat(unkownBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)).contains(test);
     }
@@ -47,7 +47,7 @@ class UnkownBehaviourTesterShould {
     void callsConsumerWithResults() {
         TestResult testResult = new TestResult(Map.of());
         when(results.dataThatPostConditions(Mockito.any()))
-            .thenReturn(testResult);
+                .thenReturn(testResult);
 
         AtomicBoolean consumerExecuted = new AtomicBoolean(false);
 
@@ -55,7 +55,7 @@ class UnkownBehaviourTesterShould {
             assertThat(a).isEqualTo("Unknown post-exploration");
             assertThat(b).isSameAs(testResult);
             consumerExecuted.set(true);
-        }).forEach(ct -> ct.test.run());
+        }).forEach(ct -> ct.test.check());
 
         if (!consumerExecuted.get()) {
             fail("Consumer should be called");
@@ -65,33 +65,39 @@ class UnkownBehaviourTesterShould {
     @Test
     void addsUnknownBehaviourLast() {
         assertThat(unkownBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)).extracting(b -> b.name.value)
-                                                                                 .last()
-                                                                                 .isEqualTo("Unknown post-exploration");
+                .last()
+                .isEqualTo("Unknown post-exploration");
     }
 
 
     @Test
     void failsIfAtLeastOneDataPassesNothing() {
         when(results.dataThatPostConditions(Mockito.any())).then(filterFrom(
-            Map.of(ExplorationArguments.of(2), Stream.of(ConditionOutput.FAIL))));
+                Map.of(ExplorationArguments.of(2), Stream.of(ConditionOutput.FAIL))));
+        Optional<ErrorMessage> testResult = this.unkownBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)
+                .map(t -> t.test.check())
+                .findFirst().get();
+        Assertions.assertThat(testResult)
+                .isNotEmpty()
+                .hasValueSatisfying(s -> {
+                    assertThat(s.message)
+                        .contains("At least one data has unknown post-exploration");
+                            assertThat(s.causes).contains(ExplorationArguments.of(2));
+                }
 
-        Assertions.assertThatThrownBy(() -> this.unkownBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)
-                                                                      .forEach(t -> t.test.run()))
-                  .isInstanceOf(AssertionError.class)
-                  .hasMessageContaining("At least one data has unknown post-exploration")
-                  .hasMessageContaining("2");
+                );
     }
 
     @Test
     void passesIfAllDataPassesSomeThing() {
         when(results.dataThatPostConditions(Mockito.any())).then(filterFrom(
-            Map.of(ExplorationArguments.of(1), Stream.of(ConditionOutput.PASS),
-                   ExplorationArguments.of(2), Stream.of(ConditionOutput.PASS,ConditionOutput.PASS)
-        )));
+                Map.of(ExplorationArguments.of(1), Stream.of(ConditionOutput.PASS),
+                        ExplorationArguments.of(2), Stream.of(ConditionOutput.PASS, ConditionOutput.PASS)
+                )));
 
         try {
             unkownBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)
-                                 .forEach(t -> t.test.run());
+                    .forEach(t -> t.test.check());
         } catch (Exception e) {
             fail("All data passes something");
         }

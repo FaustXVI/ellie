@@ -3,7 +3,6 @@ package com.github.ellie.core;
 import com.github.ellie.core.ExplorableCondition.Name;
 import com.github.ellie.core.asserters.ExploratoryTester;
 import com.github.ellie.core.asserters.Tester;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -15,9 +14,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.ConditionOutput.FAIL;
-import static com.github.ellie.core.ConditionOutput.IGNORED;
-import static com.github.ellie.core.ConditionOutput.PASS;
+import static com.github.ellie.core.ConditionOutput.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
@@ -91,10 +88,7 @@ public class ExploratoryTesterShould {
         Stream<Exploration> behaviours = new ExploratoryTester().tests(this.results, (key, value) -> testResults.put(new Name(key), value));
 
         behaviours.forEach(t -> {
-            try {
-                t.test.run();
-            } catch (AssertionError ignored) {
-            }
+                t.test.check();
         });
 
         assertThat(testResults).isEqualTo(results);
@@ -108,7 +102,7 @@ public class ExploratoryTesterShould {
         Stream<Exploration> behaviours = exploratoryTester.tests(this.results,
                 IGNORE_RESULTS_CONSUMER);
         try {
-            behaviours.forEach(t -> t.test.run());
+            behaviours.forEach(t -> t.test.check());
         } catch (AssertionError e) {
             fail("No exception should be thrown but got : " + e);
         }
@@ -121,9 +115,12 @@ public class ExploratoryTesterShould {
         Stream<Exploration> behaviours = exploratoryTester.tests(this.results,
                 IGNORE_RESULTS_CONSUMER);
 
-        Assertions.assertThatThrownBy(() -> behaviours.forEach(t -> t.test.run()))
-                .isInstanceOf(AssertionError.class)
-                .hasMessageContaining("no data validates this behaviour");
+        behaviours.map(t->t.test.check()).forEach( o ->{
+            assertThat(o).hasValueSatisfying(e -> {
+                assertThat(e.message)
+                        .contains("no data validates this behaviour");
+            });
+        });
     }
 
 }
