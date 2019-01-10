@@ -2,10 +2,12 @@ package com.github.ellie.core;
 
 import com.github.ellie.core.ExplorableCondition.Name;
 
+import java.util.function.Consumer;
+
 public class Exploration {
 
     public interface Check {
-        ExplorationResult check();
+        TestResult check(Consumer<ErrorMessage> errorHandler);
     }
 
     public final Name name;

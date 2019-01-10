@@ -25,16 +25,16 @@ public class UnkownBehaviourTester implements Tester {
     private Exploration dataWithUnknownBehaviour(PostConditionResults results,
                                                  BiConsumer<String, TestResult> resultConsumer) {
         return exploration(new Name("Unknown post-exploration"),
-                () -> {
+                (errorMessageHandler) -> {
                     TestResult result =
                             results.dataThatPostConditions(b -> b.anyMatch(r -> r == PASS));
                     resultConsumer.accept("Unknown post-exploration", result);
                     Collection<ExplorationArguments> dataWithUnknownBehaviour = result.failingData();
-                    if (dataWithUnknownBehaviour.isEmpty()) {
-                        return new ExplorationResult(result);
-                    } else {
-                        return new ExplorationResult(new ErrorMessage("At least one data has unknown post-exploration", dataWithUnknownBehaviour), result);
+                    if (!dataWithUnknownBehaviour.isEmpty()) {
+                        ErrorMessage errorMessage = new ErrorMessage("At least one data has unknown post-exploration", dataWithUnknownBehaviour);
+                        errorMessageHandler.accept(errorMessage);
                     }
+                    return result;
                 });
     }
 

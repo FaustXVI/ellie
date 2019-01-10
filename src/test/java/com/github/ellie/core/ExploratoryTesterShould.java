@@ -11,7 +11,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.*;
@@ -31,6 +34,8 @@ public class ExploratoryTesterShould {
             FAIL, List.of(ExplorationArguments.of(2)),
             IGNORED, List.of(ExplorationArguments.of(3))
     ));
+    private static final Consumer<ErrorMessage> IGNORE_ERROR_MESSAGE = c -> {
+    };
 
     private PostConditionResults results;
     private Tester exploratoryTester;
@@ -88,7 +93,7 @@ public class ExploratoryTesterShould {
         Stream<Exploration> behaviours = new ExploratoryTester().tests(this.results, (key, value) -> testResults.put(new Name(key), value));
 
         behaviours.forEach(t -> {
-                t.test.check();
+            t.test.check(IGNORE_ERROR_MESSAGE);
         });
 
         assertThat(testResults).isEqualTo(results);
@@ -102,7 +107,7 @@ public class ExploratoryTesterShould {
         Stream<Exploration> behaviours = exploratoryTester.tests(this.results,
                 IGNORE_RESULTS_CONSUMER);
         try {
-            behaviours.forEach(t -> t.test.check());
+            behaviours.forEach(t -> t.test.check(IGNORE_ERROR_MESSAGE));
         } catch (AssertionError e) {
             fail("No exception should be thrown but got : " + e);
         }
@@ -112,15 +117,14 @@ public class ExploratoryTesterShould {
     @MethodSource("failingResults")
     void failPotentialBehaviourIfNotDataValidatesPredicate(Map<Name, TestResult> results) {
         when(this.results.resultByPostConditions()).thenReturn(results);
-        Stream<Exploration> behaviours = exploratoryTester.tests(this.results,
-                IGNORE_RESULTS_CONSUMER);
+        AtomicReference<ErrorMessage> errorMessageAtomicReference = new AtomicReference<>();
+        List<TestResult> list = exploratoryTester.tests(this.results,
+                IGNORE_RESULTS_CONSUMER).map(ex -> ex.test.check(errorMessageAtomicReference::set))
+                .collect(Collectors.toList());
 
-        behaviours.map(t->t.test.check()).forEach( o ->{
-            assertThat(o.error).hasValueSatisfying(e -> {
-                assertThat(e.message)
-                        .contains("no data validates this behaviour");
-            });
-        });
+
+        assertThat(errorMessageAtomicReference.get().message)
+                .contains("no data validates this behaviour");
     }
 
 }

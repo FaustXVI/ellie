@@ -25,16 +25,17 @@ public class MultipleBehaviourTester implements Tester {
 
     private Stream<Exploration> dataThatPassesMultiplePostConditions(PostConditionResults results,
                                                                      BiConsumer<String, TestResult> resultConsumer) {
-        return Stream.of(Exploration.exploration(new Name("Match multiple post-conditions"), () -> {
-            TestResult testResult = dataThatPassesMaximumOneBehaviour(results);
-            resultConsumer.accept("Match multiple post-conditions", testResult);
-            Collection<ExplorationArguments> dataWithMultipleBehaviours = testResult.failingData();
-            if (dataWithMultipleBehaviours.isEmpty()) {
-                return new ExplorationResult(testResult);
-            } else {
-                return new ExplorationResult(new ErrorMessage("At least one data has many post-conditions", dataWithMultipleBehaviours), testResult);
-            }
-        }));
+        return Stream.of(Exploration.exploration(new Name("Match multiple post-conditions"),
+                (errorMessageHandler) -> {
+                    TestResult testResult = dataThatPassesMaximumOneBehaviour(results);
+                    resultConsumer.accept("Match multiple post-conditions", testResult);
+                    Collection<ExplorationArguments> dataWithMultipleBehaviours = testResult.failingData();
+                    if (!dataWithMultipleBehaviours.isEmpty()) {
+                        ErrorMessage errorMessage = new ErrorMessage("At least one data has many post-conditions", dataWithMultipleBehaviours);
+                        errorMessageHandler.accept(errorMessage);
+                    }
+                    return testResult;
+                }));
     }
 
     private TestResult dataThatPassesMaximumOneBehaviour(PostConditionResults results) {

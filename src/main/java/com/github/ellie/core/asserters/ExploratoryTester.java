@@ -16,15 +16,15 @@ public class ExploratoryTester implements Tester {
                 .stream()
                 .map(behaviour -> exploration(
                         behaviour.getKey(),
-                        () -> {
+                        (errorHandler) -> {
                             TestResult testResult = behaviour.getValue();
                             // TODO : move consumer out
                             resultConsumer.accept(behaviour.getKey().value, testResult);
                             if (testResult.passingData().isEmpty()) {
-                                return new ExplorationResult(new ErrorMessage("no data validates this behaviour"), testResult);
-                            } else {
-                                return new ExplorationResult(testResult);
+                                ErrorMessage errorMessage = new ErrorMessage("no data validates this behaviour");
+                                errorHandler.accept(errorMessage);
                             }
+                            return testResult;
                         }));
     }
 
