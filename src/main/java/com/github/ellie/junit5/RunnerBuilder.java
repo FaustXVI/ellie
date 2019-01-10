@@ -13,7 +13,7 @@ import static com.github.ellie.core.Explorer.explore;
 class RunnerBuilder {
     static Stream<Exploration> generateTestsFor(Object testInstance, BiConsumer<String, TestResult> resultConsumer) {
         InstanceParser instanceParser = new InstanceParser(testInstance);
-        ExplorationResults results = explore(instanceParser.data(), instanceParser.executablePostConditions());
+        PostConditionResults results = explore(instanceParser.data(), instanceParser.executablePostConditions());
         return new MultipleBehaviourTester(
                 new UnkownBehaviourTester(
                         new ExploratoryTester()

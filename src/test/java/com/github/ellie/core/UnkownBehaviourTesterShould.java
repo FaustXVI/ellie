@@ -24,12 +24,12 @@ class UnkownBehaviourTesterShould {
 
     private Tester otherTester;
     private UnkownBehaviourTester unkownBehaviourRunner;
-    private ExplorationResults results;
+    private PostConditionResults results;
 
     @BeforeEach
     void createRunner() {
         otherTester = mock(Tester.class);
-        results = mock(ExplorationResults.class);
+        results = mock(PostConditionResults.class);
         when(results.dataThatPostConditions(Mockito.any())).thenReturn(new TestResult(Map.of()));
         unkownBehaviourRunner = new UnkownBehaviourTester(otherTester);
     }

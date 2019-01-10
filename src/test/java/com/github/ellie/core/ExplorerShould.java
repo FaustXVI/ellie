@@ -30,7 +30,7 @@ class ExplorerShould {
     @ParameterizedTest
     @MethodSource("methodNames")
     void nameNodesWithActionAndSupposedBehaviour(List<String> names) {
-        ExplorationResults results = explore(List.of(ExplorationArguments.of(2)),
+        PostConditionResults results = explore(List.of(ExplorationArguments.of(2)),
                 new PostConditions(names.stream().map(this::conditionThatPasses).collect(Collectors.toList())));
 
         assertThat(results.resultByPostConditions().keySet())
@@ -43,7 +43,7 @@ class ExplorerShould {
         ExplorationArguments two = ExplorationArguments.of(2);
         ExplorationArguments four = ExplorationArguments.of(4);
         ExplorationArguments ignore = ExplorationArguments.of(-42);
-        ExplorationResults results = explore(List.of(two, four, ignore),
+        PostConditionResults results = explore(List.of(two, four, ignore),
                 new PostConditions(List.of(condition("argIs2", i -> i == two ? PASS : i == ignore ? IGNORED : FAIL),
                         condition("argIs4", i -> i == four ? PASS : i == ignore ? IGNORED : FAIL))));
         Map<Name, TestResult> resultByBehaviour = results.resultByPostConditions();

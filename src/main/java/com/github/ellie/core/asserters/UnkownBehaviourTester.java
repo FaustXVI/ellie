@@ -19,11 +19,11 @@ public class UnkownBehaviourTester implements Tester {
     }
 
     @Override
-    public Stream<Exploration> tests(ExplorationResults results, BiConsumer<String, TestResult> resultConsumer) {
+    public Stream<Exploration> tests(PostConditionResults results, BiConsumer<String, TestResult> resultConsumer) {
         return Stream.concat(otherTester.tests(results, resultConsumer), Stream.of(dataWithUnknownBehaviour(results, resultConsumer)));
     }
 
-    private Exploration dataWithUnknownBehaviour(ExplorationResults results,
+    private Exploration dataWithUnknownBehaviour(PostConditionResults results,
                                                  BiConsumer<String, TestResult> resultConsumer) {
         return exploration(new Name("Unknown post-exploration"),
                 () -> {

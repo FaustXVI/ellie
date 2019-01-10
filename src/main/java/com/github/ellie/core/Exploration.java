@@ -7,6 +7,7 @@ import java.util.Optional;
 public class Exploration {
 
     public interface Check {
+        // TODO create Object in order to add the test results
         Optional<ErrorMessage> check();
     }
 

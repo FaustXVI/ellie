@@ -32,12 +32,12 @@ public class ExploratoryTesterShould {
             IGNORED, List.of(ExplorationArguments.of(3))
     ));
 
-    private ExplorationResults results;
+    private PostConditionResults results;
     private Tester exploratoryTester;
 
     @BeforeEach
     void createRunner() {
-        results = mock(ExplorationResults.class);
+        results = mock(PostConditionResults.class);
         exploratoryTester = new ExploratoryTester();
     }
 

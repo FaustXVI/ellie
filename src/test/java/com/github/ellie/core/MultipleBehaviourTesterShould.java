@@ -37,12 +37,12 @@ class MultipleBehaviourTesterShould {
             MULTIPLE_PASS = Map.of(ExplorationArguments.of(2), Stream.of(PASS, PASS));
     private Tester otherTester;
     private MultipleBehaviourTester multipleBehaviourRunner;
-    private ExplorationResults results;
+    private PostConditionResults results;
 
     @BeforeEach
     void createRunner() {
         otherTester = mock(Tester.class);
-        results = mock(ExplorationResults.class);
+        results = mock(PostConditionResults.class);
         when(results.dataThatPostConditions(Mockito.any())).thenReturn(new TestResult(Map.of()));
         multipleBehaviourRunner = new MultipleBehaviourTester(otherTester);
     }

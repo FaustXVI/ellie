@@ -12,10 +12,10 @@ import java.util.stream.Stream;
 import static com.github.ellie.core.ConditionOutput.fromPredicate;
 import static java.util.stream.Collectors.*;
 
-public class ExplorationResults {
+public class PostConditionResults {
     private final Collection<ExecutedCondition> postConditionsResults;
 
-    public ExplorationResults(Collection<ExecutedCondition> postConditionsResults) {
+    public PostConditionResults(Collection<ExecutedCondition> postConditionsResults) {
         this.postConditionsResults = postConditionsResults;
     }
 
