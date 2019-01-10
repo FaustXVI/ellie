@@ -1,8 +1,10 @@
 package com.github.ellie.core.asserters;
 
-import com.github.ellie.core.*;
+import com.github.ellie.core.ErrorMessage;
+import com.github.ellie.core.Exploration;
+import com.github.ellie.core.PostConditionResults;
+import com.github.ellie.core.TestResult;
 
-import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 import static com.github.ellie.core.Exploration.exploration;
@@ -10,7 +12,7 @@ import static com.github.ellie.core.Exploration.exploration;
 public class ExploratoryTester implements Tester {
 
     @Override
-    public Stream<Exploration> tests(PostConditionResults results, BiConsumer<String, TestResult> resultConsumer) {
+    public Stream<Exploration> tests(PostConditionResults results) {
         return results.resultByPostConditions()
                 .entrySet()
                 .stream()
@@ -18,8 +20,6 @@ public class ExploratoryTester implements Tester {
                         behaviour.getKey(),
                         (errorHandler) -> {
                             TestResult testResult = behaviour.getValue();
-                            // TODO : move consumer out
-                            resultConsumer.accept(behaviour.getKey().value, testResult);
                             if (testResult.passingData().isEmpty()) {
                                 ErrorMessage errorMessage = new ErrorMessage("no data validates this behaviour");
                                 errorHandler.accept(errorMessage);

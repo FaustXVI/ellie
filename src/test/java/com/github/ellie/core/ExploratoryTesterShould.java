@@ -8,11 +8,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -25,8 +23,6 @@ import static org.mockito.Mockito.when;
 
 public class ExploratoryTesterShould {
 
-    public static final BiConsumer<String, TestResult> IGNORE_RESULTS_CONSUMER = (l, o) -> {
-    };
     private static final TestResult PASSING_RESULTS = new TestResult(Map.of(PASS, List.of(ExplorationArguments.of(1))));
     private static final TestResult FAILING_RESULTS = new TestResult(Map.of(FAIL, List.of(ExplorationArguments.of(2))));
     private static final TestResult MIXTED_RESULTS = new TestResult(Map.of(
@@ -76,7 +72,7 @@ public class ExploratoryTesterShould {
         when(this.results.resultByPostConditions()).thenReturn(results);
 
         Stream<Exploration> behaviours =
-                exploratoryTester.tests(this.results, IGNORE_RESULTS_CONSUMER);
+                exploratoryTester.tests(this.results);
 
         assertThat(behaviours).hasSize(results.size())
                 .extracting(c -> c.name)
@@ -85,27 +81,10 @@ public class ExploratoryTesterShould {
 
 
     @ParameterizedTest
-    @MethodSource({"passingResults", "mixtedResults", "failingResults"})
-    void callsConsumerWithTestResultAfterRun(Map<Name, TestResult> results) {
-        Map<Name, TestResult> testResults = new HashMap<>();
-        when(this.results.resultByPostConditions()).thenReturn(results);
-
-        Stream<Exploration> behaviours = new ExploratoryTester().tests(this.results, (key, value) -> testResults.put(new Name(key), value));
-
-        behaviours.forEach(t -> {
-            t.test.check(IGNORE_ERROR_MESSAGE);
-        });
-
-        assertThat(testResults).isEqualTo(results);
-    }
-
-
-    @ParameterizedTest
     @MethodSource({"passingResults", "mixtedResults"})
     void passIfALeastOneDataPasses(Map<Name, TestResult> results) {
         when(this.results.resultByPostConditions()).thenReturn(results);
-        Stream<Exploration> behaviours = exploratoryTester.tests(this.results,
-                IGNORE_RESULTS_CONSUMER);
+        Stream<Exploration> behaviours = exploratoryTester.tests(this.results);
         try {
             behaviours.forEach(t -> t.test.check(IGNORE_ERROR_MESSAGE));
         } catch (AssertionError e) {
@@ -118,8 +97,7 @@ public class ExploratoryTesterShould {
     void failPotentialBehaviourIfNotDataValidatesPredicate(Map<Name, TestResult> results) {
         when(this.results.resultByPostConditions()).thenReturn(results);
         AtomicReference<ErrorMessage> errorMessageAtomicReference = new AtomicReference<>();
-        List<TestResult> list = exploratoryTester.tests(this.results,
-                IGNORE_RESULTS_CONSUMER).map(ex -> ex.test.check(errorMessageAtomicReference::set))
+        List<TestResult> list = exploratoryTester.tests(this.results).map(ex -> ex.test.check(errorMessageAtomicReference::set))
                 .collect(Collectors.toList());
 
 

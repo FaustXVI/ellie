@@ -15,7 +15,7 @@ public interface ExploratoryTest {
 
     @TestFactory
     default Stream<? extends DynamicTest> generatedTests() {
-        return RunnerBuilder.generateTestsFor(this, passingCasesConsumer())
+        return RunnerBuilder.generateTestsFor(this)
                 .map(t -> DynamicTest.dynamicTest(t.name.value, () -> {
                     TestResult result = t.test.check(m -> Assertions.assertThat(m.causes)
                             .as(m.message).isEmpty());

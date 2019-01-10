@@ -3,7 +3,6 @@ package com.github.ellie.core.asserters;
 import com.github.ellie.core.*;
 
 import java.util.Collection;
-import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.PASS;
@@ -18,17 +17,15 @@ public class MultipleBehaviourTester implements Tester {
     }
 
     @Override
-    public Stream<Exploration> tests(PostConditionResults results, BiConsumer<String, TestResult> resultConsumer) {
-        return Stream.concat(tester.tests(results, resultConsumer),
-                dataThatPassesMultiplePostConditions(results, resultConsumer));
+    public Stream<Exploration> tests(PostConditionResults results) {
+        return Stream.concat(tester.tests(results),
+                dataThatPassesMultiplePostConditions(results));
     }
 
-    private Stream<Exploration> dataThatPassesMultiplePostConditions(PostConditionResults results,
-                                                                     BiConsumer<String, TestResult> resultConsumer) {
+    private Stream<Exploration> dataThatPassesMultiplePostConditions(PostConditionResults results) {
         return Stream.of(Exploration.exploration(new Name("Match multiple post-conditions"),
                 (errorMessageHandler) -> {
                     TestResult testResult = dataThatPassesMaximumOneBehaviour(results);
-                    resultConsumer.accept("Match multiple post-conditions", testResult);
                     Collection<ExplorationArguments> dataWithMultipleBehaviours = testResult.failingData();
                     if (!dataWithMultipleBehaviours.isEmpty()) {
                         ErrorMessage errorMessage = new ErrorMessage("At least one data has many post-conditions", dataWithMultipleBehaviours);

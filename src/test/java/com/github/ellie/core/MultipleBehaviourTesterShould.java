@@ -12,7 +12,6 @@ import org.mockito.stubbing.Answer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -20,7 +19,6 @@ import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.FAIL;
 import static com.github.ellie.core.ConditionOutput.PASS;
-import static com.github.ellie.core.ExploratoryTesterShould.IGNORE_RESULTS_CONSUMER;
 import static java.util.stream.Collectors.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -53,15 +51,15 @@ class MultipleBehaviourTesterShould {
     @Test
     void keepsOtherRunnerTests() {
         Exploration test = Exploration.exploration(new Name("test"), (c) -> new TestResult(new ArrayList<>()));
-        Mockito.when(otherTester.tests(results, IGNORE_RESULTS_CONSUMER))
+        Mockito.when(otherTester.tests(results))
                 .thenReturn(Stream.of(test));
 
-        assertThat(multipleBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)).contains(test);
+        assertThat(multipleBehaviourRunner.tests(results)).contains(test);
     }
 
     @Test
     void addsMultipleBehaviourLast() {
-        assertThat(multipleBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER))
+        assertThat(multipleBehaviourRunner.tests(results))
                 .extracting(b -> b.name.value)
                 .last()
                 .isEqualTo(
@@ -76,17 +74,11 @@ class MultipleBehaviourTesterShould {
         when(results.dataThatPostConditions(Mockito.any()))
                 .thenReturn(testResult);
 
-        AtomicBoolean consumerExecuted = new AtomicBoolean(false);
+        multipleBehaviourRunner.tests(results).forEach(ct -> {
+            assertThat(ct.name.value).isEqualTo("Match multiple post-conditions");
+            assertThat(ct.test.check(IGNORE_ERROR_MESSAGE)).isSameAs(testResult);
+        });
 
-        multipleBehaviourRunner.tests(results, (a, b) -> {
-            assertThat(a).isEqualTo("Match multiple post-conditions");
-            assertThat(b).isSameAs(testResult);
-            consumerExecuted.set(true);
-        }).forEach(ct -> ct.test.check(IGNORE_ERROR_MESSAGE));
-
-        if (!consumerExecuted.get()) {
-            fail("Consumer should be called");
-        }
     }
 
     @Test
@@ -95,7 +87,7 @@ class MultipleBehaviourTesterShould {
 
         AtomicReference<ErrorMessage> errorMessageAtomicReference = new AtomicReference<>();
 
-        TestResult testResult = this.multipleBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)
+        TestResult testResult = this.multipleBehaviourRunner.tests(results)
                 .map(t -> t.test.check(errorMessageAtomicReference::set))
                 .findFirst().get();
 
@@ -112,7 +104,7 @@ class MultipleBehaviourTesterShould {
                 .then(filterFrom(NO_MULTIPLE_PASS));
 
         try {
-            multipleBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)
+            multipleBehaviourRunner.tests(results)
                     .forEach(t -> t.test.check(IGNORE_ERROR_MESSAGE));
         } catch (Exception e) {
             fail("No data passes many post conditions");

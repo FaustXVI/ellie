@@ -4,7 +4,6 @@ import com.github.ellie.core.*;
 import com.github.ellie.core.ExplorableCondition.Name;
 
 import java.util.Collection;
-import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.PASS;
@@ -18,17 +17,15 @@ public class UnkownBehaviourTester implements Tester {
     }
 
     @Override
-    public Stream<Exploration> tests(PostConditionResults results, BiConsumer<String, TestResult> resultConsumer) {
-        return Stream.concat(otherTester.tests(results, resultConsumer), Stream.of(dataWithUnknownBehaviour(results, resultConsumer)));
+    public Stream<Exploration> tests(PostConditionResults results) {
+        return Stream.concat(otherTester.tests(results), Stream.of(dataWithUnknownBehaviour(results)));
     }
 
-    private Exploration dataWithUnknownBehaviour(PostConditionResults results,
-                                                 BiConsumer<String, TestResult> resultConsumer) {
+    private Exploration dataWithUnknownBehaviour(PostConditionResults results) {
         return exploration(new Name("Unknown post-exploration"),
                 (errorMessageHandler) -> {
                     TestResult result =
                             results.dataThatPostConditions(b -> b.anyMatch(r -> r == PASS));
-                    resultConsumer.accept("Unknown post-exploration", result);
                     Collection<ExplorationArguments> dataWithUnknownBehaviour = result.failingData();
                     if (!dataWithUnknownBehaviour.isEmpty()) {
                         ErrorMessage errorMessage = new ErrorMessage("At least one data has unknown post-exploration", dataWithUnknownBehaviour);

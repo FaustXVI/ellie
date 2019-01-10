@@ -10,12 +10,10 @@ import org.mockito.stubbing.Answer;
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.ExploratoryTesterShould.IGNORE_RESULTS_CONSUMER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
@@ -40,10 +38,10 @@ class UnkownBehaviourTesterShould {
     @Test
     void keepsOtherRunnerTests() {
         Exploration test = Exploration.exploration(new Name("test"), (c) -> new TestResult(new ArrayList<>()));
-        Mockito.when(otherTester.tests(results, IGNORE_RESULTS_CONSUMER))
+        Mockito.when(otherTester.tests(results))
                 .thenReturn(Stream.of(test));
 
-        assertThat(unkownBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)).contains(test);
+        assertThat(unkownBehaviourRunner.tests(results)).contains(test);
     }
 
     @Test
@@ -52,22 +50,16 @@ class UnkownBehaviourTesterShould {
         when(results.dataThatPostConditions(Mockito.any()))
                 .thenReturn(testResult);
 
-        AtomicBoolean consumerExecuted = new AtomicBoolean(false);
+        unkownBehaviourRunner.tests(results).forEach(ct -> {
+            assertThat(ct.name.value).isEqualTo("Unknown post-exploration");
+            assertThat(ct.test.check(IGNORE_ERROR_MESSAGE)).isSameAs(testResult);
+        });
 
-        unkownBehaviourRunner.tests(results, (a, b) -> {
-            assertThat(a).isEqualTo("Unknown post-exploration");
-            assertThat(b).isSameAs(testResult);
-            consumerExecuted.set(true);
-        }).forEach(ct -> ct.test.check(IGNORE_ERROR_MESSAGE));
-
-        if (!consumerExecuted.get()) {
-            fail("Consumer should be called");
-        }
     }
 
     @Test
     void addsUnknownBehaviourLast() {
-        assertThat(unkownBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)).extracting(b -> b.name.value)
+        assertThat(unkownBehaviourRunner.tests(results)).extracting(b -> b.name.value)
                 .last()
                 .isEqualTo("Unknown post-exploration");
     }
@@ -78,7 +70,7 @@ class UnkownBehaviourTesterShould {
         when(results.dataThatPostConditions(Mockito.any())).then(filterFrom(
                 Map.of(ExplorationArguments.of(2), Stream.of(ConditionOutput.FAIL))));
         AtomicReference<ErrorMessage> errorMessageAtomicReference = new AtomicReference<>();
-        TestResult testResult = this.unkownBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)
+        TestResult testResult = this.unkownBehaviourRunner.tests(results)
                 .map(t -> t.test.check(errorMessageAtomicReference::set))
                 .findFirst().get();
         ErrorMessage errorMessage = errorMessageAtomicReference.get();
@@ -95,7 +87,7 @@ class UnkownBehaviourTesterShould {
                 )));
 
         try {
-            unkownBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)
+            unkownBehaviourRunner.tests(results)
                     .forEach(t -> t.test.check(IGNORE_ERROR_MESSAGE));
         } catch (Exception e) {
             fail("All data passes something");
