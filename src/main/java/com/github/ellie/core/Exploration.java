@@ -5,7 +5,6 @@ import com.github.ellie.core.ExplorableCondition.Name;
 public class Exploration {
 
     public interface Check {
-        // TODO create Object in order to add the test results
         ExplorationResult check();
     }
 

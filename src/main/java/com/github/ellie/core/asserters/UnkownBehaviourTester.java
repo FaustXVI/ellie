@@ -31,9 +31,9 @@ public class UnkownBehaviourTester implements Tester {
                     resultConsumer.accept("Unknown post-exploration", result);
                     Collection<ExplorationArguments> dataWithUnknownBehaviour = result.failingData();
                     if (dataWithUnknownBehaviour.isEmpty()) {
-                        return new ExplorationResult();
+                        return new ExplorationResult(result);
                     } else {
-                        return new ExplorationResult(new ErrorMessage("At least one data has unknown post-exploration", dataWithUnknownBehaviour));
+                        return new ExplorationResult(new ErrorMessage("At least one data has unknown post-exploration", dataWithUnknownBehaviour), result);
                     }
                 });
     }

@@ -30,9 +30,9 @@ public class MultipleBehaviourTester implements Tester {
             resultConsumer.accept("Match multiple post-conditions", testResult);
             Collection<ExplorationArguments> dataWithMultipleBehaviours = testResult.failingData();
             if (dataWithMultipleBehaviours.isEmpty()) {
-                return new ExplorationResult();
+                return new ExplorationResult(testResult);
             } else {
-                return new ExplorationResult(new ErrorMessage("At least one data has many post-conditions", dataWithMultipleBehaviours));
+                return new ExplorationResult(new ErrorMessage("At least one data has many post-conditions", dataWithMultipleBehaviours), testResult);
             }
         }));
     }

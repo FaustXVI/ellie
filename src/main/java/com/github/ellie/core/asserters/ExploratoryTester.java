@@ -21,9 +21,9 @@ public class ExploratoryTester implements Tester {
                             // TODO : move consumer out
                             resultConsumer.accept(behaviour.getKey().value, testResult);
                             if (testResult.passingData().isEmpty()) {
-                                return new ExplorationResult(new ErrorMessage("no data validates this behaviour"));
+                                return new ExplorationResult(new ErrorMessage("no data validates this behaviour"), testResult);
                             } else {
-                                return new ExplorationResult();
+                                return new ExplorationResult(testResult);
                             }
                         }));
     }

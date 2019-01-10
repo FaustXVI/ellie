@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,7 +37,7 @@ class UnkownBehaviourTesterShould {
 
     @Test
     void keepsOtherRunnerTests() {
-        Exploration test = Exploration.exploration(new Name("test"), ExplorationResult::new);
+        Exploration test = Exploration.exploration(new Name("test"), () -> new ExplorationResult(new TestResult(new ArrayList<>())));
         Mockito.when(otherTester.tests(results, IGNORE_RESULTS_CONSUMER))
                 .thenReturn(Stream.of(test));
 
