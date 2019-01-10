@@ -1,11 +1,7 @@
 package com.github.ellie.core.asserters;
 
-import com.github.ellie.core.ErrorMessage;
-import com.github.ellie.core.Exploration;
-import com.github.ellie.core.PostConditionResults;
-import com.github.ellie.core.TestResult;
+import com.github.ellie.core.*;
 
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
@@ -25,9 +21,9 @@ public class ExploratoryTester implements Tester {
                             // TODO : move consumer out
                             resultConsumer.accept(behaviour.getKey().value, testResult);
                             if (testResult.passingData().isEmpty()) {
-                                return Optional.of(new ErrorMessage("no data validates this behaviour"));
+                                return new ExplorationResult(new ErrorMessage("no data validates this behaviour"));
                             } else {
-                                return Optional.empty();
+                                return new ExplorationResult();
                             }
                         }));
     }

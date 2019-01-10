@@ -3,7 +3,6 @@ package com.github.ellie.core.asserters;
 import com.github.ellie.core.*;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
@@ -31,9 +30,9 @@ public class MultipleBehaviourTester implements Tester {
             resultConsumer.accept("Match multiple post-conditions", testResult);
             Collection<ExplorationArguments> dataWithMultipleBehaviours = testResult.failingData();
             if (dataWithMultipleBehaviours.isEmpty()) {
-                return Optional.empty();
+                return new ExplorationResult();
             } else {
-                return Optional.of(new ErrorMessage("At least one data has many post-conditions", dataWithMultipleBehaviours));
+                return new ExplorationResult(new ErrorMessage("At least one data has many post-conditions", dataWithMultipleBehaviours));
             }
         }));
     }

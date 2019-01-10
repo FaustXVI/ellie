@@ -4,7 +4,6 @@ import com.github.ellie.core.*;
 import com.github.ellie.core.ExplorableCondition.Name;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
@@ -32,9 +31,9 @@ public class UnkownBehaviourTester implements Tester {
                     resultConsumer.accept("Unknown post-exploration", result);
                     Collection<ExplorationArguments> dataWithUnknownBehaviour = result.failingData();
                     if (dataWithUnknownBehaviour.isEmpty()) {
-                        return Optional.empty();
+                        return new ExplorationResult();
                     } else {
-                        return Optional.of(new ErrorMessage("At least one data has unknown post-exploration", dataWithUnknownBehaviour));
+                        return new ExplorationResult(new ErrorMessage("At least one data has unknown post-exploration", dataWithUnknownBehaviour));
                     }
                 });
     }

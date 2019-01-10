@@ -49,7 +49,7 @@ class MultipleBehaviourTesterShould {
 
     @Test
     void keepsOtherRunnerTests() {
-        Exploration test = Exploration.exploration(new Name("test"), Optional::empty);
+        Exploration test = Exploration.exploration(new Name("test"), ExplorationResult::new);
         Mockito.when(otherTester.tests(results, IGNORE_RESULTS_CONSUMER))
                 .thenReturn(Stream.of(test));
 
@@ -92,7 +92,7 @@ class MultipleBehaviourTesterShould {
 
         Optional<ErrorMessage> testResult = this.multipleBehaviourRunner.tests(results, IGNORE_RESULTS_CONSUMER)
                 .map(t -> t.test.check())
-                .findFirst().get();
+                .findFirst().get().error;
 
         Assertions.assertThat(testResult)
                 .hasValueSatisfying(s -> {

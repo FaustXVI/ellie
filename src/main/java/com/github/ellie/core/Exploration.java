@@ -2,13 +2,11 @@ package com.github.ellie.core;
 
 import com.github.ellie.core.ExplorableCondition.Name;
 
-import java.util.Optional;
-
 public class Exploration {
 
     public interface Check {
         // TODO create Object in order to add the test results
-        Optional<ErrorMessage> check();
+        ExplorationResult check();
     }
 
     public final Name name;

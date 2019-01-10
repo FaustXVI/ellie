@@ -116,7 +116,7 @@ public class ExploratoryTesterShould {
                 IGNORE_RESULTS_CONSUMER);
 
         behaviours.map(t->t.test.check()).forEach( o ->{
-            assertThat(o).hasValueSatisfying(e -> {
+            assertThat(o.error).hasValueSatisfying(e -> {
                 assertThat(e.message)
                         .contains("no data validates this behaviour");
             });
