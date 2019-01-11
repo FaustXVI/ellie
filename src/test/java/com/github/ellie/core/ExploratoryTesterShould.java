@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.*;
@@ -86,7 +85,7 @@ public class ExploratoryTesterShould {
         when(this.results.resultByPostConditions()).thenReturn(results);
         Stream<Exploration> behaviours = exploratoryTester.tests(this.results);
         try {
-            behaviours.forEach(t -> t.test.check(IGNORE_ERROR_MESSAGE));
+            behaviours.forEach(t -> t.check(IGNORE_ERROR_MESSAGE));
         } catch (AssertionError e) {
             fail("No exception should be thrown but got : " + e);
         }
@@ -97,9 +96,7 @@ public class ExploratoryTesterShould {
     void failPotentialBehaviourIfNotDataValidatesPredicate(Map<Name, TestResult> results) {
         when(this.results.resultByPostConditions()).thenReturn(results);
         AtomicReference<ErrorMessage> errorMessageAtomicReference = new AtomicReference<>();
-        List<TestResult> list = exploratoryTester.tests(this.results).map(ex -> ex.test.check(errorMessageAtomicReference::set))
-                .collect(Collectors.toList());
-
+        exploratoryTester.tests(this.results).forEach(ex -> ex.check(errorMessageAtomicReference::set));
 
         assertThat(errorMessageAtomicReference.get().message)
                 .contains("no data validates this behaviour");

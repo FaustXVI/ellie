@@ -52,7 +52,7 @@ class UnkownBehaviourTesterShould {
 
         unkownBehaviourRunner.tests(results).forEach(ct -> {
             assertThat(ct.name.value).isEqualTo("Unknown post-exploration");
-            assertThat(ct.test.check(IGNORE_ERROR_MESSAGE)).isSameAs(testResult);
+            assertThat(ct.check(IGNORE_ERROR_MESSAGE)).isSameAs(testResult);
         });
 
     }
@@ -70,9 +70,8 @@ class UnkownBehaviourTesterShould {
         when(results.dataThatPostConditions(Mockito.any())).then(filterFrom(
                 Map.of(ExplorationArguments.of(2), Stream.of(ConditionOutput.FAIL))));
         AtomicReference<ErrorMessage> errorMessageAtomicReference = new AtomicReference<>();
-        TestResult testResult = this.unkownBehaviourRunner.tests(results)
-                .map(t -> t.test.check(errorMessageAtomicReference::set))
-                .findFirst().get();
+        this.unkownBehaviourRunner.tests(results)
+                .forEach(t -> t.check(errorMessageAtomicReference::set));
         ErrorMessage errorMessage = errorMessageAtomicReference.get();
         assertThat(errorMessage.message)
                 .contains("At least one data has unknown post-exploration");
@@ -88,7 +87,7 @@ class UnkownBehaviourTesterShould {
 
         try {
             unkownBehaviourRunner.tests(results)
-                    .forEach(t -> t.test.check(IGNORE_ERROR_MESSAGE));
+                    .forEach(t -> t.check(IGNORE_ERROR_MESSAGE));
         } catch (Exception e) {
             fail("All data passes something");
         }

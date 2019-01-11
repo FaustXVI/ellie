@@ -11,11 +11,15 @@ public class Exploration {
     }
 
     public final Name name;
-    public final Check test;
+    private final Check test;
 
     private Exploration(Name name, Check test) {
         this.name = name;
         this.test = test;
+    }
+
+    public TestResult check(Consumer<ErrorMessage> errorHandler){
+        return test.check(errorHandler);
     }
 
     public static Exploration exploration(Name name, Check test) {

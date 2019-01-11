@@ -76,7 +76,7 @@ class MultipleBehaviourTesterShould {
 
         multipleBehaviourRunner.tests(results).forEach(ct -> {
             assertThat(ct.name.value).isEqualTo("Match multiple post-conditions");
-            assertThat(ct.test.check(IGNORE_ERROR_MESSAGE)).isSameAs(testResult);
+            assertThat(ct.check(IGNORE_ERROR_MESSAGE)).isSameAs(testResult);
         });
 
     }
@@ -87,9 +87,8 @@ class MultipleBehaviourTesterShould {
 
         AtomicReference<ErrorMessage> errorMessageAtomicReference = new AtomicReference<>();
 
-        TestResult testResult = this.multipleBehaviourRunner.tests(results)
-                .map(t -> t.test.check(errorMessageAtomicReference::set))
-                .findFirst().get();
+        this.multipleBehaviourRunner.tests(results)
+                .forEach(t -> t.check(errorMessageAtomicReference::set));
 
         ErrorMessage errorMessage = errorMessageAtomicReference.get();
         Assertions.assertThat(errorMessage.message)
@@ -105,7 +104,7 @@ class MultipleBehaviourTesterShould {
 
         try {
             multipleBehaviourRunner.tests(results)
-                    .forEach(t -> t.test.check(IGNORE_ERROR_MESSAGE));
+                    .forEach(t -> t.check(IGNORE_ERROR_MESSAGE));
         } catch (Exception e) {
             fail("No data passes many post conditions");
         }
