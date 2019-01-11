@@ -13,34 +13,36 @@ import java.util.stream.Stream;
 public interface ExploratoryTest {
 
 
+    BiConsumer<String, TestResult> PRINT_PASSING_CASES = (s, l) -> {
+        Stream<String> arguments = l.passingData()
+                .stream()
+                .map(args -> Arrays.stream(args.get())
+                        .map(o -> {
+                            if (o instanceof String) return "\"" + o + "\"";
+                            else return o.toString();
+                        })
+                        .collect(
+                                Collectors.joining(", ", "            Arguments.of(",
+                                        ")"))
+                );
+        String method = arguments
+                .collect(Collectors.joining(",\n", "    static Stream<Arguments> " + s + "() {\n"
+                        + "        return Stream.of(\n", "\n        );\n    }"));
+        System.out.println(method);
+    };
+
     @TestFactory
     default Stream<? extends DynamicTest> generatedTests() {
         return RunnerBuilder.generateTestsFor(this)
                 .map(t -> DynamicTest.dynamicTest(t.name(), () -> {
                     TestResult result = t.check(m -> Assertions.assertThat(m.causes)
                             .as(m.message).isEmpty());
-                    passingCasesConsumer().accept(t.name(),result);
+                    testResultConsumer().accept(t.name(),result);
                 }));
     }
 
-    default BiConsumer<String, TestResult> passingCasesConsumer() {
-        return (s, l) -> {
-            Stream<String> arguments = l.passingData()
-                    .stream()
-                    .map(args -> Arrays.stream(args.get())
-                            .map(o -> {
-                                if (o instanceof String) return "\"" + o + "\"";
-                                else return o.toString();
-                            })
-                            .collect(
-                                    Collectors.joining(", ", "            Arguments.of(",
-                                            ")"))
-                    );
-            String method = arguments
-                    .collect(Collectors.joining(",\n", "    static Stream<Arguments> " + s + "() {\n"
-                            + "        return Stream.of(\n", "\n        );\n    }"));
-            System.out.println(method);
-        };
+    default BiConsumer<String, TestResult> testResultConsumer() {
+        return PRINT_PASSING_CASES;
     }
 
 }

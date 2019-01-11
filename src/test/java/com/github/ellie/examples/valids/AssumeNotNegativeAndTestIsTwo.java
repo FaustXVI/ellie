@@ -1,4 +1,4 @@
-package com.github.ellie.examples;
+package com.github.ellie.examples.valids;
 
 import com.github.ellie.junit5.annotations.PostCondition;
 import com.github.ellie.junit5.annotations.TestedBehaviour;

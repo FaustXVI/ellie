@@ -1,5 +1,6 @@
-package com.github.ellie.examples.valids;
+package com.github.ellie.junit5.examples;
 
+import com.github.ellie.junit5.ExploratoryTest;
 import com.github.ellie.junit5.annotations.DataProvider;
 import com.github.ellie.junit5.annotations.PostCondition;
 import com.github.ellie.junit5.annotations.TestedBehaviour;
@@ -8,7 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class DataMatchesMultipleSuppositionExploration {
+public class PerfectJunit5 implements ExploratoryTest {
 
     @DataProvider
     public Collection<Integer> numbers() {
@@ -16,18 +17,12 @@ public class DataMatchesMultipleSuppositionExploration {
     }
 
     @TestedBehaviour
-    public int times3(Integer n) {
-        return n * 3;
+    public int times2(int n) {
+        return n * 2;
     }
 
     @PostCondition
-    public Predicate<Integer> is6(int n) {
-        return i -> i == 6;
-    }
-
-    @PostCondition
-    public Predicate<Integer> isMoreThanOriginal(int n) {
+    public Predicate<Integer> isGreater(int n) {
         return i -> i > n;
     }
-
 }

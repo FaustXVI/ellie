@@ -5,7 +5,7 @@ import com.github.ellie.junit5.annotations.PostCondition;
 import com.github.ellie.junit5.annotations.TestedBehaviour;
 import com.github.ellie.core.ExplorableCondition;
 import com.github.ellie.core.ExplorationArguments;
-import com.github.ellie.examples.AssumeNotNegativeAndTestIsTwo;
+import com.github.ellie.examples.valids.AssumeNotNegativeAndTestIsTwo;
 import com.github.ellie.examples.invalids.NoDataExploration;
 import com.github.ellie.examples.invalids.NotIterableDataExploration;
 import com.github.ellie.examples.invalids.NotPredicateExploration;
