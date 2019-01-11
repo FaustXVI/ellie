@@ -9,7 +9,7 @@ import org.mockito.stubbing.Answer;
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -68,13 +68,17 @@ class UnkownBehaviourTesterShould {
     void failsIfAtLeastOneDataPassesNothing() {
         when(results.dataThatPostConditions(Mockito.any())).then(filterFrom(
                 Map.of(ExplorationArguments.of(2), Stream.of(ConditionOutput.FAIL))));
-        AtomicReference<ErrorMessage> errorMessageAtomicReference = new AtomicReference<>();
+
+        AtomicBoolean errorFound = new AtomicBoolean(false);
         this.unkownBehaviourRunner.tests(results)
-                .forEach(t -> t.check(errorMessageAtomicReference::set));
-        ErrorMessage errorMessage = errorMessageAtomicReference.get();
-        assertThat(errorMessage.message)
-                .contains("At least one data has unknown post-exploration");
-        assertThat(errorMessage.causes).contains(ExplorationArguments.of(2));
+                .forEach(t -> t.check(errorMessage -> {
+                    errorFound.set(true);
+                    assertThat(errorMessage.message)
+                            .contains("At least one data has unknown post-exploration");
+                    assertThat(errorMessage.causes).contains(ExplorationArguments.of(2));
+                }));
+
+        assertThat(errorFound.get()).isTrue();
     }
 
     @Test
@@ -86,7 +90,7 @@ class UnkownBehaviourTesterShould {
 
         try {
             unkownBehaviourRunner.tests(results)
-                    .forEach(t -> t.check(IGNORE_ERROR_MESSAGE));
+                    .forEach(t -> t.check(e -> fail("No error should be found but got : " + e)));
         } catch (Exception e) {
             fail("All data passes something");
         }

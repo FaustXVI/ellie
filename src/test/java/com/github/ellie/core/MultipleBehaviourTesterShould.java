@@ -2,7 +2,6 @@ package com.github.ellie.core;
 
 import com.github.ellie.core.asserters.MultipleBehaviourTester;
 import com.github.ellie.core.asserters.Tester;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -11,7 +10,7 @@ import org.mockito.stubbing.Answer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -62,8 +61,7 @@ class MultipleBehaviourTesterShould {
                 .extracting(Exploration::name)
                 .last()
                 .isEqualTo(
-                        "Match multiple "
-                                + "post-conditions");
+                        "Match multiple post-conditions");
     }
 
 
@@ -84,16 +82,16 @@ class MultipleBehaviourTesterShould {
     void failsIfAtLeastOneDataPassesManyTimes() {
         when(results.dataThatPostConditions(Mockito.any())).then(filterFrom(MULTIPLE_PASS));
 
-        AtomicReference<ErrorMessage> errorMessageAtomicReference = new AtomicReference<>();
+        AtomicBoolean errorFound = new AtomicBoolean(false);
 
         this.multipleBehaviourRunner.tests(results)
-                .forEach(t -> t.check(errorMessageAtomicReference::set));
+                .forEach(t -> t.check(errorMessage -> {
+                    errorFound.set(true);
+                    assertThat(errorMessage.message).contains("one data has many post-conditions");
+                    assertThat(errorMessage.causes).containsAll(MULTIPLE_PASS.keySet());
+                }));
 
-        ErrorMessage errorMessage = errorMessageAtomicReference.get();
-        Assertions.assertThat(errorMessage.message)
-                .contains("one data has many post-conditions");
-        assertThat(errorMessage.causes).containsAll(MULTIPLE_PASS.keySet());
-
+        assertThat(errorFound.get()).isTrue();
     }
 
     @Test
@@ -103,7 +101,7 @@ class MultipleBehaviourTesterShould {
 
         try {
             multipleBehaviourRunner.tests(results)
-                    .forEach(t -> t.check(IGNORE_ERROR_MESSAGE));
+                    .forEach(t -> t.check(e -> fail("No error should be found but got : " + e)));
         } catch (Exception e) {
             fail("No data passes many post conditions");
         }
