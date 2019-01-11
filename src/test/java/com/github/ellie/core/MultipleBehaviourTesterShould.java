@@ -60,7 +60,7 @@ class MultipleBehaviourTesterShould {
     @Test
     void addsMultipleBehaviourLast() {
         assertThat(multipleBehaviourRunner.tests(results))
-                .extracting(b -> b.name.value)
+                .extracting(Exploration::name)
                 .last()
                 .isEqualTo(
                         "Match multiple "
@@ -75,7 +75,7 @@ class MultipleBehaviourTesterShould {
                 .thenReturn(testResult);
 
         multipleBehaviourRunner.tests(results).forEach(ct -> {
-            assertThat(ct.name.value).isEqualTo("Match multiple post-conditions");
+            assertThat(ct.name()).isEqualTo("Match multiple post-conditions");
             assertThat(ct.check(IGNORE_ERROR_MESSAGE)).isSameAs(testResult);
         });
 

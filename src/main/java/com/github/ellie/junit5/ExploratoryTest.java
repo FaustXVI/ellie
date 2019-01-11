@@ -16,10 +16,10 @@ public interface ExploratoryTest {
     @TestFactory
     default Stream<? extends DynamicTest> generatedTests() {
         return RunnerBuilder.generateTestsFor(this)
-                .map(t -> DynamicTest.dynamicTest(t.name.value, () -> {
+                .map(t -> DynamicTest.dynamicTest(t.name(), () -> {
                     TestResult result = t.check(m -> Assertions.assertThat(m.causes)
                             .as(m.message).isEmpty());
-                    passingCasesConsumer().accept(t.name.value,result);
+                    passingCasesConsumer().accept(t.name(),result);
                 }));
     }
 

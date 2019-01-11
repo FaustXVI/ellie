@@ -10,7 +10,7 @@ public class Exploration {
         TestResult check(Consumer<ErrorMessage> errorHandler);
     }
 
-    public final Name name;
+    private final Name name;
     private final Check test;
 
     private Exploration(Name name, Check test) {
@@ -20,6 +20,10 @@ public class Exploration {
 
     public TestResult check(Consumer<ErrorMessage> errorHandler){
         return test.check(errorHandler);
+    }
+
+    public String name(){
+        return name.value;
     }
 
     public static Exploration exploration(Name name, Check test) {

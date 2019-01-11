@@ -51,7 +51,7 @@ class UnkownBehaviourTesterShould {
                 .thenReturn(testResult);
 
         unkownBehaviourRunner.tests(results).forEach(ct -> {
-            assertThat(ct.name.value).isEqualTo("Unknown post-exploration");
+            assertThat(ct.name()).isEqualTo("Unknown post-exploration");
             assertThat(ct.check(IGNORE_ERROR_MESSAGE)).isSameAs(testResult);
         });
 
@@ -59,7 +59,7 @@ class UnkownBehaviourTesterShould {
 
     @Test
     void addsUnknownBehaviourLast() {
-        assertThat(unkownBehaviourRunner.tests(results)).extracting(b -> b.name.value)
+        assertThat(unkownBehaviourRunner.tests(results)).extracting(Exploration::name)
                 .last()
                 .isEqualTo("Unknown post-exploration");
     }
