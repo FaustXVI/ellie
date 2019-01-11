@@ -6,7 +6,8 @@ import java.util.Collection;
 import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.PASS;
-import static com.github.ellie.core.ExplorableCondition.Name;
+
+import com.github.ellie.core.Name;
 
 public class MultipleBehaviourTester implements Tester {
 

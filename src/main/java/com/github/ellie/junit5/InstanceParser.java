@@ -1,12 +1,9 @@
 package com.github.ellie.junit5;
 
-import com.github.ellie.core.PostConditions;
+import com.github.ellie.core.*;
 import com.github.ellie.junit5.annotations.DataProvider;
 import com.github.ellie.junit5.annotations.PostCondition;
 import com.github.ellie.junit5.annotations.TestedBehaviour;
-import com.github.ellie.core.ConditionOutput;
-import com.github.ellie.core.ExplorableCondition;
-import com.github.ellie.core.ExplorationArguments;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;

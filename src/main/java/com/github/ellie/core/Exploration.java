@@ -1,7 +1,5 @@
 package com.github.ellie.core;
 
-import com.github.ellie.core.ExplorableCondition.Name;
-
 import java.util.function.Consumer;
 
 public class Exploration {

@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toMap;
-
 public class PostConditions {
 
     public final List<ExplorableCondition> postConditions;

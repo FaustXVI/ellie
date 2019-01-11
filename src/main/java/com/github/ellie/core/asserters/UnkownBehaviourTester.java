@@ -1,7 +1,7 @@
 package com.github.ellie.core.asserters;
 
 import com.github.ellie.core.*;
-import com.github.ellie.core.ExplorableCondition.Name;
+import com.github.ellie.core.Name;
 
 import java.util.Collection;
 import java.util.stream.Stream;

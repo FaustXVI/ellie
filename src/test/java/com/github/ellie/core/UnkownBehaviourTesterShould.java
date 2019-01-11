@@ -1,6 +1,5 @@
 package com.github.ellie.core;
 
-import com.github.ellie.core.ExplorableCondition.Name;
 import com.github.ellie.core.asserters.Tester;
 import com.github.ellie.core.asserters.UnkownBehaviourTester;
 import org.junit.jupiter.api.BeforeEach;

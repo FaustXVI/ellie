@@ -1,6 +1,5 @@
 package com.github.ellie.core;
 
-import com.github.ellie.core.ExplorableCondition.Name;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -30,8 +29,9 @@ class ExplorerShould {
     @ParameterizedTest
     @MethodSource("methodNames")
     void nameNodesWithActionAndSupposedBehaviour(List<String> names) {
+        List<ExplorableCondition> passingConditions = names.stream().map(name -> condition(name, i -> PASS)).collect(Collectors.toList());
         PostConditionResults results = explore(List.of(ExplorationArguments.of(2)),
-                new PostConditions(names.stream().map(this::conditionThatPasses).collect(Collectors.toList())));
+                new PostConditions(passingConditions));
 
         assertThat(results.resultByPostConditions().keySet())
                 .extracting(e->e.value)
@@ -64,7 +64,7 @@ class ExplorerShould {
     void testEachBehavioursWithEachData() {
         ExplorationArguments firstInput = ExplorationArguments.of(2);
         ExplorationArguments secondInput = ExplorationArguments.of(4);
-        ExplorableCondition passes = Mockito.spy(conditionThatPasses("test_passes"));
+        ExplorableCondition passes = Mockito.spy(condition("test_passes", i -> PASS));
         ExplorableCondition fails = Mockito.spy(conditionThatFails("test_fails"));
         explore(List.of(firstInput, secondInput), new PostConditions(List.of(passes, fails)));
 
@@ -86,10 +86,6 @@ class ExplorerShould {
                 return new Name(name);
             }
         };
-    }
-
-    private ExplorableCondition conditionThatPasses(String name) {
-        return condition(name, i -> PASS);
     }
 
     private ExplorableCondition conditionThatFails(String name) {
