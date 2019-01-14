@@ -11,9 +11,9 @@ import static com.github.ellie.core.ConditionOutput.fromPredicate;
 import static java.util.stream.Collectors.*;
 
 public class PostConditionResults {
-    private final Collection<ExecutedCondition> postConditionsResults;
+    private final Collection<NamedExecutedCondition> postConditionsResults;
 
-    public PostConditionResults(Collection<ExecutedCondition> postConditionsResults) {
+    public PostConditionResults(Collection<NamedExecutedCondition> postConditionsResults) {
         this.postConditionsResults = postConditionsResults;
     }
 
@@ -28,22 +28,17 @@ public class PostConditionResults {
             Predicate<Stream<ConditionOutput>> postConditionPredicate) {
         Function<List<ConditionOutput>, ConditionOutput> outputFunction
                 = fromPredicate(l -> postConditionPredicate.test(l.stream()));
-        return new TestResult(flipMap(mapDataTo(outputFunction)));
+        return new TestResult(dataToExecutedConditions(outputFunction));
     }
 
-    private Map<ExplorationArguments, ConditionOutput> mapDataTo(Function<List<ConditionOutput>, ConditionOutput> outputFunction) {
+
+    private List<ExecutedCondition> dataToExecutedConditions(Function<List<ConditionOutput>, ConditionOutput> outputFunction) {
         return postConditionsResults.stream()
-                .collect(
-                        groupingBy(e -> e.arguments,
-                                collectingAndThen(
-                                        mapping(e -> e.output, toList()), outputFunction)));
-    }
-
-    private <K, V> Map<V, List<K>> flipMap(Map<K, V> argumentsResults) {
-        return argumentsResults.entrySet()
-                .stream()
-                .collect(groupingBy(Map.Entry::getValue,
-                        mapping(Map.Entry::getKey, toList())));
+                .collect(groupingBy(e -> e.arguments,
+                        collectingAndThen(mapping(e -> e.output, toList()), outputFunction))
+                ).entrySet().stream()
+                .map(e -> new ExecutedCondition(e.getValue(), e.getKey()))
+                .collect(toList());
     }
 
 }

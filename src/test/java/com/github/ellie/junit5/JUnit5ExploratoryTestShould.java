@@ -1,5 +1,6 @@
 package com.github.ellie.junit5;
 
+import com.github.ellie.core.ExecutedCondition;
 import com.github.ellie.core.Exploration;
 import com.github.ellie.core.ExplorationArguments;
 import com.github.ellie.core.TestResult;
@@ -10,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -38,7 +38,10 @@ public class JUnit5ExploratoryTestShould {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         System.setOut(new PrintStream(out));
         BiConsumer<String, TestResult> printer = ExploratoryTest.PRINT_PASSING_CASES;
-        printer.accept("test", new TestResult(Map.of(PASS, List.of(ExplorationArguments.of(1, "arg1"), ExplorationArguments.of(2, "arg2")))));
+        printer.accept("test", new TestResult(List.of(
+                new ExecutedCondition(PASS, ExplorationArguments.of(1, "arg1")),
+                new ExecutedCondition(PASS, ExplorationArguments.of(2, "arg2"))
+        )));
         assertThat(out.toString()).isEqualTo("    static Stream<Arguments> test() {\n"
                 + "        return Stream.of(\n"
                 + "            Arguments.of(1, \"arg1\"),\n"
@@ -57,7 +60,10 @@ public class JUnit5ExploratoryTestShould {
                 return (s, t) -> System.out.print(s);
             }
         }.testResultConsumer();
-        printer.accept("test", new TestResult(Map.of(PASS, List.of(ExplorationArguments.of(1, "arg1"), ExplorationArguments.of(2, "arg2")))));
+        printer.accept("test", new TestResult(List.of(
+                new ExecutedCondition(PASS, ExplorationArguments.of(1, "arg1")),
+                new ExecutedCondition(PASS, ExplorationArguments.of(2, "arg2"))
+        )));
         assertThat(out.toString()).isEqualTo("test");
     }
 

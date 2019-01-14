@@ -10,7 +10,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,15 +21,13 @@ import static org.mockito.Mockito.when;
 
 public class ExploratoryTesterShould {
 
-    private static final TestResult PASSING_RESULTS = new TestResult(Map.of(PASS, List.of(ExplorationArguments.of(1))));
-    private static final TestResult FAILING_RESULTS = new TestResult(Map.of(FAIL, List.of(ExplorationArguments.of(2))));
-    private static final TestResult MIXTED_RESULTS = new TestResult(Map.of(
-            PASS, List.of(ExplorationArguments.of(1)),
-            FAIL, List.of(ExplorationArguments.of(2)),
-            IGNORED, List.of(ExplorationArguments.of(3))
+    private static final TestResult PASSING_RESULTS = new TestResult(List.of(new ExecutedCondition(PASS, ExplorationArguments.of(1))));
+    private static final TestResult FAILING_RESULTS = new TestResult(List.of(new ExecutedCondition(FAIL, ExplorationArguments.of(2))));
+    private static final TestResult MIXTED_RESULTS = new TestResult(List.of(
+            new ExecutedCondition(PASS, ExplorationArguments.of(1)),
+            new ExecutedCondition(FAIL, ExplorationArguments.of(2)),
+            new ExecutedCondition(IGNORED, ExplorationArguments.of(3))
     ));
-    private static final Consumer<ErrorMessage> IGNORE_ERROR_MESSAGE = c -> {
-    };
 
     private PostConditionResults postConditionResults;
     private Tester exploratoryTester;

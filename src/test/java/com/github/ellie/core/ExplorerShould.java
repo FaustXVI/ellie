@@ -21,18 +21,18 @@ class ExplorerShould {
 
     static Stream<Arguments> methodNames() {
         return Stream.of(
-                Arguments.of(List.of("test")),
-                Arguments.of(List.of("firstMethod", "secondMethod"))
+                Arguments.of(List.of(conditionThatPasses("test"))),
+                Arguments.of(List.of(conditionThatPasses("firstMethod"), conditionThatPasses("secondMethod")))
         );
     }
 
     @ParameterizedTest
     @MethodSource("methodNames")
-    void nameNodesWithActionAndSupposedBehaviour(List<String> names) {
-        List<ExplorableCondition> passingConditions = names.stream().map(name -> condition(name, i -> PASS)).collect(Collectors.toList());
+    void nameNodesWithActionAndSupposedBehaviour(List<ExplorableCondition> conditions) {
         PostConditionResults results = explore(List.of(ExplorationArguments.of(2)),
-                new PostConditions(passingConditions));
+                new PostConditions(conditions));
 
+        List<String> names = conditions.stream().map(explorableCondition -> explorableCondition.name().value).collect(Collectors.toList());
         assertThat(results.resultByPostConditions().keySet())
                 .extracting(e->e.value)
                 .containsAll(names);
@@ -64,7 +64,7 @@ class ExplorerShould {
     void testEachBehavioursWithEachData() {
         ExplorationArguments firstInput = ExplorationArguments.of(2);
         ExplorationArguments secondInput = ExplorationArguments.of(4);
-        ExplorableCondition passes = Mockito.spy(condition("test_passes", i -> PASS));
+        ExplorableCondition passes = Mockito.spy(conditionThatPasses("test_passes"));
         ExplorableCondition fails = Mockito.spy(conditionThatFails("test_fails"));
         explore(List.of(firstInput, secondInput), new PostConditions(List.of(passes, fails)));
 
@@ -74,7 +74,7 @@ class ExplorerShould {
         verify(fails).testWith(secondInput);
     }
 
-    private ExplorableCondition condition(String name, Function<ExplorationArguments, ConditionOutput> predicate) {
+    private static ExplorableCondition condition(String name, Function<ExplorationArguments, ConditionOutput> predicate) {
         return new ExplorableCondition() {
             @Override
             public ConditionOutput testWith(ExplorationArguments explorationArguments) {
@@ -88,8 +88,11 @@ class ExplorerShould {
         };
     }
 
-    private ExplorableCondition conditionThatFails(String name) {
+    private static ExplorableCondition conditionThatFails(String name) {
         return condition(name, i -> FAIL);
+    }
+    private static ExplorableCondition conditionThatPasses(String name) {
+        return condition(name, i -> PASS);
     }
 
 }

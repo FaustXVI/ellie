@@ -14,9 +14,9 @@ public class PostConditions {
     }
 
 
-    public Collection<ExecutedCondition> exploreWith(ExplorationArguments d) {
+    public Collection<NamedExecutedCondition> exploreWith(ExplorationArguments d) {
         return postConditions.stream()
-                .map(e -> new ExecutedCondition(e.name(), e.testWith(d), d))
+                .map(e -> new NamedExecutedCondition(e.name(), e.testWith(d), d))
                 .collect(Collectors.toList());
     }
 }

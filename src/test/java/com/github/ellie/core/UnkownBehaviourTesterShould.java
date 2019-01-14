@@ -8,6 +8,7 @@ import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -30,7 +31,7 @@ class UnkownBehaviourTesterShould {
     void createRunner() {
         otherTester = mock(Tester.class);
         results = mock(PostConditionResults.class);
-        when(results.dataThatPostConditions(Mockito.any())).thenReturn(new TestResult(Map.of()));
+        when(results.dataThatPostConditions(Mockito.any())).thenReturn(new TestResult(List.of()));
         unkownBehaviourRunner = new UnkownBehaviourTester(otherTester);
     }
 
@@ -45,7 +46,7 @@ class UnkownBehaviourTesterShould {
 
     @Test
     void callsConsumerWithResults() {
-        TestResult testResult = new TestResult(Map.of());
+        TestResult testResult = new TestResult(List.of());
         when(results.dataThatPostConditions(Mockito.any()))
                 .thenReturn(testResult);
 

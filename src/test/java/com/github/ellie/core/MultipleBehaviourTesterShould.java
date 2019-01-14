@@ -42,7 +42,7 @@ class MultipleBehaviourTesterShould {
     void createRunner() {
         otherTester = mock(Tester.class);
         results = mock(PostConditionResults.class);
-        when(results.dataThatPostConditions(Mockito.any())).thenReturn(new TestResult(Map.of()));
+        when(results.dataThatPostConditions(Mockito.any())).thenReturn(new TestResult(List.of()));
         multipleBehaviourRunner = new MultipleBehaviourTester(otherTester);
     }
 
@@ -67,7 +67,7 @@ class MultipleBehaviourTesterShould {
 
     @Test
     void callsConsumerWithResults() {
-        TestResult testResult = new TestResult(Map.of());
+        TestResult testResult = new TestResult(List.of());
         when(results.dataThatPostConditions(Mockito.any()))
                 .thenReturn(testResult);
 
@@ -110,15 +110,12 @@ class MultipleBehaviourTesterShould {
     public static Answer<TestResult> filterFrom(Map<ExplorationArguments, Stream<ConditionOutput>> data) {
         return invocationOnMock -> {
             Predicate<Stream<ConditionOutput>> predicate = invocationOnMock.getArgument(0);
-            Map<ConditionOutput, List<ExplorationArguments>> results =
+            List<ExecutedCondition> results =
                     data.entrySet()
                             .stream()
-                            .collect(groupingBy(
-                                    e -> predicate.test(e.getValue()) ? PASS
-                                            : FAIL,
-                                    mapping(Map.Entry::getKey,
-                                            toList())
-                            ));
+                            .map(e -> new ExecutedCondition(predicate.test(e.getValue()) ? PASS
+                                    : FAIL, e.getKey()))
+                            .collect(toList());
             return new TestResult(results);
         };
     }
