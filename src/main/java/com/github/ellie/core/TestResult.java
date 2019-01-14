@@ -1,30 +1,26 @@
 package com.github.ellie.core;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
-import static com.github.ellie.core.ConditionOutput.FAIL;
-import static com.github.ellie.core.ConditionOutput.IGNORED;
-import static com.github.ellie.core.ConditionOutput.PASS;
+import static com.github.ellie.core.ConditionOutput.*;
 import static java.util.Collections.unmodifiableCollection;
+import static java.util.stream.Collectors.toList;
 
 public class TestResult {
     private final Collection<ExplorationArguments> passes;
     private final Collection<ExplorationArguments> failing;
     private final Collection<ExplorationArguments> ignored;
 
-    private TestResult(Map<ConditionOutput, List<ExplorationArguments>> testResults) {
-        this.passes = unmodifiableCollection(testResults.getOrDefault(PASS, Collections.emptyList()));
-        this.failing = unmodifiableCollection(testResults.getOrDefault(FAIL, Collections.emptyList()));
-        this.ignored = unmodifiableCollection(testResults.getOrDefault(IGNORED, Collections.emptyList()));
+    public TestResult(List<? extends ExecutedCondition> testResults) {
+        this.passes = selectOutput(testResults, PASS);
+        this.failing = selectOutput(testResults, FAIL);
+        this.ignored = selectOutput(testResults, IGNORED);
     }
 
-    public TestResult(List<? extends ExecutedCondition> testResults) {
-        this(testResults.stream()
-                .collect(Collectors.groupingBy(e -> e.output, Collectors.mapping(e -> e.arguments, Collectors.toList()))));
+    private Collection<ExplorationArguments> selectOutput(List<? extends ExecutedCondition> testResults, ConditionOutput output) {
+        return unmodifiableCollection(testResults.stream().filter(e -> e.output == output)
+                .map(e -> e.arguments).collect(toList()));
     }
 
     public Collection<ExplorationArguments> passingData() {
