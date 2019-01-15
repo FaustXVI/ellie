@@ -1,7 +1,6 @@
 package com.github.ellie.core;
 
 import java.util.Collection;
-import java.util.List;
 
 import static com.github.ellie.core.ConditionOutput.*;
 import static java.util.Collections.unmodifiableCollection;
@@ -12,13 +11,13 @@ public class TestResult {
     private final Collection<ExplorationArguments> failing;
     private final Collection<ExplorationArguments> ignored;
 
-    public TestResult(List<? extends ExecutedCondition> testResults) {
+    TestResult(Collection<? extends ExecutedCondition> testResults) {
         this.passes = selectOutput(testResults, PASS);
         this.failing = selectOutput(testResults, FAIL);
         this.ignored = selectOutput(testResults, IGNORED);
     }
 
-    private Collection<ExplorationArguments> selectOutput(List<? extends ExecutedCondition> testResults, ConditionOutput output) {
+    private Collection<ExplorationArguments> selectOutput(Collection<? extends ExecutedCondition> testResults, ConditionOutput output) {
         return unmodifiableCollection(testResults.stream().filter(e -> e.output == output)
                 .map(e -> e.arguments).collect(toList()));
     }

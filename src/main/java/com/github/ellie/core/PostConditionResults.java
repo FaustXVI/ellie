@@ -32,7 +32,7 @@ public class PostConditionResults {
     }
 
 
-    private List<ExecutedCondition> dataToExecutedConditions(Function<List<ConditionOutput>, ConditionOutput> outputFunction) {
+    private Collection<ExecutedCondition> dataToExecutedConditions(Function<List<ConditionOutput>, ConditionOutput> outputFunction) {
         return postConditionsResults.stream()
                 .collect(groupingBy(e -> e.arguments,
                         collectingAndThen(mapping(e -> e.output, toList()), outputFunction))
