@@ -1,6 +1,6 @@
 package com.github.ellie.core;
 
-import com.github.ellie.core.asserters.TestResult;
+import com.github.ellie.core.explorers.TestResult;
 import com.github.ellie.core.conditions.ConditionResult;
 
 import java.util.HashMap;

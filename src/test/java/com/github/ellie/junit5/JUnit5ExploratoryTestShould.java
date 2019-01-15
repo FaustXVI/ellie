@@ -1,8 +1,8 @@
 package com.github.ellie.junit5;
 
 import com.github.ellie.core.*;
-import com.github.ellie.core.asserters.Exploration;
-import com.github.ellie.core.asserters.TestResult;
+import com.github.ellie.core.explorers.Exploration;
+import com.github.ellie.core.explorers.TestResult;
 import com.github.ellie.junit5.examples.PerfectJunit5;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;

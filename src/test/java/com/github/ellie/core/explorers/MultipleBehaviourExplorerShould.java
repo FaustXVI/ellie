@@ -1,4 +1,4 @@
-package com.github.ellie.core.asserters;
+package com.github.ellie.core.explorers;
 
 import com.github.ellie.core.*;
 import com.github.ellie.core.ConditionOutput;
@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class MultipleBehaviourTesterShould {
+class MultipleBehaviourExplorerShould {
 
     public static final Map<ExplorationArguments, Stream<ConditionOutput>>
             NO_MULTIPLE_PASS = Map.of(ExplorationArguments.of(1), Stream.of(PASS),
@@ -32,33 +32,33 @@ class MultipleBehaviourTesterShould {
             ExplorationArguments.of(3), Stream.of(ConditionOutput.IGNORED));
     public static final Map<ExplorationArguments, Stream<ConditionOutput>>
             MULTIPLE_PASS = Map.of(ExplorationArguments.of(2), Stream.of(PASS, PASS));
-    private Tester otherTester;
-    private MultipleBehaviourTester multipleBehaviourRunner;
-    private IPostConditionResults results;
-    private static final Consumer<ErrorMessage> IGNORE_ERROR_MESSAGE = c -> {
+    private Explorer otherExplorer;
+    private MultipleBehaviourExplorer multipleBehaviourRunner;
+    private Explorer.PostConditionResults results;
+    private static final Consumer<Exploration.ErrorMessage> IGNORE_ERROR_MESSAGE = c -> {
     };
 
 
     @BeforeEach
     void createRunner() {
-        otherTester = mock(Tester.class);
-        results = mock(IPostConditionResults.class);
+        otherExplorer = mock(Explorer.class);
+        results = mock(Explorer.PostConditionResults.class);
         when(results.dataThatPostConditions(Mockito.any())).thenReturn(new TestResult(List.of()));
-        multipleBehaviourRunner = new MultipleBehaviourTester(otherTester);
+        multipleBehaviourRunner = new MultipleBehaviourExplorer(otherExplorer);
     }
 
     @Test
     void keepsOtherRunnerTests() {
         Exploration test = Exploration.exploration(new Name("test"), (c) -> new TestResult(new ArrayList<>()));
-        Mockito.when(otherTester.tests(results))
+        Mockito.when(otherExplorer.explore(results))
                 .thenReturn(Stream.of(test));
 
-        assertThat(multipleBehaviourRunner.tests(results)).contains(test);
+        assertThat(multipleBehaviourRunner.explore(results)).contains(test);
     }
 
     @Test
     void addsMultipleBehaviourLast() {
-        assertThat(multipleBehaviourRunner.tests(results))
+        assertThat(multipleBehaviourRunner.explore(results))
                 .extracting(Exploration::name)
                 .last()
                 .isEqualTo(
@@ -72,7 +72,7 @@ class MultipleBehaviourTesterShould {
         when(results.dataThatPostConditions(Mockito.any()))
                 .thenReturn(testResult);
 
-        multipleBehaviourRunner.tests(results).forEach(ct -> {
+        multipleBehaviourRunner.explore(results).forEach(ct -> {
             assertThat(ct.name()).isEqualTo("Match multiple post-conditions");
             assertThat(ct.check(IGNORE_ERROR_MESSAGE)).isSameAs(testResult);
         });
@@ -85,7 +85,7 @@ class MultipleBehaviourTesterShould {
 
         AtomicBoolean errorFound = new AtomicBoolean(false);
 
-        this.multipleBehaviourRunner.tests(results)
+        this.multipleBehaviourRunner.explore(results)
                 .forEach(t -> t.check(errorMessage -> {
                     errorFound.set(true);
                     assertThat(errorMessage.message).contains("one data has many post-conditions");
@@ -101,7 +101,7 @@ class MultipleBehaviourTesterShould {
                 .then(filterFrom(NO_MULTIPLE_PASS));
 
         try {
-            multipleBehaviourRunner.tests(results)
+            multipleBehaviourRunner.explore(results)
                     .forEach(t -> t.check(e -> fail("No error should be found but got : " + e)));
         } catch (Exception e) {
             fail("No data passes many post conditions");

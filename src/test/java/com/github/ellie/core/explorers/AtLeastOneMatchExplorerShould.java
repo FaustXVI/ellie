@@ -1,4 +1,4 @@
-package com.github.ellie.core.asserters;
+package com.github.ellie.core.explorers;
 
 import com.github.ellie.core.*;
 import com.github.ellie.core.conditions.ConditionResult;
@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ExploratoryTesterShould {
+public class AtLeastOneMatchExplorerShould {
 
     private static final TestResult PASSING_RESULTS = new TestResult(List.of(new ConditionResult(PASS, ExplorationArguments.of(1))));
     private static final TestResult FAILING_RESULTS = new TestResult(List.of(new ConditionResult(FAIL, ExplorationArguments.of(2))));
@@ -29,13 +29,13 @@ public class ExploratoryTesterShould {
             new ConditionResult(IGNORED, ExplorationArguments.of(3))
     ));
 
-    private IPostConditionResults postConditionResults;
-    private Tester exploratoryTester;
+    private Explorer.PostConditionResults postConditionResults;
+    private Explorer exploratoryExplorer;
 
     @BeforeEach
     void createRunner() {
-        postConditionResults = mock(IPostConditionResults.class);
-        exploratoryTester = new ExploratoryTester();
+        postConditionResults = mock(Explorer.PostConditionResults.class);
+        exploratoryExplorer = new AtLeastOneMatchExplorer();
     }
 
     private static Stream<Arguments> passingResults() {
@@ -68,7 +68,7 @@ public class ExploratoryTesterShould {
         when(postConditionResults.resultByPostConditions()).thenReturn(wrapName(results));
 
         Stream<Exploration> behaviours =
-                exploratoryTester.tests(postConditionResults);
+                exploratoryExplorer.explore(postConditionResults);
 
         assertThat(behaviours).hasSize(results.size())
                 .extracting(Exploration::name)
@@ -86,10 +86,10 @@ public class ExploratoryTesterShould {
     @MethodSource({"passingResults", "mixtedResults"})
     void passIfALeastOneDataPasses(Map<String, TestResult> results) {
         when(this.postConditionResults.resultByPostConditions()).thenReturn(wrapName(results));
-        Stream<Exploration> behaviours = exploratoryTester.tests(this.postConditionResults);
+        Stream<Exploration> behaviours = exploratoryExplorer.explore(this.postConditionResults);
         try {
             behaviours.forEach(t ->
-                    t.check(e -> fail("should pass the tests but got " + e)));
+                    t.check(e -> fail("should pass the explore but got " + e)));
         } catch (AssertionError e) {
             fail("No exception should be thrown but got : " + e);
         }
@@ -100,7 +100,7 @@ public class ExploratoryTesterShould {
     void failPotentialBehaviourIfNotDataValidatesPredicate(Map<String, TestResult> results) {
         when(this.postConditionResults.resultByPostConditions()).thenReturn(wrapName(results));
         AtomicBoolean errorFound = new AtomicBoolean(false);
-        exploratoryTester.tests(this.postConditionResults)
+        exploratoryExplorer.explore(this.postConditionResults)
                 .forEach(ex -> ex.check(e -> {
                     errorFound.set(true);
                     assertThat(e.message)

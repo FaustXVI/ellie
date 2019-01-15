@@ -1,13 +1,13 @@
-package com.github.ellie.core.asserters;
+package com.github.ellie.core.explorers;
 
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.asserters.Exploration.exploration;
+import static com.github.ellie.core.explorers.Exploration.exploration;
 
-public class ExploratoryTester implements Tester {
+public class AtLeastOneMatchExplorer implements Explorer {
 
     @Override
-    public Stream<Exploration> tests(IPostConditionResults results) {
+    public Stream<Exploration> explore(PostConditionResults results) {
         return results.resultByPostConditions()
                 .entrySet()
                 .stream()
@@ -16,7 +16,7 @@ public class ExploratoryTester implements Tester {
                         (errorHandler) -> {
                             TestResult testResult = behaviour.getValue();
                             if (testResult.passingData().isEmpty()) {
-                                ErrorMessage errorMessage = new ErrorMessage("no data validates this behaviour");
+                                Exploration.ErrorMessage errorMessage = new Exploration.ErrorMessage("no data validates this behaviour");
                                 errorHandler.accept(errorMessage);
                             }
                             return testResult;

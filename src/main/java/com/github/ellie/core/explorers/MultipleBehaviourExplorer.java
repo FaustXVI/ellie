@@ -1,4 +1,4 @@
-package com.github.ellie.core.asserters;
+package com.github.ellie.core.explorers;
 
 import com.github.ellie.core.ExplorationArguments;
 import com.github.ellie.core.Name;
@@ -8,34 +8,34 @@ import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.PASS;
 
-public class MultipleBehaviourTester implements Tester {
+public class MultipleBehaviourExplorer implements Explorer {
 
-    private final Tester tester;
+    private final Explorer explorer;
 
-    public MultipleBehaviourTester(Tester tester) {
-        this.tester = tester;
+    public MultipleBehaviourExplorer(Explorer explorer) {
+        this.explorer = explorer;
     }
 
     @Override
-    public Stream<Exploration> tests(IPostConditionResults results) {
-        return Stream.concat(tester.tests(results),
+    public Stream<Exploration> explore(PostConditionResults results) {
+        return Stream.concat(explorer.explore(results),
                 dataThatPassesMultiplePostConditions(results));
     }
 
-    private Stream<Exploration> dataThatPassesMultiplePostConditions(IPostConditionResults results) {
+    private Stream<Exploration> dataThatPassesMultiplePostConditions(PostConditionResults results) {
         return Stream.of(Exploration.exploration(new Name("Match multiple post-conditions"),
                 (errorMessageHandler) -> {
                     TestResult testResult = dataThatPassesMaximumOneBehaviour(results);
                     Collection<ExplorationArguments> dataWithMultipleBehaviours = testResult.failingData();
                     if (!dataWithMultipleBehaviours.isEmpty()) {
-                        ErrorMessage errorMessage = new ErrorMessage("At least one data has many post-conditions", dataWithMultipleBehaviours);
+                        Exploration.ErrorMessage errorMessage = new Exploration.ErrorMessage("At least one data has many post-conditions", dataWithMultipleBehaviours);
                         errorMessageHandler.accept(errorMessage);
                     }
                     return testResult;
                 }));
     }
 
-    private TestResult dataThatPassesMaximumOneBehaviour(IPostConditionResults results) {
+    private TestResult dataThatPassesMaximumOneBehaviour(PostConditionResults results) {
         return results.dataThatPostConditions(c -> c.filter(r -> r == PASS)
                 .count() <= 1);
     }

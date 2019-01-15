@@ -2,7 +2,7 @@ package com.github.ellie.junit5;
 
 import com.github.ellie.core.ExplorationArguments;
 import com.github.ellie.core.Name;
-import com.github.ellie.core.PostConditions;
+import com.github.ellie.core.conditions.PostConditions;
 import com.github.ellie.core.ConditionOutput;
 import com.github.ellie.core.conditions.NamedCondition;
 import com.github.ellie.core.conditions.NamedConditionResult;

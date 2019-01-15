@@ -1,4 +1,4 @@
-package com.github.ellie.core.asserters;
+package com.github.ellie.core.explorers;
 
 import com.github.ellie.core.*;
 import com.github.ellie.core.ConditionOutput;
@@ -19,29 +19,29 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class UnkownBehaviourTesterShould {
+class UnkownBehaviourExplorerShould {
 
-    private Tester otherTester;
-    private UnkownBehaviourTester unkownBehaviourRunner;
-    private IPostConditionResults results;
-    public static final Consumer<ErrorMessage> IGNORE_ERROR_MESSAGE = c -> {
+    private Explorer otherExplorer;
+    private UnkownBehaviourExplorer unkownBehaviourRunner;
+    private Explorer.PostConditionResults results;
+    public static final Consumer<Exploration.ErrorMessage> IGNORE_ERROR_MESSAGE = c -> {
     };
 
     @BeforeEach
     void createRunner() {
-        otherTester = mock(Tester.class);
-        results = mock(IPostConditionResults.class);
+        otherExplorer = mock(Explorer.class);
+        results = mock(Explorer.PostConditionResults.class);
         when(results.dataThatPostConditions(Mockito.any())).thenReturn(new TestResult(List.of()));
-        unkownBehaviourRunner = new UnkownBehaviourTester(otherTester);
+        unkownBehaviourRunner = new UnkownBehaviourExplorer(otherExplorer);
     }
 
     @Test
     void keepsOtherRunnerTests() {
         Exploration test = Exploration.exploration(new Name("test"), (c) -> new TestResult(new ArrayList<>()));
-        Mockito.when(otherTester.tests(results))
+        Mockito.when(otherExplorer.explore(results))
                 .thenReturn(Stream.of(test));
 
-        assertThat(unkownBehaviourRunner.tests(results)).contains(test);
+        assertThat(unkownBehaviourRunner.explore(results)).contains(test);
     }
 
     @Test
@@ -50,7 +50,7 @@ class UnkownBehaviourTesterShould {
         when(results.dataThatPostConditions(Mockito.any()))
                 .thenReturn(testResult);
 
-        unkownBehaviourRunner.tests(results).forEach(ct -> {
+        unkownBehaviourRunner.explore(results).forEach(ct -> {
             assertThat(ct.name()).isEqualTo("Unknown post-exploration");
             assertThat(ct.check(IGNORE_ERROR_MESSAGE)).isSameAs(testResult);
         });
@@ -59,7 +59,7 @@ class UnkownBehaviourTesterShould {
 
     @Test
     void addsUnknownBehaviourLast() {
-        assertThat(unkownBehaviourRunner.tests(results)).extracting(Exploration::name)
+        assertThat(unkownBehaviourRunner.explore(results)).extracting(Exploration::name)
                 .last()
                 .isEqualTo("Unknown post-exploration");
     }
@@ -72,7 +72,7 @@ class UnkownBehaviourTesterShould {
                 Map.of(two, Stream.of(ConditionOutput.FAIL))));
 
         AtomicBoolean errorFound = new AtomicBoolean(false);
-        this.unkownBehaviourRunner.tests(results)
+        this.unkownBehaviourRunner.explore(results)
                 .forEach(t -> t.check(errorMessage -> {
                     errorFound.set(true);
                     assertThat(errorMessage.message)
@@ -91,7 +91,7 @@ class UnkownBehaviourTesterShould {
                 )));
 
         try {
-            unkownBehaviourRunner.tests(results)
+            unkownBehaviourRunner.explore(results)
                     .forEach(t -> t.check(e -> fail("No error should be found but got : " + e)));
         } catch (Exception e) {
             fail("All data passes something");
@@ -99,7 +99,7 @@ class UnkownBehaviourTesterShould {
     }
 
     private Answer<TestResult> filterFrom(Map<ExplorationArguments, Stream<ConditionOutput>> data) {
-        return MultipleBehaviourTesterShould.filterFrom(data);
+        return MultipleBehaviourExplorerShould.filterFrom(data);
     }
 
 

@@ -1,4 +1,4 @@
-package com.github.ellie.core.asserters;
+package com.github.ellie.core.explorers;
 
 import com.github.ellie.core.ExplorationArguments;
 import com.github.ellie.core.ConditionOutput;

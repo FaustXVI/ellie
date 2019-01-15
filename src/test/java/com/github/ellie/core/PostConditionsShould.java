@@ -1,7 +1,8 @@
 package com.github.ellie.core;
 
-import com.github.ellie.core.asserters.IPostConditionResults;
-import com.github.ellie.core.asserters.TestResult;
+import com.github.ellie.core.conditions.PostConditions;
+import com.github.ellie.core.explorers.Explorer;
+import com.github.ellie.core.explorers.TestResult;
 import com.github.ellie.core.conditions.NamedCondition;
 import com.github.ellie.core.conditions.NamedConditionResult;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,7 @@ class PostConditionsShould {
     @ParameterizedTest
     @MethodSource("methodNames")
     void nameNodesWithActionAndSupposedBehaviour(List<NamedCondition> conditions) {
-        IPostConditionResults results = new PostConditions(conditions).explore(List.of(ExplorationArguments.of(2)));
+        Explorer.PostConditionResults results = new PostConditions(conditions).explore(List.of(ExplorationArguments.of(2)));
 
         List<String> names = conditions.stream().map(condition -> condition.name().value).collect(Collectors.toList());
         assertThat(results.resultByPostConditions().keySet())
@@ -45,7 +46,7 @@ class PostConditionsShould {
         ExplorationArguments two = ExplorationArguments.of(2);
         ExplorationArguments four = ExplorationArguments.of(4);
         ExplorationArguments ignore = ExplorationArguments.of(-42);
-        IPostConditionResults results = new PostConditions(List.of(condition("argIs2", i -> i == two ? PASS : i == ignore ? IGNORED : FAIL),
+        Explorer.PostConditionResults results = new PostConditions(List.of(condition("argIs2", i -> i == two ? PASS : i == ignore ? IGNORED : FAIL),
                 condition("argIs4", i -> i == four ? PASS : i == ignore ? IGNORED : FAIL))).explore(List.of(two, four, ignore));
         Map<Name, TestResult> resultByBehaviour = results.resultByPostConditions();
 
