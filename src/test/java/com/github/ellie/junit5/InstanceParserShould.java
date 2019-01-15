@@ -3,7 +3,7 @@ package com.github.ellie.junit5;
 import com.github.ellie.junit5.annotations.DataProvider;
 import com.github.ellie.junit5.annotations.PostCondition;
 import com.github.ellie.junit5.annotations.TestedBehaviour;
-import com.github.ellie.core.ExplorableCondition;
+import com.github.ellie.core.Condition;
 import com.github.ellie.core.ExplorationArguments;
 import com.github.ellie.examples.valids.AssumeNotNegativeAndTestIsTwo;
 import com.github.ellie.examples.invalids.NoDataExploration;
@@ -83,7 +83,7 @@ class InstanceParserShould {
         final InstanceParser instanceParser = new InstanceParser(testInstance);
 
         assertThat(instanceParser.executablePostConditions().postConditions)
-                .extracting(explorableCondition -> explorableCondition.name().value)
+                .extracting(condition -> condition.name().value)
                 .containsAll(behaviourNames)
         ;
     }
@@ -112,7 +112,7 @@ class InstanceParserShould {
     void composeBehaviourMethodWithPostConditionMethod() {
         OneSuppositionExploration testInstance = Mockito.spy(new OneSuppositionExploration());
         InstanceParser instanceParser = new InstanceParser(testInstance);
-        List<ExplorableCondition> conditions = instanceParser.executablePostConditions().postConditions;
+        List<Condition> conditions = instanceParser.executablePostConditions().postConditions;
         int testedInput = 2;
 
         conditions.get(0).testWith(ExplorationArguments.of(testedInput));
@@ -125,7 +125,7 @@ class InstanceParserShould {
     void transformsBooleanToTestResult() {
         AssumeNotNegativeAndTestIsTwo testInstance = Mockito.spy(new AssumeNotNegativeAndTestIsTwo());
         InstanceParser instanceParser = new InstanceParser(testInstance);
-        List<ExplorableCondition> conditions = instanceParser.executablePostConditions().postConditions;
+        List<Condition> conditions = instanceParser.executablePostConditions().postConditions;
 
         assertThat(conditions.get(0).testWith(ExplorationArguments.of(2))).isEqualTo(PASS);
         assertThat(conditions.get(0).testWith(ExplorationArguments.of(4))).isEqualTo(FAIL);

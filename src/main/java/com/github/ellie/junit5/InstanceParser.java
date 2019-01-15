@@ -2,7 +2,6 @@ package com.github.ellie.junit5;
 
 import com.github.ellie.core.*;
 import com.github.ellie.junit5.annotations.DataProvider;
-import com.github.ellie.junit5.annotations.PostCondition;
 import com.github.ellie.junit5.annotations.TestedBehaviour;
 
 import java.lang.annotation.Annotation;
@@ -71,9 +70,9 @@ class InstanceParser {
     }
 
     private List<AccessibleMethod> postConditions() {
-        List<AccessibleMethod> postConditions = findMethodsAnnotatedWith(PostCondition.class);
+        List<AccessibleMethod> postConditions = findMethodsAnnotatedWith(com.github.ellie.junit5.annotations.PostCondition.class);
         assertThat(postConditions).as(
-            PostCondition.class.getSimpleName() + " methods return type should be predicate or consumer")
+            com.github.ellie.junit5.annotations.PostCondition.class.getSimpleName() + " methods return type should be predicate or consumer")
                                   .allMatch(m -> m.returnsAnyOf(Predicate.class, Consumer.class));
         return postConditions;
     }
@@ -83,17 +82,17 @@ class InstanceParser {
 
         return new PostConditions(postConditions()
             .stream()
-            .map(m -> new ExplorablePostCondition(m,
+            .map(m -> new PostCondition(m,
                                                   exploredCode))
             .collect(Collectors.toList()));
     }
 
 
-    private static final class ExplorablePostCondition implements ExplorableCondition {
+    private static final class PostCondition implements Condition {
         private final AccessibleMethod postConditionSupplier;
         private final AccessibleMethod behaviourMethod;
 
-        private ExplorablePostCondition(AccessibleMethod postConditionSupplier, AccessibleMethod behaviourMethod) {
+        private PostCondition(AccessibleMethod postConditionSupplier, AccessibleMethod behaviourMethod) {
             this.postConditionSupplier = postConditionSupplier;
             this.behaviourMethod = behaviourMethod;
         }

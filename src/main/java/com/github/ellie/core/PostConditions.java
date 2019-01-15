@@ -5,18 +5,26 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+
 public class PostConditions {
 
-    public final List<ExplorableCondition> postConditions;
+    public final List<Condition> postConditions;
 
-    public PostConditions(List<ExplorableCondition> postConditions) {
+    public PostConditions(List<Condition> postConditions) {
         this.postConditions = Collections.unmodifiableList(postConditions);
     }
 
+    public PostConditionResults explore(List<ExplorationArguments> data) {
+        return new PostConditionResults(data.stream()
+                .flatMap(d -> exploreWith(d).stream())
+                .collect(toList()));
+    }
 
-    public Collection<NamedExecutedCondition> exploreWith(ExplorationArguments d) {
+
+    private Collection<NamedExecutedCondition> exploreWith(ExplorationArguments arguments) {
         return postConditions.stream()
-                .map(e -> new NamedExecutedCondition(e.name(), e.testWith(d), d))
+                .map(e -> new NamedExecutedCondition(e.name(), e.testWith(arguments), arguments))
                 .collect(Collectors.toList());
     }
 }

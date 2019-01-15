@@ -8,12 +8,10 @@ import com.github.ellie.core.asserters.UnkownBehaviourTester;
 
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.Explorer.explore;
-
 class RunnerBuilder {
     static Stream<Exploration> generateTestsFor(Object testInstance) {
         InstanceParser instanceParser = new InstanceParser(testInstance);
-        PostConditionResults results = explore(instanceParser.data(), instanceParser.executablePostConditions());
+        PostConditionResults results = instanceParser.executablePostConditions().explore(instanceParser.data());
         return new MultipleBehaviourTester(
                 new UnkownBehaviourTester(
                         new ExploratoryTester()

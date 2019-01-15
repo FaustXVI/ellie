@@ -13,11 +13,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.*;
-import static com.github.ellie.core.Explorer.explore;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
-class ExplorerShould {
+class PostConditionsShould {
 
     static Stream<Arguments> methodNames() {
         return Stream.of(
@@ -28,11 +27,10 @@ class ExplorerShould {
 
     @ParameterizedTest
     @MethodSource("methodNames")
-    void nameNodesWithActionAndSupposedBehaviour(List<ExplorableCondition> conditions) {
-        PostConditionResults results = explore(List.of(ExplorationArguments.of(2)),
-                new PostConditions(conditions));
+    void nameNodesWithActionAndSupposedBehaviour(List<Condition> conditions) {
+        PostConditionResults results = new PostConditions(conditions).explore(List.of(ExplorationArguments.of(2)));
 
-        List<String> names = conditions.stream().map(explorableCondition -> explorableCondition.name().value).collect(Collectors.toList());
+        List<String> names = conditions.stream().map(condition -> condition.name().value).collect(Collectors.toList());
         assertThat(results.resultByPostConditions().keySet())
                 .extracting(e->e.value)
                 .containsAll(names);
@@ -43,9 +41,8 @@ class ExplorerShould {
         ExplorationArguments two = ExplorationArguments.of(2);
         ExplorationArguments four = ExplorationArguments.of(4);
         ExplorationArguments ignore = ExplorationArguments.of(-42);
-        PostConditionResults results = explore(List.of(two, four, ignore),
-                new PostConditions(List.of(condition("argIs2", i -> i == two ? PASS : i == ignore ? IGNORED : FAIL),
-                        condition("argIs4", i -> i == four ? PASS : i == ignore ? IGNORED : FAIL))));
+        PostConditionResults results = new PostConditions(List.of(condition("argIs2", i -> i == two ? PASS : i == ignore ? IGNORED : FAIL),
+                condition("argIs4", i -> i == four ? PASS : i == ignore ? IGNORED : FAIL))).explore(List.of(two, four, ignore));
         Map<Name, TestResult> resultByBehaviour = results.resultByPostConditions();
 
         TestResult argIs2 = resultByBehaviour.get(new Name("argIs2"));
@@ -64,9 +61,9 @@ class ExplorerShould {
     void testEachBehavioursWithEachData() {
         ExplorationArguments firstInput = ExplorationArguments.of(2);
         ExplorationArguments secondInput = ExplorationArguments.of(4);
-        ExplorableCondition passes = Mockito.spy(conditionThatPasses("test_passes"));
-        ExplorableCondition fails = Mockito.spy(conditionThatFails("test_fails"));
-        explore(List.of(firstInput, secondInput), new PostConditions(List.of(passes, fails)));
+        Condition passes = Mockito.spy(conditionThatPasses("test_passes"));
+        Condition fails = Mockito.spy(conditionThatFails("test_fails"));
+        new PostConditions(List.of(passes, fails)).explore(List.of(firstInput, secondInput));
 
         verify(passes).testWith(firstInput);
         verify(passes).testWith(secondInput);
@@ -74,8 +71,8 @@ class ExplorerShould {
         verify(fails).testWith(secondInput);
     }
 
-    private static ExplorableCondition condition(String name, Function<ExplorationArguments, ConditionOutput> predicate) {
-        return new ExplorableCondition() {
+    private static Condition condition(String name, Function<ExplorationArguments, ConditionOutput> predicate) {
+        return new Condition() {
             @Override
             public ConditionOutput testWith(ExplorationArguments explorationArguments) {
                 return predicate.apply(explorationArguments);
@@ -88,10 +85,10 @@ class ExplorerShould {
         };
     }
 
-    private static ExplorableCondition conditionThatFails(String name) {
+    private static Condition conditionThatFails(String name) {
         return condition(name, i -> FAIL);
     }
-    private static ExplorableCondition conditionThatPasses(String name) {
+    private static Condition conditionThatPasses(String name) {
         return condition(name, i -> PASS);
     }
 
