@@ -1,13 +1,11 @@
 package com.github.ellie.core.asserters;
 
-import com.github.ellie.core.ErrorMessage;
-import com.github.ellie.core.Exploration;
 import com.github.ellie.core.PostConditionResults;
 import com.github.ellie.core.TestResult;
 
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.Exploration.exploration;
+import static com.github.ellie.core.asserters.Exploration.exploration;
 
 public class ExploratoryTester implements Tester {
 

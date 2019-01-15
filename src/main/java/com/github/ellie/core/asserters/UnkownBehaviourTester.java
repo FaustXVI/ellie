@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.stream.Stream;
 
 import static com.github.ellie.core.conditions.ConditionOutput.PASS;
-import static com.github.ellie.core.Exploration.exploration;
+import static com.github.ellie.core.asserters.Exploration.exploration;
 
 public class UnkownBehaviourTester implements Tester {
     private Tester otherTester;

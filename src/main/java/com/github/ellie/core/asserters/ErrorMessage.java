@@ -1,4 +1,6 @@
-package com.github.ellie.core;
+package com.github.ellie.core.asserters;
+
+import com.github.ellie.core.ExplorationArguments;
 
 import java.util.Collection;
 import java.util.Collections;

@@ -1,7 +1,6 @@
-package com.github.ellie.core;
+package com.github.ellie.core.asserters;
 
-import com.github.ellie.core.asserters.MultipleBehaviourTester;
-import com.github.ellie.core.asserters.Tester;
+import com.github.ellie.core.*;
 import com.github.ellie.core.conditions.ConditionOutput;
 import com.github.ellie.core.conditions.ConditionResult;
 import org.junit.jupiter.api.BeforeEach;

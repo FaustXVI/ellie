@@ -1,6 +1,5 @@
 package com.github.ellie.core.asserters;
 
-import com.github.ellie.core.Exploration;
 import com.github.ellie.core.PostConditionResults;
 
 import java.util.stream.Stream;

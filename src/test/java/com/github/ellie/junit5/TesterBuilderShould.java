@@ -1,6 +1,6 @@
 package com.github.ellie.junit5;
 
-import com.github.ellie.core.Exploration;
+import com.github.ellie.core.asserters.Exploration;
 import com.github.ellie.examples.valids.OneSuppositionExploration;
 import org.junit.jupiter.api.Test;
 

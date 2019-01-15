@@ -14,7 +14,7 @@ public class TestResult {
     private final Collection<ExplorationArguments> failing;
     private final Collection<ExplorationArguments> ignored;
 
-    TestResult(Collection<? extends ConditionResult> testResults) {
+    public TestResult(Collection<? extends ConditionResult> testResults) {
         this.passes = selectOutput(testResults, PASS);
         this.failing = selectOutput(testResults, FAIL);
         this.ignored = selectOutput(testResults, IGNORED);
