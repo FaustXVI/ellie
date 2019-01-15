@@ -65,7 +65,7 @@ public class AtLeastOneMatchExplorerShould {
     @ParameterizedTest
     @MethodSource({"passingResults", "failingResults", "mixtedResults"})
     void createsOneTestPerPostCondition(Map<String, TestResult> results) {
-        when(postConditionResults.resultByPostConditions()).thenReturn(wrapName(results));
+        when(postConditionResults.resultByName()).thenReturn(wrapName(results));
 
         Stream<Exploration> behaviours =
                 exploratoryExplorer.explore(postConditionResults);
@@ -85,7 +85,7 @@ public class AtLeastOneMatchExplorerShould {
     @ParameterizedTest
     @MethodSource({"passingResults", "mixtedResults"})
     void passIfALeastOneDataPasses(Map<String, TestResult> results) {
-        when(this.postConditionResults.resultByPostConditions()).thenReturn(wrapName(results));
+        when(this.postConditionResults.resultByName()).thenReturn(wrapName(results));
         Stream<Exploration> behaviours = exploratoryExplorer.explore(this.postConditionResults);
         try {
             behaviours.forEach(t ->
@@ -98,7 +98,7 @@ public class AtLeastOneMatchExplorerShould {
     @ParameterizedTest
     @MethodSource("failingResults")
     void failPotentialBehaviourIfNotDataValidatesPredicate(Map<String, TestResult> results) {
-        when(this.postConditionResults.resultByPostConditions()).thenReturn(wrapName(results));
+        when(this.postConditionResults.resultByName()).thenReturn(wrapName(results));
         AtomicBoolean errorFound = new AtomicBoolean(false);
         exploratoryExplorer.explore(this.postConditionResults)
                 .forEach(ex -> ex.check(e -> {

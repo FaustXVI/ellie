@@ -36,7 +36,7 @@ class PostConditionsShould {
         Explorer.PostConditionResults results = new PostConditions(conditions).explore(List.of(ExplorationArguments.of(2)));
 
         List<String> names = conditions.stream().map(condition -> condition.name().value).collect(Collectors.toList());
-        assertThat(results.resultByPostConditions().keySet())
+        assertThat(results.resultByName().keySet())
                 .extracting(e->e.value)
                 .containsAll(names);
     }
@@ -48,7 +48,7 @@ class PostConditionsShould {
         ExplorationArguments ignore = ExplorationArguments.of(-42);
         Explorer.PostConditionResults results = new PostConditions(List.of(condition("argIs2", i -> i == two ? PASS : i == ignore ? IGNORED : FAIL),
                 condition("argIs4", i -> i == four ? PASS : i == ignore ? IGNORED : FAIL))).explore(List.of(two, four, ignore));
-        Map<Name, TestResult> resultByBehaviour = results.resultByPostConditions();
+        Map<Name, TestResult> resultByBehaviour = results.resultByName();
 
         TestResult argIs2 = resultByBehaviour.get(new Name("argIs2"));
         assertThat(argIs2.passingData()).containsOnly(two);

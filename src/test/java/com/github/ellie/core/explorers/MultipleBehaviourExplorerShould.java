@@ -43,7 +43,7 @@ class MultipleBehaviourExplorerShould {
     void createRunner() {
         otherExplorer = mock(Explorer.class);
         results = mock(Explorer.PostConditionResults.class);
-        when(results.dataThatPostConditions(Mockito.any())).thenReturn(new TestResult(List.of()));
+        when(results.matchOutputs(Mockito.any())).thenReturn(new TestResult(List.of()));
         multipleBehaviourRunner = new MultipleBehaviourExplorer(otherExplorer);
     }
 
@@ -69,7 +69,7 @@ class MultipleBehaviourExplorerShould {
     @Test
     void callsConsumerWithResults() {
         TestResult testResult = new TestResult(List.of());
-        when(results.dataThatPostConditions(Mockito.any()))
+        when(results.matchOutputs(Mockito.any()))
                 .thenReturn(testResult);
 
         multipleBehaviourRunner.explore(results).forEach(ct -> {
@@ -81,7 +81,7 @@ class MultipleBehaviourExplorerShould {
 
     @Test
     void failsIfAtLeastOneDataPassesManyTimes() {
-        when(results.dataThatPostConditions(Mockito.any())).then(filterFrom(MULTIPLE_PASS));
+        when(results.matchOutputs(Mockito.any())).then(filterFrom(MULTIPLE_PASS));
 
         AtomicBoolean errorFound = new AtomicBoolean(false);
 
@@ -97,7 +97,7 @@ class MultipleBehaviourExplorerShould {
 
     @Test
     void passesIfNoDataPassesManyTimes() {
-        when(results.dataThatPostConditions(Mockito.any()))
+        when(results.matchOutputs(Mockito.any()))
                 .then(filterFrom(NO_MULTIPLE_PASS));
 
         try {

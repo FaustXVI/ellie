@@ -8,7 +8,7 @@ public class AtLeastOneMatchExplorer implements Explorer {
 
     @Override
     public Stream<Exploration> explore(PostConditionResults results) {
-        return results.resultByPostConditions()
+        return results.resultByName()
                 .entrySet()
                 .stream()
                 .map(behaviour -> exploration(

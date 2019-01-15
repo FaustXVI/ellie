@@ -36,7 +36,7 @@ public class MultipleBehaviourExplorer implements Explorer {
     }
 
     private TestResult dataThatPassesMaximumOneBehaviour(PostConditionResults results) {
-        return results.dataThatPostConditions(c -> c.filter(r -> r == PASS)
+        return results.matchOutputs(c -> c.filter(r -> r == PASS)
                 .count() <= 1);
     }
 

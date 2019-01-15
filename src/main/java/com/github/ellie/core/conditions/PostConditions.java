@@ -42,22 +42,22 @@ public class PostConditions {
 
 
        @Override
-       public Map<Name, TestResult> resultByPostConditions() {
+       public Map<Name, TestResult> resultByName() {
            return postConditionsResults.stream()
                    .collect(groupingBy(e -> e.name,
                            collectingAndThen(toList(), TestResult::new)));
        }
 
        @Override
-       public TestResult dataThatPostConditions(
+       public TestResult matchOutputs(
                Predicate<Stream<ConditionOutput>> postConditionPredicate) {
            Function<List<ConditionOutput>, ConditionOutput> outputFunction
                    = fromPredicate(l -> postConditionPredicate.test(l.stream()));
-           return new TestResult(dataToExecutedConditions(outputFunction));
+           return new TestResult(conditionResultsFor(outputFunction));
        }
 
 
-       private Collection<ConditionResult> dataToExecutedConditions(Function<List<ConditionOutput>, ConditionOutput> outputFunction) {
+       private Collection<ConditionResult> conditionResultsFor(Function<List<ConditionOutput>, ConditionOutput> outputFunction) {
            return postConditionsResults.stream()
                    .collect(groupingBy(e -> e.arguments,
                            collectingAndThen(mapping(e -> e.output, toList()), outputFunction))

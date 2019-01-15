@@ -12,9 +12,10 @@ public interface Explorer {
     Stream<Exploration> explore(PostConditionResults results);
 
     interface PostConditionResults {
-        Map<Name, TestResult> resultByPostConditions();
+        Map<Name, TestResult> resultByName();
 
-        TestResult dataThatPostConditions(
+        // TODO add results by arguments ?
+        TestResult matchOutputs(
                 Predicate<Stream<ConditionOutput>> postConditionPredicate);
     }
 }

@@ -25,7 +25,7 @@ public class UnkownBehaviourExplorer implements Explorer {
         return exploration(new Name("Unknown post-exploration"),
                 (errorMessageHandler) -> {
                     TestResult result =
-                            results.dataThatPostConditions(b -> b.anyMatch(r -> r == PASS));
+                            results.matchOutputs(b -> b.anyMatch(r -> r == PASS));
                     Collection<ExplorationArguments> dataWithUnknownBehaviour = result.failingData();
                     if (!dataWithUnknownBehaviour.isEmpty()) {
                         Exploration.ErrorMessage errorMessage = new Exploration.ErrorMessage("At least one data has unknown post-exploration", dataWithUnknownBehaviour);

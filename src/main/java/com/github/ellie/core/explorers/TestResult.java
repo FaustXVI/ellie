@@ -10,6 +10,7 @@ import static com.github.ellie.core.ConditionOutput.*;
 import static java.util.Collections.unmodifiableCollection;
 import static java.util.stream.Collectors.toList;
 
+// TODO replace with interface ? argumentsGeneratingOutput(ConditionOutput)
 public class TestResult {
     private final Collection<ExplorationArguments> passes;
     private final Collection<ExplorationArguments> failing;

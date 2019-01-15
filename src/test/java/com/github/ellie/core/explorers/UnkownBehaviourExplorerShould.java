@@ -31,7 +31,7 @@ class UnkownBehaviourExplorerShould {
     void createRunner() {
         otherExplorer = mock(Explorer.class);
         results = mock(Explorer.PostConditionResults.class);
-        when(results.dataThatPostConditions(Mockito.any())).thenReturn(new TestResult(List.of()));
+        when(results.matchOutputs(Mockito.any())).thenReturn(new TestResult(List.of()));
         unkownBehaviourRunner = new UnkownBehaviourExplorer(otherExplorer);
     }
 
@@ -47,7 +47,7 @@ class UnkownBehaviourExplorerShould {
     @Test
     void callsConsumerWithResults() {
         TestResult testResult = new TestResult(List.of());
-        when(results.dataThatPostConditions(Mockito.any()))
+        when(results.matchOutputs(Mockito.any()))
                 .thenReturn(testResult);
 
         unkownBehaviourRunner.explore(results).forEach(ct -> {
@@ -68,7 +68,7 @@ class UnkownBehaviourExplorerShould {
     @Test
     void failsIfAtLeastOneDataPassesNothing() {
         ExplorationArguments two = ExplorationArguments.of(2);
-        when(results.dataThatPostConditions(Mockito.any())).then(filterFrom(
+        when(results.matchOutputs(Mockito.any())).then(filterFrom(
                 Map.of(two, Stream.of(ConditionOutput.FAIL))));
 
         AtomicBoolean errorFound = new AtomicBoolean(false);
@@ -85,7 +85,7 @@ class UnkownBehaviourExplorerShould {
 
     @Test
     void passesIfAllDataPassesSomeThing() {
-        when(results.dataThatPostConditions(Mockito.any())).then(filterFrom(
+        when(results.matchOutputs(Mockito.any())).then(filterFrom(
                 Map.of(ExplorationArguments.of(1), Stream.of(ConditionOutput.PASS),
                         ExplorationArguments.of(2), Stream.of(ConditionOutput.PASS, ConditionOutput.PASS)
                 )));
