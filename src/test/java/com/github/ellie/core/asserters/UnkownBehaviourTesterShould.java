@@ -67,8 +67,9 @@ class UnkownBehaviourTesterShould {
 
     @Test
     void failsIfAtLeastOneDataPassesNothing() {
+        ExplorationArguments two = ExplorationArguments.of(2);
         when(results.dataThatPostConditions(Mockito.any())).then(filterFrom(
-                Map.of(ExplorationArguments.of(2), Stream.of(ConditionOutput.FAIL))));
+                Map.of(two, Stream.of(ConditionOutput.FAIL))));
 
         AtomicBoolean errorFound = new AtomicBoolean(false);
         this.unkownBehaviourRunner.tests(results)
@@ -76,7 +77,7 @@ class UnkownBehaviourTesterShould {
                     errorFound.set(true);
                     assertThat(errorMessage.message)
                             .contains("At least one data has unknown post-exploration");
-                    assertThat(errorMessage.causes).contains(ExplorationArguments.of(2));
+                    assertThat(errorMessage.causes).contains(two);
                 }));
 
         assertThat(errorFound.get()).isTrue();

@@ -27,17 +27,5 @@ public interface ExplorationArguments {
             return Arrays.toString(arguments);
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            ArrayExplorationArguments that = (ArrayExplorationArguments) o;
-            return Arrays.equals(arguments, that.arguments);
-        }
-
-        @Override
-        public int hashCode() {
-            return Arrays.hashCode(arguments);
-        }
     }
 }
