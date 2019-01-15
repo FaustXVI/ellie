@@ -1,6 +1,9 @@
 package com.github.ellie.junit5;
 
 import com.github.ellie.core.*;
+import com.github.ellie.core.conditions.ConditionOutput;
+import com.github.ellie.core.conditions.NamedCondition;
+import com.github.ellie.core.conditions.NamedConditionResult;
 import com.github.ellie.junit5.annotations.DataProvider;
 import com.github.ellie.junit5.annotations.TestedBehaviour;
 
@@ -24,10 +27,10 @@ class InstanceParser {
 
     List<ExplorationArguments> data() {
         return dataProviders()
-            .stream()
-            .flatMap(InstanceParser::dataOf)
-            .map(InstanceParser::toArguments)
-            .collect(Collectors.toList());
+                .stream()
+                .flatMap(InstanceParser::dataOf)
+                .map(InstanceParser::toArguments)
+                .collect(Collectors.toList());
     }
 
     private static Stream<?> dataOf(AccessibleMethod method) {
@@ -43,37 +46,37 @@ class InstanceParser {
 
     private List<AccessibleMethod> findMethodsAnnotatedWith(Class<? extends Annotation> annotationClass) {
         return Arrays.stream(testInstance.getClass()
-                                         .getDeclaredMethods())
-                     .filter(m -> m.getAnnotation(annotationClass) != null)
-                     .map(method -> new AccessibleMethod(testInstance, method))
-                     .collect(Collectors.toList());
+                .getDeclaredMethods())
+                .filter(m -> m.getAnnotation(annotationClass) != null)
+                .map(method -> new AccessibleMethod(testInstance, method))
+                .collect(Collectors.toList());
     }
 
     private AccessibleMethod testedBehaviour() {
         List<AccessibleMethod> testedBehaviours = findMethodsAnnotatedWith(TestedBehaviour.class);
         assertThat(testedBehaviours)
-            .as("only one method should be annotated with %s", TestedBehaviour.class.getSimpleName())
-            .hasSize(1);
+                .as("only one method should be annotated with %s", TestedBehaviour.class.getSimpleName())
+                .hasSize(1);
         return testedBehaviours.get(0);
     }
 
     private List<AccessibleMethod> dataProviders() {
         List<AccessibleMethod> dataMethods = findMethodsAnnotatedWith(DataProvider.class);
         assertThat(dataMethods.size())
-            .as("no data found : at least one method should be annotated with %s",
-                DataProvider.class.getSimpleName())
-            .isGreaterThanOrEqualTo(1);
+                .as("no data found : at least one method should be annotated with %s",
+                        DataProvider.class.getSimpleName())
+                .isGreaterThanOrEqualTo(1);
         assertThat(dataMethods).as(
-            DataProvider.class.getSimpleName() + " methods return type should be iterable or stream")
-                               .allMatch((m) -> m.returnsAnyOf(Stream.class, Iterable.class));
+                DataProvider.class.getSimpleName() + " methods return type should be iterable or stream")
+                .allMatch((m) -> m.returnsAnyOf(Stream.class, Iterable.class));
         return dataMethods;
     }
 
     private List<AccessibleMethod> postConditions() {
         List<AccessibleMethod> postConditions = findMethodsAnnotatedWith(com.github.ellie.junit5.annotations.PostCondition.class);
         assertThat(postConditions).as(
-            com.github.ellie.junit5.annotations.PostCondition.class.getSimpleName() + " methods return type should be predicate or consumer")
-                                  .allMatch(m -> m.returnsAnyOf(Predicate.class, Consumer.class));
+                com.github.ellie.junit5.annotations.PostCondition.class.getSimpleName() + " methods return type should be predicate or consumer")
+                .allMatch(m -> m.returnsAnyOf(Predicate.class, Consumer.class));
         return postConditions;
     }
 
@@ -81,14 +84,14 @@ class InstanceParser {
         AccessibleMethod exploredCode = testedBehaviour();
 
         return new PostConditions(postConditions()
-            .stream()
-            .map(m -> new PostCondition(m,
-                                                  exploredCode))
-            .collect(Collectors.toList()));
+                .stream()
+                .map(m -> new PostCondition(m,
+                        exploredCode))
+                .collect(Collectors.toList()));
     }
 
 
-    private static final class PostCondition implements Condition {
+    private static final class PostCondition implements NamedCondition {
         private final AccessibleMethod postConditionSupplier;
         private final AccessibleMethod behaviourMethod;
 
@@ -98,14 +101,14 @@ class InstanceParser {
         }
 
         @Override
-        public ConditionOutput testWith(ExplorationArguments explorationArguments) {
-                Predicate<Object> predicate;
-                if (postConditionSupplier.returnsAnyOf(Consumer.class)) {
-                    predicate = asPredicate(postConditionSupplier.invoke(explorationArguments));
-                } else {
-                    predicate = postConditionSupplier.invoke(explorationArguments);
-                }
-                return ConditionOutput.fromPredicate(predicate).apply(behaviourMethod.invoke(explorationArguments));
+        public NamedConditionResult testWith(ExplorationArguments explorationArguments) {
+            Predicate<Object> predicate;
+            if (postConditionSupplier.returnsAnyOf(Consumer.class)) {
+                predicate = asPredicate(postConditionSupplier.invoke(explorationArguments));
+            } else {
+                predicate = postConditionSupplier.invoke(explorationArguments);
+            }
+            return new NamedConditionResult(name(), ConditionOutput.fromPredicate(predicate).apply(behaviourMethod.invoke(explorationArguments)), explorationArguments);
         }
 
         private static Predicate<Object> asPredicate(Consumer<Object> consumer) {

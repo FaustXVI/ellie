@@ -1,5 +1,8 @@
 package com.github.ellie.core;
 
+import com.github.ellie.core.conditions.ConditionOutput;
+import com.github.ellie.core.conditions.NamedCondition;
+import com.github.ellie.core.conditions.NamedConditionResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -12,7 +15,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.ConditionOutput.*;
+import static com.github.ellie.core.conditions.ConditionOutput.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
@@ -27,7 +30,7 @@ class PostConditionsShould {
 
     @ParameterizedTest
     @MethodSource("methodNames")
-    void nameNodesWithActionAndSupposedBehaviour(List<Condition> conditions) {
+    void nameNodesWithActionAndSupposedBehaviour(List<NamedCondition> conditions) {
         PostConditionResults results = new PostConditions(conditions).explore(List.of(ExplorationArguments.of(2)));
 
         List<String> names = conditions.stream().map(condition -> condition.name().value).collect(Collectors.toList());
@@ -61,8 +64,8 @@ class PostConditionsShould {
     void testEachBehavioursWithEachData() {
         ExplorationArguments firstInput = ExplorationArguments.of(2);
         ExplorationArguments secondInput = ExplorationArguments.of(4);
-        Condition passes = Mockito.spy(conditionThatPasses("test_passes"));
-        Condition fails = Mockito.spy(conditionThatFails("test_fails"));
+        NamedCondition passes = Mockito.spy(conditionThatPasses("test_passes"));
+        NamedCondition fails = Mockito.spy(conditionThatFails("test_fails"));
         new PostConditions(List.of(passes, fails)).explore(List.of(firstInput, secondInput));
 
         verify(passes).testWith(firstInput);
@@ -71,11 +74,11 @@ class PostConditionsShould {
         verify(fails).testWith(secondInput);
     }
 
-    private static Condition condition(String name, Function<ExplorationArguments, ConditionOutput> predicate) {
-        return new Condition() {
+    private static NamedCondition condition(String name, Function<ExplorationArguments, ConditionOutput> predicate) {
+        return new NamedCondition() {
             @Override
-            public ConditionOutput testWith(ExplorationArguments explorationArguments) {
-                return predicate.apply(explorationArguments);
+            public NamedConditionResult testWith(ExplorationArguments explorationArguments) {
+                return new NamedConditionResult(name(),predicate.apply(explorationArguments),explorationArguments);
             }
 
             @Override
@@ -85,10 +88,10 @@ class PostConditionsShould {
         };
     }
 
-    private static Condition conditionThatFails(String name) {
+    private static NamedCondition conditionThatFails(String name) {
         return condition(name, i -> FAIL);
     }
-    private static Condition conditionThatPasses(String name) {
+    private static NamedCondition conditionThatPasses(String name) {
         return condition(name, i -> PASS);
     }
 

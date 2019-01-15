@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-import static com.github.ellie.core.ConditionOutput.PASS;
+import static com.github.ellie.core.conditions.ConditionOutput.PASS;
 import static com.github.ellie.core.TestResultBuilder.aTestResult;
 import static org.assertj.core.api.Assertions.assertThat;
 

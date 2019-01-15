@@ -1,4 +1,4 @@
-package com.github.ellie.core;
+package com.github.ellie.core.conditions;
 
 import org.opentest4j.TestAbortedException;
 

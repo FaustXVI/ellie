@@ -5,7 +5,7 @@ import com.github.ellie.core.*;
 import java.util.Collection;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.ConditionOutput.PASS;
+import static com.github.ellie.core.conditions.ConditionOutput.PASS;
 
 import com.github.ellie.core.Name;
 

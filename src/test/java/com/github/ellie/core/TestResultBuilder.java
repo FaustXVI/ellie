@@ -1,5 +1,8 @@
 package com.github.ellie.core;
 
+import com.github.ellie.core.conditions.ConditionOutput;
+import com.github.ellie.core.conditions.ConditionResult;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,6 +22,6 @@ public class TestResultBuilder {
 
     public TestResult build() {
         return new TestResult(results.entrySet().stream()
-                .map(e -> new ExecutedCondition(e.getValue(), e.getKey())).collect(Collectors.toList()));
+                .map(e -> new ConditionResult(e.getValue(), e.getKey())).collect(Collectors.toList()));
     }
 }

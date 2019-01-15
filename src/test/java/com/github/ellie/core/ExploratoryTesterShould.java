@@ -2,6 +2,7 @@ package com.github.ellie.core;
 
 import com.github.ellie.core.asserters.ExploratoryTester;
 import com.github.ellie.core.asserters.Tester;
+import com.github.ellie.core.conditions.ConditionResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -13,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.ConditionOutput.*;
+import static com.github.ellie.core.conditions.ConditionOutput.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
@@ -21,12 +22,12 @@ import static org.mockito.Mockito.when;
 
 public class ExploratoryTesterShould {
 
-    private static final TestResult PASSING_RESULTS = new TestResult(List.of(new ExecutedCondition(PASS, ExplorationArguments.of(1))));
-    private static final TestResult FAILING_RESULTS = new TestResult(List.of(new ExecutedCondition(FAIL, ExplorationArguments.of(2))));
+    private static final TestResult PASSING_RESULTS = new TestResult(List.of(new ConditionResult(PASS, ExplorationArguments.of(1))));
+    private static final TestResult FAILING_RESULTS = new TestResult(List.of(new ConditionResult(FAIL, ExplorationArguments.of(2))));
     private static final TestResult MIXTED_RESULTS = new TestResult(List.of(
-            new ExecutedCondition(PASS, ExplorationArguments.of(1)),
-            new ExecutedCondition(FAIL, ExplorationArguments.of(2)),
-            new ExecutedCondition(IGNORED, ExplorationArguments.of(3))
+            new ConditionResult(PASS, ExplorationArguments.of(1)),
+            new ConditionResult(FAIL, ExplorationArguments.of(2)),
+            new ConditionResult(IGNORED, ExplorationArguments.of(3))
     ));
 
     private PostConditionResults postConditionResults;

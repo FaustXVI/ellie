@@ -2,6 +2,8 @@ package com.github.ellie.core;
 
 import com.github.ellie.core.asserters.MultipleBehaviourTester;
 import com.github.ellie.core.asserters.Tester;
+import com.github.ellie.core.conditions.ConditionOutput;
+import com.github.ellie.core.conditions.ConditionResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -15,8 +17,8 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.ConditionOutput.FAIL;
-import static com.github.ellie.core.ConditionOutput.PASS;
+import static com.github.ellie.core.conditions.ConditionOutput.FAIL;
+import static com.github.ellie.core.conditions.ConditionOutput.PASS;
 import static java.util.stream.Collectors.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -110,10 +112,10 @@ class MultipleBehaviourTesterShould {
     public static Answer<TestResult> filterFrom(Map<ExplorationArguments, Stream<ConditionOutput>> data) {
         return invocationOnMock -> {
             Predicate<Stream<ConditionOutput>> predicate = invocationOnMock.getArgument(0);
-            List<ExecutedCondition> results =
+            List<ConditionResult> results =
                     data.entrySet()
                             .stream()
-                            .map(e -> new ExecutedCondition(predicate.test(e.getValue()) ? PASS
+                            .map(e -> new ConditionResult(predicate.test(e.getValue()) ? PASS
                                     : FAIL, e.getKey()))
                             .collect(toList());
             return new TestResult(results);

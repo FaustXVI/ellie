@@ -2,6 +2,7 @@ package com.github.ellie.core;
 
 import com.github.ellie.core.asserters.Tester;
 import com.github.ellie.core.asserters.UnkownBehaviourTester;
+import com.github.ellie.core.conditions.ConditionOutput;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
