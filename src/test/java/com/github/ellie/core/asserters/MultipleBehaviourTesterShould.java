@@ -1,7 +1,7 @@
 package com.github.ellie.core.asserters;
 
 import com.github.ellie.core.*;
-import com.github.ellie.core.conditions.ConditionOutput;
+import com.github.ellie.core.ConditionOutput;
 import com.github.ellie.core.conditions.ConditionResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,8 +16,8 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.conditions.ConditionOutput.FAIL;
-import static com.github.ellie.core.conditions.ConditionOutput.PASS;
+import static com.github.ellie.core.ConditionOutput.FAIL;
+import static com.github.ellie.core.ConditionOutput.PASS;
 import static java.util.stream.Collectors.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -34,7 +34,7 @@ class MultipleBehaviourTesterShould {
             MULTIPLE_PASS = Map.of(ExplorationArguments.of(2), Stream.of(PASS, PASS));
     private Tester otherTester;
     private MultipleBehaviourTester multipleBehaviourRunner;
-    private PostConditionResults results;
+    private IPostConditionResults results;
     private static final Consumer<ErrorMessage> IGNORE_ERROR_MESSAGE = c -> {
     };
 
@@ -42,7 +42,7 @@ class MultipleBehaviourTesterShould {
     @BeforeEach
     void createRunner() {
         otherTester = mock(Tester.class);
-        results = mock(PostConditionResults.class);
+        results = mock(IPostConditionResults.class);
         when(results.dataThatPostConditions(Mockito.any())).thenReturn(new TestResult(List.of()));
         multipleBehaviourRunner = new MultipleBehaviourTester(otherTester);
     }

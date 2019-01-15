@@ -1,11 +1,12 @@
-package com.github.ellie.core;
+package com.github.ellie.core.asserters;
 
-import com.github.ellie.core.conditions.ConditionOutput;
+import com.github.ellie.core.ExplorationArguments;
+import com.github.ellie.core.ConditionOutput;
 import com.github.ellie.core.conditions.ConditionResult;
 
 import java.util.Collection;
 
-import static com.github.ellie.core.conditions.ConditionOutput.*;
+import static com.github.ellie.core.ConditionOutput.*;
 import static java.util.Collections.unmodifiableCollection;
 import static java.util.stream.Collectors.toList;
 

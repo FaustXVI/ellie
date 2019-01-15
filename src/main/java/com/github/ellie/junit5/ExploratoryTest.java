@@ -1,6 +1,6 @@
 package com.github.ellie.junit5;
 
-import com.github.ellie.core.TestResult;
+import com.github.ellie.core.asserters.TestResult;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;

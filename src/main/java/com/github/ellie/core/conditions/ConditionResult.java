@@ -1,5 +1,6 @@
 package com.github.ellie.core.conditions;
 
+import com.github.ellie.core.ConditionOutput;
 import com.github.ellie.core.ExplorationArguments;
 
 public class ConditionResult {
@@ -11,4 +12,5 @@ public class ConditionResult {
         this.output = output;
         this.arguments = arguments;
     }
+
 }

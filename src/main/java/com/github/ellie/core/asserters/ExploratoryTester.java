@@ -1,8 +1,5 @@
 package com.github.ellie.core.asserters;
 
-import com.github.ellie.core.PostConditionResults;
-import com.github.ellie.core.TestResult;
-
 import java.util.stream.Stream;
 
 import static com.github.ellie.core.asserters.Exploration.exploration;
@@ -10,7 +7,7 @@ import static com.github.ellie.core.asserters.Exploration.exploration;
 public class ExploratoryTester implements Tester {
 
     @Override
-    public Stream<Exploration> tests(PostConditionResults results) {
+    public Stream<Exploration> tests(IPostConditionResults results) {
         return results.resultByPostConditions()
                 .entrySet()
                 .stream()

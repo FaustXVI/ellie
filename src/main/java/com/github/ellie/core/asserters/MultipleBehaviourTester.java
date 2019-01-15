@@ -1,13 +1,12 @@
 package com.github.ellie.core.asserters;
 
-import com.github.ellie.core.*;
+import com.github.ellie.core.ExplorationArguments;
+import com.github.ellie.core.Name;
 
 import java.util.Collection;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.conditions.ConditionOutput.PASS;
-
-import com.github.ellie.core.Name;
+import static com.github.ellie.core.ConditionOutput.PASS;
 
 public class MultipleBehaviourTester implements Tester {
 
@@ -18,12 +17,12 @@ public class MultipleBehaviourTester implements Tester {
     }
 
     @Override
-    public Stream<Exploration> tests(PostConditionResults results) {
+    public Stream<Exploration> tests(IPostConditionResults results) {
         return Stream.concat(tester.tests(results),
                 dataThatPassesMultiplePostConditions(results));
     }
 
-    private Stream<Exploration> dataThatPassesMultiplePostConditions(PostConditionResults results) {
+    private Stream<Exploration> dataThatPassesMultiplePostConditions(IPostConditionResults results) {
         return Stream.of(Exploration.exploration(new Name("Match multiple post-conditions"),
                 (errorMessageHandler) -> {
                     TestResult testResult = dataThatPassesMaximumOneBehaviour(results);
@@ -36,7 +35,7 @@ public class MultipleBehaviourTester implements Tester {
                 }));
     }
 
-    private TestResult dataThatPassesMaximumOneBehaviour(PostConditionResults results) {
+    private TestResult dataThatPassesMaximumOneBehaviour(IPostConditionResults results) {
         return results.dataThatPostConditions(c -> c.filter(r -> r == PASS)
                 .count() <= 1);
     }

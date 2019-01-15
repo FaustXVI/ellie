@@ -1,7 +1,7 @@
 package com.github.ellie.core.asserters;
 
 import com.github.ellie.core.*;
-import com.github.ellie.core.conditions.ConditionOutput;
+import com.github.ellie.core.ConditionOutput;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -23,14 +23,14 @@ class UnkownBehaviourTesterShould {
 
     private Tester otherTester;
     private UnkownBehaviourTester unkownBehaviourRunner;
-    private PostConditionResults results;
+    private IPostConditionResults results;
     public static final Consumer<ErrorMessage> IGNORE_ERROR_MESSAGE = c -> {
     };
 
     @BeforeEach
     void createRunner() {
         otherTester = mock(Tester.class);
-        results = mock(PostConditionResults.class);
+        results = mock(IPostConditionResults.class);
         when(results.dataThatPostConditions(Mockito.any())).thenReturn(new TestResult(List.of()));
         unkownBehaviourRunner = new UnkownBehaviourTester(otherTester);
     }

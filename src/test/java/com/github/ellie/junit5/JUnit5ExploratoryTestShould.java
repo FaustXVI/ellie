@@ -2,6 +2,7 @@ package com.github.ellie.junit5;
 
 import com.github.ellie.core.*;
 import com.github.ellie.core.asserters.Exploration;
+import com.github.ellie.core.asserters.TestResult;
 import com.github.ellie.junit5.examples.PerfectJunit5;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-import static com.github.ellie.core.conditions.ConditionOutput.PASS;
+import static com.github.ellie.core.ConditionOutput.PASS;
 import static com.github.ellie.core.TestResultBuilder.aTestResult;
 import static org.assertj.core.api.Assertions.assertThat;
 

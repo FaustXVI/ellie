@@ -1,5 +1,6 @@
 package com.github.ellie.core.conditions;
 
+import com.github.ellie.core.ConditionOutput;
 import com.github.ellie.core.ExplorationArguments;
 import com.github.ellie.core.Name;
 

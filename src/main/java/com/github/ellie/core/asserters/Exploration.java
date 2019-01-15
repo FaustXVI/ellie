@@ -1,7 +1,6 @@
 package com.github.ellie.core.asserters;
 
 import com.github.ellie.core.Name;
-import com.github.ellie.core.TestResult;
 
 import java.util.function.Consumer;
 

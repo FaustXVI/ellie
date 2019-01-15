@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.conditions.ConditionOutput.*;
+import static com.github.ellie.core.ConditionOutput.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 

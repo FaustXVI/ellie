@@ -1,6 +1,7 @@
 package com.github.ellie.core;
 
-import com.github.ellie.core.conditions.ConditionOutput;
+import com.github.ellie.core.asserters.IPostConditionResults;
+import com.github.ellie.core.asserters.TestResult;
 import com.github.ellie.core.conditions.NamedCondition;
 import com.github.ellie.core.conditions.NamedConditionResult;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.conditions.ConditionOutput.*;
+import static com.github.ellie.core.ConditionOutput.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
@@ -31,7 +32,7 @@ class PostConditionsShould {
     @ParameterizedTest
     @MethodSource("methodNames")
     void nameNodesWithActionAndSupposedBehaviour(List<NamedCondition> conditions) {
-        PostConditionResults results = new PostConditions(conditions).explore(List.of(ExplorationArguments.of(2)));
+        IPostConditionResults results = new PostConditions(conditions).explore(List.of(ExplorationArguments.of(2)));
 
         List<String> names = conditions.stream().map(condition -> condition.name().value).collect(Collectors.toList());
         assertThat(results.resultByPostConditions().keySet())
@@ -44,7 +45,7 @@ class PostConditionsShould {
         ExplorationArguments two = ExplorationArguments.of(2);
         ExplorationArguments four = ExplorationArguments.of(4);
         ExplorationArguments ignore = ExplorationArguments.of(-42);
-        PostConditionResults results = new PostConditions(List.of(condition("argIs2", i -> i == two ? PASS : i == ignore ? IGNORED : FAIL),
+        IPostConditionResults results = new PostConditions(List.of(condition("argIs2", i -> i == two ? PASS : i == ignore ? IGNORED : FAIL),
                 condition("argIs4", i -> i == four ? PASS : i == ignore ? IGNORED : FAIL))).explore(List.of(two, four, ignore));
         Map<Name, TestResult> resultByBehaviour = results.resultByPostConditions();
 

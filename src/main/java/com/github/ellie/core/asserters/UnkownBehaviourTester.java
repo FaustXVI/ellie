@@ -6,7 +6,7 @@ import com.github.ellie.core.Name;
 import java.util.Collection;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.conditions.ConditionOutput.PASS;
+import static com.github.ellie.core.ConditionOutput.PASS;
 import static com.github.ellie.core.asserters.Exploration.exploration;
 
 public class UnkownBehaviourTester implements Tester {
@@ -17,11 +17,11 @@ public class UnkownBehaviourTester implements Tester {
     }
 
     @Override
-    public Stream<Exploration> tests(PostConditionResults results) {
+    public Stream<Exploration> tests(IPostConditionResults results) {
         return Stream.concat(otherTester.tests(results), Stream.of(dataWithUnknownBehaviour(results)));
     }
 
-    private Exploration dataWithUnknownBehaviour(PostConditionResults results) {
+    private Exploration dataWithUnknownBehaviour(IPostConditionResults results) {
         return exploration(new Name("Unknown post-exploration"),
                 (errorMessageHandler) -> {
                     TestResult result =
