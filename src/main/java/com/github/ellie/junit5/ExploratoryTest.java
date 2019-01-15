@@ -33,7 +33,7 @@ public interface ExploratoryTest {
 
     @TestFactory
     default Stream<? extends DynamicTest> generatedTests() {
-        return RunnerBuilder.generateTestsFor(this)
+        return ExplorerBuilder.generateTestsFor(this)
                 .map(t -> DynamicTest.dynamicTest(t.name(), () -> {
                     TestResult result = t.check(m -> Assertions.assertThat(m.causes)
                             .as(m.message).isEmpty());

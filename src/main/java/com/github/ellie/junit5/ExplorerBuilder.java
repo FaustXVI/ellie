@@ -4,7 +4,7 @@ import com.github.ellie.core.explorers.*;
 
 import java.util.stream.Stream;
 
-class RunnerBuilder {
+class ExplorerBuilder {
     static Stream<Exploration> generateTestsFor(Object testInstance) {
         InstanceParser instanceParser = new InstanceParser(testInstance);
         Explorer.PostConditionResults results = instanceParser.executablePostConditions().explore(instanceParser.data());

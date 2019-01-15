@@ -69,7 +69,7 @@ public class JUnit5ExploratoryTestShould {
     }
 
     private List<Exploration> explorationOf(PerfectJunit5 junit5Test) {
-        return RunnerBuilder.generateTestsFor(junit5Test)
+        return ExplorerBuilder.generateTestsFor(junit5Test)
                 .collect(Collectors.toList());
     }
 }

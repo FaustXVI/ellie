@@ -13,7 +13,7 @@ class ExplorerBuilderShould {
     @Test
     void addAllDecorators() {
         Stream<Exploration> tests =
-            RunnerBuilder.generateTestsFor(new OneSuppositionExploration());
+            ExplorerBuilder.generateTestsFor(new OneSuppositionExploration());
 
         assertThat(tests).hasSize(3);
     }
