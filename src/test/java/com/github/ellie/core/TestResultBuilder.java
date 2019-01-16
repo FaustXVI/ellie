@@ -1,9 +1,10 @@
 package com.github.ellie.core;
 
-import com.github.ellie.core.conditions.ConditionResult;
 import com.github.ellie.core.explorers.TestResult;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -21,7 +22,9 @@ public class TestResultBuilder {
     }
 
     public TestResult build() {
-        return new TestResult(results.entrySet().stream()
-                .map(e -> new ConditionResult(e.getValue(), e.getKey())).collect(Collectors.toList()));
+        Map<ConditionOutput, List<ExplorationArguments>> map = results.entrySet().stream().collect(
+                Collectors.groupingBy(Map.Entry::getValue, Collectors.mapping(Map.Entry::getKey, Collectors.toList()))
+        );
+        return output -> map.getOrDefault(output, Collections.emptyList());
     }
 }

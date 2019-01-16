@@ -26,13 +26,13 @@ public class MultipleBehaviourExplorer implements Explorer {
     private Stream<Exploration> dataThatPassesMultiplePostConditions(PostConditionResults results) {
         return Stream.of(Exploration.exploration(new Name("Match multiple post-conditions"),
                 (errorMessageHandler) -> {
-                    TestResult testResult = dataThatPassesMaximumOneBehaviour(results);
-                    Collection<ExplorationArguments> dataWithMultipleBehaviours = testResult.argumentsThat(FAIL);
+                    TestResult TestResult = dataThatPassesMaximumOneBehaviour(results);
+                    Collection<ExplorationArguments> dataWithMultipleBehaviours = TestResult.argumentsThat(FAIL);
                     if (!dataWithMultipleBehaviours.isEmpty()) {
                         Exploration.ErrorMessage errorMessage = new Exploration.ErrorMessage("At least one data has many post-conditions", dataWithMultipleBehaviours);
                         errorMessageHandler.accept(errorMessage);
                     }
-                    return testResult;
+                    return TestResult;
                 }));
     }
 

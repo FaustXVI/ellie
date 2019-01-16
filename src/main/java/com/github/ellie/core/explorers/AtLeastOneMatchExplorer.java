@@ -15,12 +15,12 @@ public class AtLeastOneMatchExplorer implements Explorer {
                 .map(behaviour -> exploration(
                         behaviour.getKey(),
                         (errorHandler) -> {
-                            TestResult testResult = behaviour.getValue();
-                            if (testResult.argumentsThat(PASS).isEmpty()) {
+                            TestResult TestResult = behaviour.getValue();
+                            if (TestResult.argumentsThat(PASS).isEmpty()) {
                                 Exploration.ErrorMessage errorMessage = new Exploration.ErrorMessage("no data validates this behaviour");
                                 errorHandler.accept(errorMessage);
                             }
-                            return testResult;
+                            return TestResult;
                         }));
     }
 

@@ -1,19 +1,21 @@
 package com.github.ellie.core.explorers;
 
-import com.github.ellie.core.*;
-import com.github.ellie.core.conditions.ConditionResult;
+import com.github.ellie.core.ExplorationArguments;
+import com.github.ellie.core.Name;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.ConditionOutput.*;
+import static com.github.ellie.core.ConditionOutput.FAIL;
+import static com.github.ellie.core.ConditionOutput.PASS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
@@ -21,12 +23,16 @@ import static org.mockito.Mockito.when;
 
 public class AtLeastOneMatchExplorerShould {
 
-    private static final TestResult PASSING_RESULTS = new TestResult(List.of(new ConditionResult(PASS, ExplorationArguments.of(1))));
-    private static final TestResult FAILING_RESULTS = new TestResult(List.of(new ConditionResult(FAIL, ExplorationArguments.of(2))));
-    private static final TestResult MIXTED_RESULTS = new TestResult(List.of(
-            new ConditionResult(PASS, ExplorationArguments.of(1)),
-            new ConditionResult(FAIL, ExplorationArguments.of(2))
-    ));
+    private static final TestResult PASSING_RESULTS = o ->
+            Map.of(PASS, List.of(ExplorationArguments.of(1)))
+                    .getOrDefault(o, Collections.emptyList());
+    private static final TestResult FAILING_RESULTS = o ->
+            Map.of(FAIL, List.of(ExplorationArguments.of(2)))
+                    .getOrDefault(o, Collections.emptyList());
+    private static final TestResult MIXTED_RESULTS = o ->
+            Map.of(FAIL, List.of(ExplorationArguments.of(2)),
+                    PASS, List.of(ExplorationArguments.of(1)))
+                    .getOrDefault(o, Collections.emptyList());
 
     private Explorer.PostConditionResults postConditionResults;
     private Explorer exploratoryExplorer;

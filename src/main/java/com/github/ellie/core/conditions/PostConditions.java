@@ -45,7 +45,7 @@ public class PostConditions {
        public Map<Name, TestResult> resultByName() {
            return postConditionsResults.stream()
                    .collect(groupingBy(e -> e.name,
-                           collectingAndThen(toList(), TestResult::new)));
+                           collectingAndThen(toList(), UnmodifiableTestResult::new)));
        }
 
        @Override
@@ -53,7 +53,7 @@ public class PostConditions {
                Predicate<Stream<ConditionOutput>> postConditionPredicate) {
            Function<List<ConditionOutput>, ConditionOutput> outputFunction
                    = fromPredicate(l -> postConditionPredicate.test(l.stream()));
-           return new TestResult(conditionResultsFor(outputFunction));
+           return new UnmodifiableTestResult(conditionResultsFor(outputFunction));
        }
 
 

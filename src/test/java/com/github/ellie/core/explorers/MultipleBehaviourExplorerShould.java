@@ -1,14 +1,15 @@
 package com.github.ellie.core.explorers;
 
-import com.github.ellie.core.*;
 import com.github.ellie.core.ConditionOutput;
+import com.github.ellie.core.ExplorationArguments;
+import com.github.ellie.core.Name;
 import com.github.ellie.core.conditions.ConditionResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -18,7 +19,7 @@ import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.FAIL;
 import static com.github.ellie.core.ConditionOutput.PASS;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
@@ -31,6 +32,7 @@ class MultipleBehaviourExplorerShould {
             ExplorationArguments.of(2), Stream.of(ConditionOutput.FAIL));
     public static final Map<ExplorationArguments, Stream<ConditionOutput>>
             MULTIPLE_PASS = Map.of(ExplorationArguments.of(2), Stream.of(PASS, PASS));
+    public static final TestResult EMPTY_TEST_RESULT = o -> Collections.emptyList();
     private Explorer otherExplorer;
     private MultipleBehaviourExplorer multipleBehaviourRunner;
     private Explorer.PostConditionResults results;
@@ -42,13 +44,13 @@ class MultipleBehaviourExplorerShould {
     void createRunner() {
         otherExplorer = mock(Explorer.class);
         results = mock(Explorer.PostConditionResults.class);
-        when(results.matchOutputs(Mockito.any())).thenReturn(new TestResult(List.of()));
+        when(results.matchOutputs(Mockito.any())).thenReturn(EMPTY_TEST_RESULT);
         multipleBehaviourRunner = new MultipleBehaviourExplorer(otherExplorer);
     }
 
     @Test
     void keepsOtherRunnerTests() {
-        Exploration test = Exploration.exploration(new Name("test"), (c) -> new TestResult(new ArrayList<>()));
+        Exploration test = Exploration.exploration(new Name("test"), (c) -> EMPTY_TEST_RESULT);
         Mockito.when(otherExplorer.explore(results))
                 .thenReturn(Stream.of(test));
 
@@ -67,13 +69,13 @@ class MultipleBehaviourExplorerShould {
 
     @Test
     void callsConsumerWithResults() {
-        TestResult testResult = new TestResult(List.of());
+        TestResult TestResult = EMPTY_TEST_RESULT;
         when(results.matchOutputs(Mockito.any()))
-                .thenReturn(testResult);
+                .thenReturn(TestResult);
 
         multipleBehaviourRunner.explore(results).forEach(ct -> {
             assertThat(ct.name()).isEqualTo("Match multiple post-conditions");
-            assertThat(ct.check(IGNORE_ERROR_MESSAGE)).isSameAs(testResult);
+            assertThat(ct.check(IGNORE_ERROR_MESSAGE)).isSameAs(TestResult);
         });
 
     }
@@ -116,7 +118,7 @@ class MultipleBehaviourExplorerShould {
                             .map(e -> new ConditionResult(predicate.test(e.getValue()) ? PASS
                                     : FAIL, e.getKey()))
                             .collect(toList());
-            return new TestResult(results);
+            return o -> results.stream().filter(r -> o == r.output).map(r -> r.arguments).collect(toList());
         };
     }
 
