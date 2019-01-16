@@ -6,6 +6,7 @@ import com.github.ellie.core.Name;
 import java.util.Collection;
 import java.util.stream.Stream;
 
+import static com.github.ellie.core.ConditionOutput.FAIL;
 import static com.github.ellie.core.ConditionOutput.PASS;
 import static com.github.ellie.core.explorers.Exploration.exploration;
 
@@ -26,7 +27,7 @@ public class UnkownBehaviourExplorer implements Explorer {
                 (errorMessageHandler) -> {
                     TestResult result =
                             results.matchOutputs(b -> b.anyMatch(r -> r == PASS));
-                    Collection<ExplorationArguments> dataWithUnknownBehaviour = result.failingData();
+                    Collection<ExplorationArguments> dataWithUnknownBehaviour = result.argumentsThat(FAIL);
                     if (!dataWithUnknownBehaviour.isEmpty()) {
                         Exploration.ErrorMessage errorMessage = new Exploration.ErrorMessage("At least one data has unknown post-exploration", dataWithUnknownBehaviour);
                         errorMessageHandler.accept(errorMessage);

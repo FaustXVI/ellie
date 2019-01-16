@@ -50,12 +50,12 @@ class PostConditionsShould {
         Map<Name, TestResult> resultByBehaviour = results.resultByName();
 
         TestResult argIs2 = resultByBehaviour.get(new Name("argIs2"));
-        assertThat(argIs2.passingData()).containsOnly(two);
-        assertThat(argIs2.failingData()).containsOnly(four);
+        assertThat(argIs2.argumentsThat(PASS)).containsOnly(two);
+        assertThat(argIs2.argumentsThat(FAIL)).containsOnly(four);
 
         TestResult argIs4 = resultByBehaviour.get(new Name("argIs4"));
-        assertThat(argIs4.passingData()).containsOnly(four);
-        assertThat(argIs4.failingData()).containsOnly(two);
+        assertThat(argIs4.argumentsThat(PASS)).containsOnly(four);
+        assertThat(argIs4.argumentsThat(FAIL)).containsOnly(two);
 
     }
 

@@ -6,6 +6,7 @@ import com.github.ellie.core.Name;
 import java.util.Collection;
 import java.util.stream.Stream;
 
+import static com.github.ellie.core.ConditionOutput.FAIL;
 import static com.github.ellie.core.ConditionOutput.PASS;
 
 public class MultipleBehaviourExplorer implements Explorer {
@@ -26,7 +27,7 @@ public class MultipleBehaviourExplorer implements Explorer {
         return Stream.of(Exploration.exploration(new Name("Match multiple post-conditions"),
                 (errorMessageHandler) -> {
                     TestResult testResult = dataThatPassesMaximumOneBehaviour(results);
-                    Collection<ExplorationArguments> dataWithMultipleBehaviours = testResult.failingData();
+                    Collection<ExplorationArguments> dataWithMultipleBehaviours = testResult.argumentsThat(FAIL);
                     if (!dataWithMultipleBehaviours.isEmpty()) {
                         Exploration.ErrorMessage errorMessage = new Exploration.ErrorMessage("At least one data has many post-conditions", dataWithMultipleBehaviours);
                         errorMessageHandler.accept(errorMessage);

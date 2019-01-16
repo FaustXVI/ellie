@@ -1,15 +1,15 @@
 package com.github.ellie.core;
 
-import com.github.ellie.core.explorers.TestResult;
 import com.github.ellie.core.conditions.ConditionResult;
+import com.github.ellie.core.explorers.TestResult;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TestResultBuilder {
 
-    private final Map<ExplorationArguments, ConditionOutput> results = new HashMap<>();
+    private final Map<ExplorationArguments, ConditionOutput> results = new LinkedHashMap<>();
 
     public static TestResultBuilder aTestResult() {
         return new TestResultBuilder();

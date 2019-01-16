@@ -2,6 +2,7 @@ package com.github.ellie.core.explorers;
 
 import java.util.stream.Stream;
 
+import static com.github.ellie.core.ConditionOutput.PASS;
 import static com.github.ellie.core.explorers.Exploration.exploration;
 
 public class AtLeastOneMatchExplorer implements Explorer {
@@ -15,7 +16,7 @@ public class AtLeastOneMatchExplorer implements Explorer {
                         behaviour.getKey(),
                         (errorHandler) -> {
                             TestResult testResult = behaviour.getValue();
-                            if (testResult.passingData().isEmpty()) {
+                            if (testResult.argumentsThat(PASS).isEmpty()) {
                                 Exploration.ErrorMessage errorMessage = new Exploration.ErrorMessage("no data validates this behaviour");
                                 errorHandler.accept(errorMessage);
                             }

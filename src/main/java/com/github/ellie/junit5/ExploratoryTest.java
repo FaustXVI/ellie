@@ -10,11 +10,13 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.github.ellie.core.ConditionOutput.PASS;
+
 public interface ExploratoryTest {
 
 
     BiConsumer<String, TestResult> PRINT_PASSING_CASES = (s, l) -> {
-        Stream<String> arguments = l.passingData()
+        Stream<String> arguments = l.argumentsThat(PASS)
                 .stream()
                 .map(args -> Arrays.stream(args.get())
                         .map(o -> {
