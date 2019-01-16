@@ -39,11 +39,11 @@ public class Exploration {
         public final String message;
         public final Collection<ExplorationArguments> causes;
 
-        public ErrorMessage(String message) {
+        ErrorMessage(String message) {
             this(message, Collections.emptyList());
         }
 
-        public ErrorMessage(String message, Collection<ExplorationArguments> causes) {
+        ErrorMessage(String message, Collection<ExplorationArguments> causes) {
             this.message = message;
             this.causes = causes;
         }
