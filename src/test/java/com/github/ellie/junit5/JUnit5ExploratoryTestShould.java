@@ -1,6 +1,7 @@
 package com.github.ellie.junit5;
 
-import com.github.ellie.core.*;
+import com.github.ellie.core.ExplorationArguments;
+import com.github.ellie.core.MapTestResult;
 import com.github.ellie.core.explorers.Exploration;
 import com.github.ellie.core.explorers.TestResult;
 import com.github.ellie.junit5.examples.PerfectJunit5;
@@ -10,11 +11,11 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import static com.github.ellie.core.ConditionOutput.PASS;
-import static com.github.ellie.core.TestResultBuilder.aTestResult;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class JUnit5ExploratoryTestShould {
@@ -38,10 +39,10 @@ public class JUnit5ExploratoryTestShould {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         System.setOut(new PrintStream(out));
         BiConsumer<String, TestResult> printer = ExploratoryTest.PRINT_PASSING_CASES;
-        printer.accept("test", aTestResult()
-                .with(ExplorationArguments.of(1, "arg1"), PASS)
-                .with(ExplorationArguments.of(2, "arg2"), PASS)
-                .build()
+        printer.accept("test", new MapTestResult(Map.of(
+                PASS,
+                List.of(ExplorationArguments.of(1, "arg1"),
+                        ExplorationArguments.of(2, "arg2"))))
         );
         assertThat(out.toString()).isEqualTo("    static Stream<Arguments> test() {\n"
                 + "        return Stream.of(\n"
@@ -61,10 +62,11 @@ public class JUnit5ExploratoryTestShould {
                 return (s, t) -> System.out.print(s);
             }
         }.testResultConsumer();
-        printer.accept("test", aTestResult()
-                .with(ExplorationArguments.of(1, "arg1"), PASS)
-                .with(ExplorationArguments.of(2, "arg2"), PASS)
-                .build());
+        printer.accept("test", new MapTestResult(Map.of(
+                PASS,
+                List.of(ExplorationArguments.of(1, "arg1"),
+                        ExplorationArguments.of(2, "arg2"))))
+        );
         assertThat(out.toString()).isEqualTo("test");
     }
 
