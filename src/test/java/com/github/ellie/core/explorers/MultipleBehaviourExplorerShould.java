@@ -28,8 +28,7 @@ class MultipleBehaviourExplorerShould {
 
     public static final Map<ExplorationArguments, Stream<ConditionOutput>>
             NO_MULTIPLE_PASS = Map.of(ExplorationArguments.of(1), Stream.of(PASS),
-            ExplorationArguments.of(2), Stream.of(ConditionOutput.FAIL),
-            ExplorationArguments.of(3), Stream.of(ConditionOutput.IGNORED));
+            ExplorationArguments.of(2), Stream.of(ConditionOutput.FAIL));
     public static final Map<ExplorationArguments, Stream<ConditionOutput>>
             MULTIPLE_PASS = Map.of(ExplorationArguments.of(2), Stream.of(PASS, PASS));
     private Explorer otherExplorer;

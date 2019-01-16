@@ -129,7 +129,6 @@ class InstanceParserShould {
 
         assertThat(conditions.get(0).testWith(ExplorationArguments.of(2)).output).isEqualTo(PASS);
         assertThat(conditions.get(0).testWith(ExplorationArguments.of(4)).output).isEqualTo(FAIL);
-        assertThat(conditions.get(0).testWith(ExplorationArguments.of(-4)).output).isEqualTo(IGNORED);
     }
 
     private static Object[] args(Object... args) {

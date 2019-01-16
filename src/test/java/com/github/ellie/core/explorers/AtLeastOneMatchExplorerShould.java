@@ -25,8 +25,7 @@ public class AtLeastOneMatchExplorerShould {
     private static final TestResult FAILING_RESULTS = new TestResult(List.of(new ConditionResult(FAIL, ExplorationArguments.of(2))));
     private static final TestResult MIXTED_RESULTS = new TestResult(List.of(
             new ConditionResult(PASS, ExplorationArguments.of(1)),
-            new ConditionResult(FAIL, ExplorationArguments.of(2)),
-            new ConditionResult(IGNORED, ExplorationArguments.of(3))
+            new ConditionResult(FAIL, ExplorationArguments.of(2))
     ));
 
     private Explorer.PostConditionResults postConditionResults;

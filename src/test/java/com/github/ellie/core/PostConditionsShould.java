@@ -45,20 +45,17 @@ class PostConditionsShould {
     void groupResultsByConditions() {
         ExplorationArguments two = ExplorationArguments.of(2);
         ExplorationArguments four = ExplorationArguments.of(4);
-        ExplorationArguments ignore = ExplorationArguments.of(-42);
-        Explorer.PostConditionResults results = new PostConditions(List.of(condition("argIs2", i -> i == two ? PASS : i == ignore ? IGNORED : FAIL),
-                condition("argIs4", i -> i == four ? PASS : i == ignore ? IGNORED : FAIL))).explore(List.of(two, four, ignore));
+        Explorer.PostConditionResults results = new PostConditions(List.of(condition("argIs2", i -> i == two ? PASS : FAIL),
+                condition("argIs4", i -> i == four ? PASS  : FAIL))).explore(List.of(two, four));
         Map<Name, TestResult> resultByBehaviour = results.resultByName();
 
         TestResult argIs2 = resultByBehaviour.get(new Name("argIs2"));
         assertThat(argIs2.passingData()).containsOnly(two);
         assertThat(argIs2.failingData()).containsOnly(four);
-        assertThat(argIs2.ignoredData()).containsOnly(ignore);
 
         TestResult argIs4 = resultByBehaviour.get(new Name("argIs4"));
         assertThat(argIs4.passingData()).containsOnly(four);
         assertThat(argIs4.failingData()).containsOnly(two);
-        assertThat(argIs4.ignoredData()).containsOnly(ignore);
 
     }
 

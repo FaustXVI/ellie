@@ -14,12 +14,10 @@ import static java.util.stream.Collectors.toList;
 public class TestResult {
     private final Collection<ExplorationArguments> passes;
     private final Collection<ExplorationArguments> failing;
-    private final Collection<ExplorationArguments> ignored;
 
     public TestResult(Collection<? extends ConditionResult> testResults) {
         this.passes = selectOutput(testResults, PASS);
         this.failing = selectOutput(testResults, FAIL);
-        this.ignored = selectOutput(testResults, IGNORED);
     }
 
     private Collection<ExplorationArguments> selectOutput(Collection<? extends ConditionResult> testResults, ConditionOutput output) {
@@ -35,7 +33,4 @@ public class TestResult {
         return failing;
     }
 
-    public Collection<ExplorationArguments> ignoredData() {
-        return ignored;
-    }
 }
