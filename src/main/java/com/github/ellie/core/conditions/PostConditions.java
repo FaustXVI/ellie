@@ -34,37 +34,26 @@ public class PostConditions {
 
 
     private static class PostConditionResults implements Explorer.PostConditionResults {
-       private final Collection<NamedConditionResult> postConditionsResults;
+        private final Collection<NamedConditionResult> postConditionsResults;
 
-       private PostConditionResults(Collection<NamedConditionResult> postConditionsResults) {
-           this.postConditionsResults = postConditionsResults;
-       }
-
-
-       @Override
-       public Map<Name, TestResult> resultByName() {
-           return postConditionsResults.stream()
-                   .collect(groupingBy(e -> e.name,
-                           collectingAndThen(toList(), UnmodifiableTestResult::new)));
-       }
-
-       @Override
-       public TestResult matchOutputs(
-               Predicate<Stream<ConditionOutput>> postConditionPredicate) {
-           Function<List<ConditionOutput>, ConditionOutput> outputFunction
-                   = fromPredicate(l -> postConditionPredicate.test(l.stream()));
-           return new UnmodifiableTestResult(conditionResultsFor(outputFunction));
-       }
+        private PostConditionResults(Collection<NamedConditionResult> postConditionsResults) {
+            this.postConditionsResults = postConditionsResults;
+        }
 
 
-       private Collection<ConditionResult> conditionResultsFor(Function<List<ConditionOutput>, ConditionOutput> outputFunction) {
-           return postConditionsResults.stream()
-                   .collect(groupingBy(e -> e.arguments,
-                           collectingAndThen(mapping(e -> e.output, toList()), outputFunction))
-                   ).entrySet().stream()
-                   .map(e -> new ConditionResult(e.getValue(), e.getKey()))
-                   .collect(toList());
-       }
+        @Override
+        public Map<Name, TestResult> resultByName() {
+            return postConditionsResults.stream()
+                    .collect(groupingBy(e -> e.name,
+                            collectingAndThen(toList(), UnmodifiableTestResult::new)));
+        }
 
-   }
+        @Override
+        public Map<ExplorationArguments, List<ConditionOutput>> outputByArgument() {
+            return postConditionsResults.stream()
+                    .collect(groupingBy(e -> e.arguments,
+                            mapping(e -> e.output, toList())));
+        }
+
+    }
 }
