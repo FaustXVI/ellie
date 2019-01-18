@@ -16,20 +16,6 @@ import static java.util.stream.Collectors.*;
 
 public interface Explorer {
 
-    default Stream<Exploration> explore(PostConditionResults results){
-        return explore(results, new PreConditionResults() {
-            @Override
-            public Map<Name, TestResult> resultByName() {
-                return Map.of();
-            }
-
-            @Override
-            public Map<ExplorationArguments, List<ConditionOutput>> outputByArgument() {
-                return Map.of();
-            }
-        });
-    }
-
     Stream<Exploration> explore(PostConditionResults postConditionResults, PreConditionResults preConditionResults);
 
     interface ConditionResults {

@@ -50,15 +50,15 @@ class MultipleBehaviourExplorerShould {
     @Test
     void keepsOtherRunnerTests() {
         Exploration test = Exploration.exploration(new Name("test"), (c) -> EMPTY_EXPLORATION_RESULT);
-        Mockito.when(otherExplorer.explore(results))
+        Mockito.when(otherExplorer.explore(results,preConditionResults))
                 .thenReturn(Stream.of(test));
 
-        assertThat(multipleBehaviourRunner.explore(results)).contains(test);
+        assertThat(multipleBehaviourRunner.explore(results,preConditionResults)).contains(test);
     }
 
     @Test
     void addsMultipleBehaviourLast() {
-        assertThat(multipleBehaviourRunner.explore(results))
+        assertThat(multipleBehaviourRunner.explore(results,preConditionResults))
                 .extracting(Exploration::name)
                 .last()
                 .isEqualTo(
@@ -71,7 +71,7 @@ class MultipleBehaviourExplorerShould {
 
         AtomicBoolean errorFound = new AtomicBoolean(false);
 
-        this.multipleBehaviourRunner.explore(results)
+        this.multipleBehaviourRunner.explore(results,preConditionResults)
                 .forEach(t -> t.check(errorMessage -> {
                     errorFound.set(true);
                     assertThat(errorMessage.message).contains("one data has many post-conditions");
@@ -87,7 +87,7 @@ class MultipleBehaviourExplorerShould {
                 .then(ExplorerFixtures.filterFrom(NO_MULTIPLE_PASS));
 
         try {
-            multipleBehaviourRunner.explore(results)
+            multipleBehaviourRunner.explore(results,preConditionResults)
                     .forEach(t -> t.check(e -> fail("No error should be found but got : " + e)));
         } catch (Exception e) {
             fail("No data passes many post conditions");
@@ -99,7 +99,7 @@ class MultipleBehaviourExplorerShould {
         when(results.matchOutputs(Mockito.any()))
                 .thenReturn(EMPTY_TEST_RESULT);
 
-        List<TestResult> checkedResults = multipleBehaviourRunner.explore(results)
+        List<TestResult> checkedResults = multipleBehaviourRunner.explore(results,preConditionResults)
                 .map(t -> t.check(IGNORE_ERROR_MESSAGE).testResult)
                 .collect(toList());
 

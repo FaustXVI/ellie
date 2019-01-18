@@ -77,7 +77,7 @@ public class AtLeastOneMatchExplorerShould {
         when(postConditionResults.resultByName()).thenReturn(wrapName(results));
 
         Stream<Exploration> behaviours =
-                exploratoryExplorer.explore(postConditionResults);
+                exploratoryExplorer.explore(postConditionResults, preConditionResults);
 
         assertThat(behaviours).hasSize(results.size())
                 .extracting(Exploration::name)
@@ -95,7 +95,7 @@ public class AtLeastOneMatchExplorerShould {
     @MethodSource({"passingResults", "mixtedResults"})
     void passIfALeastOneDataPasses(Map<String, TestResult> results) {
         when(this.postConditionResults.resultByName()).thenReturn(wrapName(results));
-        Stream<Exploration> behaviours = exploratoryExplorer.explore(this.postConditionResults);
+        Stream<Exploration> behaviours = exploratoryExplorer.explore(postConditionResults, preConditionResults);
         try {
             behaviours.forEach(t ->
                     t.check(e -> fail("should pass the explore but got " + e)));
@@ -109,7 +109,7 @@ public class AtLeastOneMatchExplorerShould {
     void failIfNoDataValidatesPredicate(Map<String, TestResult> results) {
         when(this.postConditionResults.resultByName()).thenReturn(wrapName(results));
         AtomicBoolean errorFound = new AtomicBoolean(false);
-        exploratoryExplorer.explore(this.postConditionResults)
+        exploratoryExplorer.explore(postConditionResults, preConditionResults)
                 .forEach(ex -> ex.check(e -> {
                     errorFound.set(true);
                     assertThat(e.message)
@@ -122,7 +122,7 @@ public class AtLeastOneMatchExplorerShould {
     @MethodSource({"passingResults", "mixtedResults", "failingResults"})
     void returnsTestResults(Map<String, TestResult> results) {
         when(this.postConditionResults.resultByName()).thenReturn(wrapName(results));
-        Stream<Exploration> behaviours = exploratoryExplorer.explore(this.postConditionResults);
+        Stream<Exploration> behaviours = exploratoryExplorer.explore(postConditionResults, preConditionResults);
         List<TestResult> checkedResults = behaviours.map(t ->
                 t.check(IGNORE_ERROR_MESSAGE).testResult).collect(Collectors.toList());
         assertThat(checkedResults).containsAll(results.values());

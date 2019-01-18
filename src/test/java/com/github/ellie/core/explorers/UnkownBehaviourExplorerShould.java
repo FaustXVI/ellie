@@ -41,10 +41,10 @@ class UnkownBehaviourExplorerShould {
     @Test
     void keepsOtherRunnerTests() {
         Exploration test = Exploration.exploration(new Name("test"), (c) -> EMPTY_EXPLORATION_RESULT);
-        Mockito.when(otherExplorer.explore(results))
+        Mockito.when(otherExplorer.explore(results, preConditionResults))
                 .thenReturn(Stream.of(test));
 
-        assertThat(unkownBehaviourRunner.explore(results)).contains(test);
+        assertThat(unkownBehaviourRunner.explore(results, preConditionResults)).contains(test);
     }
 
     @Test
@@ -53,7 +53,7 @@ class UnkownBehaviourExplorerShould {
         when(results.matchOutputs(Mockito.any()))
                 .thenReturn(testResult);
 
-        List<TestResult> checkedResults = unkownBehaviourRunner.explore(results)
+        List<TestResult> checkedResults = unkownBehaviourRunner.explore(results, preConditionResults)
                 .map(e -> e.check(IGNORE_ERROR_MESSAGE).testResult)
                 .collect(Collectors.toList());
 
@@ -68,7 +68,7 @@ class UnkownBehaviourExplorerShould {
         Correlations expectedCorrelations = new Correlations();
         when(this.preConditionResults.correlationsWith(Mockito.any())).thenReturn(expectedCorrelations);
 
-        List<Correlations> correlations = unkownBehaviourRunner.explore(results,preConditionResults)
+        List<Correlations> correlations = unkownBehaviourRunner.explore(results, preConditionResults)
                 .map(e -> e.check(IGNORE_ERROR_MESSAGE).correlations)
                 .collect(Collectors.toList());
 
@@ -78,7 +78,7 @@ class UnkownBehaviourExplorerShould {
 
     @Test
     void addsUnknownBehaviourLast() {
-        assertThat(unkownBehaviourRunner.explore(results)).extracting(Exploration::name)
+        assertThat(unkownBehaviourRunner.explore(results, preConditionResults)).extracting(Exploration::name)
                 .last()
                 .isEqualTo("Unknown post-exploration");
     }
@@ -90,7 +90,7 @@ class UnkownBehaviourExplorerShould {
         when(results.matchOutputs(Mockito.any())).then(filterFrom(Map.of(two, List.of(ConditionOutput.FAIL))));
 
         AtomicBoolean errorFound = new AtomicBoolean(false);
-        this.unkownBehaviourRunner.explore(results)
+        this.unkownBehaviourRunner.explore(results, preConditionResults)
                 .forEach(t -> t.check(errorMessage -> {
                     errorFound.set(true);
                     assertThat(errorMessage.message)
@@ -108,7 +108,7 @@ class UnkownBehaviourExplorerShould {
         )));
 
         try {
-            unkownBehaviourRunner.explore(results)
+            unkownBehaviourRunner.explore(results, preConditionResults)
                     .forEach(t -> t.check(e -> fail("No error should be found but got : " + e)));
         } catch (Exception e) {
             fail("All data passes something");

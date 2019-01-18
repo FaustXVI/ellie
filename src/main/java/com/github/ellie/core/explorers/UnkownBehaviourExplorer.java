@@ -19,7 +19,7 @@ public class UnkownBehaviourExplorer implements Explorer {
 
     @Override
     public Stream<Exploration> explore(PostConditionResults results, PreConditionResults preConditionResults) {
-        return Stream.concat(otherExplorer.explore(results), Stream.of(dataWithUnknownBehaviour(results,preConditionResults)));
+        return Stream.concat(otherExplorer.explore(results,preConditionResults), Stream.of(dataWithUnknownBehaviour(results,preConditionResults)));
     }
 
     private Exploration dataWithUnknownBehaviour(PostConditionResults results, PreConditionResults preConditionResults) {

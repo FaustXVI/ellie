@@ -19,7 +19,7 @@ public class MultipleBehaviourExplorer implements Explorer {
 
     @Override
     public Stream<Exploration> explore(PostConditionResults results, PreConditionResults preConditionResults) {
-        return Stream.concat(explorer.explore(results),
+        return Stream.concat(explorer.explore(results,preConditionResults),
                 dataThatPassesMultiplePostConditions(results,preConditionResults));
     }
 
