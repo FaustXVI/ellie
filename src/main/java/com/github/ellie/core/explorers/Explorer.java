@@ -45,6 +45,12 @@ public interface Explorer {
                     .collect(groupingBy(e -> outputFunction.apply(e.getValue()), mapping(Map.Entry::getKey, toList())));
             return output -> map.getOrDefault(output, Collections.emptyList());
         }
+
+        default Correlations correlationsWith(TestResult testResult) {
+            return new Correlations(resultByName().entrySet().stream()
+                    .map(n -> new Correlation(n.getKey().value, testResult.computeCorrelationFactorWith(n.getValue())))
+                    .collect(toList()));
+        }
     }
 
     interface PostConditionResults extends ConditionResults {

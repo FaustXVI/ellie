@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mockito;
 
 import java.util.Collections;
 import java.util.List;
@@ -130,16 +131,14 @@ public class AtLeastOneMatchExplorerShould {
     @ParameterizedTest
     @MethodSource({"passingResults", "mixtedResults", "failingResults"})
     void computeCorrelation(Map<String, TestResult> results) {
+        Correlations expectedCorrelations = new Correlations();
         when(this.postConditionResults.resultByName()).thenReturn(wrapName(results));
-        when(this.preConditionResults.resultByName()).thenReturn(wrapName(Map.of("precondition", o -> List.of())));
+        when(this.preConditionResults.correlationsWith(Mockito.any())).thenReturn(expectedCorrelations);
         Stream<Exploration> behaviours = exploratoryExplorer.explore(this.postConditionResults, this.preConditionResults);
         List<Correlations> allCorrelations = behaviours.map(t ->
                 t.check(IGNORE_ERROR_MESSAGE).correlations).collect(Collectors.toList());
         for (Correlations correlations : allCorrelations) {
-            correlations.forEach(c -> {
-                assertThat(c.name).isEqualTo("precondition");
-                assertThat(c.value).isEqualTo(0d);
-            });
+            assertThat(correlations).isSameAs(expectedCorrelations);
         }
     }
 
