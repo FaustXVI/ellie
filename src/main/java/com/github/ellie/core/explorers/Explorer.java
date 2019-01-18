@@ -16,9 +16,23 @@ import static java.util.stream.Collectors.*;
 
 public interface Explorer {
 
-    Stream<Exploration> explore(PostConditionResults results);
+    default Stream<Exploration> explore(PostConditionResults results){
+        return explore(results, new PreConditionResults() {
+            @Override
+            public Map<Name, TestResult> resultByName() {
+                return Map.of();
+            }
 
-    interface PostConditionResults {
+            @Override
+            public Map<ExplorationArguments, List<ConditionOutput>> outputByArgument() {
+                return Map.of();
+            }
+        });
+    }
+
+    Stream<Exploration> explore(PostConditionResults postConditionResults, PreConditionResults preConditionResults);
+
+    interface ConditionResults {
         Map<Name, TestResult> resultByName();
 
         Map<ExplorationArguments, List<ConditionOutput>> outputByArgument();
@@ -31,5 +45,11 @@ public interface Explorer {
                     .collect(groupingBy(e -> outputFunction.apply(e.getValue()), mapping(Map.Entry::getKey, toList())));
             return output -> map.getOrDefault(output, Collections.emptyList());
         }
+    }
+
+    interface PostConditionResults extends ConditionResults {
+    }
+
+    interface PreConditionResults extends ConditionResults{
     }
 }

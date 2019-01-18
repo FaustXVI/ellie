@@ -12,9 +12,11 @@ public class Exploration {
 
     public static class ExplorationResult{
         public final TestResult testResult;
+        public final Correlations correlations;
 
-        public ExplorationResult(TestResult testResult) {
+        public ExplorationResult(TestResult testResult, Correlations correlations) {
             this.testResult = testResult;
+            this.correlations = correlations;
         }
     }
 

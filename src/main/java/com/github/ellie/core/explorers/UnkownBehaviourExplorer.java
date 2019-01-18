@@ -18,7 +18,7 @@ public class UnkownBehaviourExplorer implements Explorer {
     }
 
     @Override
-    public Stream<Exploration> explore(PostConditionResults results) {
+    public Stream<Exploration> explore(PostConditionResults results, PreConditionResults preConditionResults) {
         return Stream.concat(otherExplorer.explore(results), Stream.of(dataWithUnknownBehaviour(results)));
     }
 
@@ -32,7 +32,8 @@ public class UnkownBehaviourExplorer implements Explorer {
                         Exploration.ErrorMessage errorMessage = new Exploration.ErrorMessage("At least one data has unknown post-exploration", dataWithUnknownBehaviour);
                         errorMessageHandler.accept(errorMessage);
                     }
-                    return new Exploration.ExplorationResult(result);
+                    Correlations correlations = new Correlations();
+                    return new Exploration.ExplorationResult(result, correlations);
                 });
     }
 

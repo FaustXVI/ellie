@@ -36,11 +36,13 @@ public class AtLeastOneMatchExplorerShould {
                     .getOrDefault(o, Collections.emptyList());
 
     private Explorer.PostConditionResults postConditionResults;
+    private Explorer.PreConditionResults preConditionResults;
     private Explorer exploratoryExplorer;
 
     @BeforeEach
     void createRunner() {
         postConditionResults = mock(Explorer.PostConditionResults.class);
+        preConditionResults = mock(Explorer.PreConditionResults.class);
         exploratoryExplorer = new AtLeastOneMatchExplorer();
     }
 
@@ -123,6 +125,21 @@ public class AtLeastOneMatchExplorerShould {
         List<TestResult> checkedResults = behaviours.map(t ->
                 t.check(IGNORE_ERROR_MESSAGE).testResult).collect(Collectors.toList());
         assertThat(checkedResults).containsAll(results.values());
+    }
+
+    @ParameterizedTest
+    @MethodSource({"passingResults", "mixtedResults", "failingResults"})
+    void computeCorrelation(Map<String, TestResult> results) {
+        when(this.postConditionResults.resultByName()).thenReturn(wrapName(results));
+        when(this.preConditionResults.resultByName()).thenReturn(wrapName(Map.of("precondition", o -> List.of())));
+        Stream<Exploration> behaviours = exploratoryExplorer.explore(this.postConditionResults, this.preConditionResults);
+        List<Correlations> allCorrelations = behaviours.map(t ->
+                t.check(IGNORE_ERROR_MESSAGE).correlations).collect(Collectors.toList());
+        for (Correlations correlations : allCorrelations) {
+            correlations.forEach(c -> {
+                assertThat(c.name).isEqualTo("precondition");
+            });
+        }
     }
 
 }

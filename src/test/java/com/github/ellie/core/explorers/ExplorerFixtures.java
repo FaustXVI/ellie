@@ -20,7 +20,7 @@ import static java.util.stream.Collectors.toList;
 
 public class ExplorerFixtures {
     public static final TestResult EMPTY_TEST_RESULT = o -> Collections.emptyList();
-    public static final ExplorationResult EMPTY_EXPLORATION_RESULT = new ExplorationResult(o -> Collections.emptyList());
+    public static final ExplorationResult EMPTY_EXPLORATION_RESULT = new ExplorationResult(o -> Collections.emptyList(), new Correlations());
     static final Consumer<Exploration.ErrorMessage> IGNORE_ERROR_MESSAGE = c -> {
     };
 

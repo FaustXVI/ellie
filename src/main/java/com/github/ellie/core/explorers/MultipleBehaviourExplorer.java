@@ -18,7 +18,7 @@ public class MultipleBehaviourExplorer implements Explorer {
     }
 
     @Override
-    public Stream<Exploration> explore(PostConditionResults results) {
+    public Stream<Exploration> explore(PostConditionResults results, PreConditionResults preConditionResults) {
         return Stream.concat(explorer.explore(results),
                 dataThatPassesMultiplePostConditions(results));
     }
@@ -32,7 +32,8 @@ public class MultipleBehaviourExplorer implements Explorer {
                         Exploration.ErrorMessage errorMessage = new Exploration.ErrorMessage("At least one data has many post-conditions", dataWithMultipleBehaviours);
                         errorMessageHandler.accept(errorMessage);
                     }
-                    return new Exploration.ExplorationResult(testResult);
+                    Correlations correlations = new Correlations();
+                    return new Exploration.ExplorationResult(testResult, correlations);
                 }));
     }
 
