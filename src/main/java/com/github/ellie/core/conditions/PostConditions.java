@@ -10,16 +10,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
-import static com.github.ellie.core.ConditionOutput.fromPredicate;
 import static java.util.stream.Collectors.*;
 
 public class PostConditions {
 
-    public final List<NamedCondition> postConditions;
+    private final List<NamedCondition> postConditions;
 
     public PostConditions(List<NamedCondition> postConditions) {
         this.postConditions = Collections.unmodifiableList(postConditions);

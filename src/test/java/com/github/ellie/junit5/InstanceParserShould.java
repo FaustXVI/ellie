@@ -1,19 +1,16 @@
 package com.github.ellie.junit5;
 
-import com.github.ellie.junit5.annotations.DataProvider;
-import com.github.ellie.junit5.annotations.PostCondition;
-import com.github.ellie.junit5.annotations.TestedBehaviour;
-import com.github.ellie.core.conditions.Condition;
 import com.github.ellie.core.ExplorationArguments;
-import com.github.ellie.examples.valids.AssumeNotNegativeAndTestIsTwo;
+import com.github.ellie.core.conditions.PostConditions;
+import com.github.ellie.core.explorers.Explorer;
 import com.github.ellie.examples.invalids.NoDataExploration;
 import com.github.ellie.examples.invalids.NotIterableDataExploration;
 import com.github.ellie.examples.invalids.NotPredicateExploration;
 import com.github.ellie.examples.invalids.TwoBehaviourExploration;
-import com.github.ellie.examples.valids.AllAllowedTypesExploration;
-import com.github.ellie.examples.valids.OneSuppositionExploration;
-import com.github.ellie.examples.valids.TwoDataProviderExploration;
-import com.github.ellie.examples.valids.TwoSuppositionExploration;
+import com.github.ellie.examples.valids.*;
+import com.github.ellie.junit5.annotations.DataProvider;
+import com.github.ellie.junit5.annotations.PostCondition;
+import com.github.ellie.junit5.annotations.TestedBehaviour;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -23,9 +20,9 @@ import org.mockito.Mockito;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.ConditionOutput.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
@@ -82,10 +79,15 @@ class InstanceParserShould {
                                                                           List<String> behaviourNames) {
         final InstanceParser instanceParser = new InstanceParser(testInstance);
 
-        assertThat(instanceParser.executablePostConditions().postConditions)
-                .extracting(condition -> condition.name().value)
-                .containsAll(behaviourNames)
-        ;
+        assertThat(namesOf(instanceParser.executablePostConditions().explore(instanceParser.data())))
+                .containsAll(behaviourNames);
+    }
+
+    private Collection<String> namesOf(Explorer.PostConditionResults results) {
+        return results
+                .resultByName()
+                .keySet().stream().map(n->n.value)
+                .collect(Collectors.toList());
     }
 
     static Stream<Arguments> data() {
@@ -112,24 +114,15 @@ class InstanceParserShould {
     void composeBehaviourMethodWithPostConditionMethod() {
         OneSuppositionExploration testInstance = Mockito.spy(new OneSuppositionExploration());
         InstanceParser instanceParser = new InstanceParser(testInstance);
-        List<? extends Condition> conditions = instanceParser.executablePostConditions().postConditions;
+        PostConditions conditions = instanceParser.executablePostConditions();
         int testedInput = 2;
 
-        conditions.get(0).testWith(ExplorationArguments.of(testedInput));
+        conditions.explore(List.of(ExplorationArguments.of(testedInput)));
 
         verify(testInstance).times2(testedInput);
         verify(testInstance).is4(testedInput);
     }
 
-    @Test
-    void transformsBooleanToTestResult() {
-        AssumeNotNegativeAndTestIsTwo testInstance = Mockito.spy(new AssumeNotNegativeAndTestIsTwo());
-        InstanceParser instanceParser = new InstanceParser(testInstance);
-        List<? extends Condition> conditions = instanceParser.executablePostConditions().postConditions;
-
-        assertThat(conditions.get(0).testWith(ExplorationArguments.of(2)).output).isEqualTo(PASS);
-        assertThat(conditions.get(0).testWith(ExplorationArguments.of(4)).output).isEqualTo(FAIL);
-    }
 
     private static Object[] args(Object... args) {
         return args;
