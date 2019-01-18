@@ -2,8 +2,9 @@ package com.github.ellie.junit5;
 
 import com.github.ellie.core.ExplorationArguments;
 import com.github.ellie.core.MapTestResult;
+import com.github.ellie.core.explorers.Correlation;
+import com.github.ellie.core.explorers.Correlations;
 import com.github.ellie.core.explorers.Exploration;
-import com.github.ellie.core.explorers.TestResult;
 import com.github.ellie.junit5.examples.PerfectJunit5;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
@@ -38,11 +39,11 @@ public class JUnit5ExploratoryTestShould {
     void prettyPrintsArguments() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         System.setOut(new PrintStream(out));
-        BiConsumer<String, TestResult> printer = ExploratoryTest.PRINT_PASSING_CASES;
-        printer.accept("test", new MapTestResult(Map.of(
+        BiConsumer<String, Exploration.ExplorationResult> printer = ExploratoryTest.PRINT_PASSING_CASES;
+        printer.accept("test", new Exploration.ExplorationResult(new MapTestResult(Map.of(
                 PASS,
                 List.of(ExplorationArguments.of(1, "arg1"),
-                        ExplorationArguments.of(2, "arg2"))))
+                        ExplorationArguments.of(2, "arg2")))), new Correlations())
         );
         assertThat(out.toString()).isEqualTo("    static Stream<Arguments> test() {\n"
                 + "        return Stream.of(\n"
@@ -53,19 +54,35 @@ public class JUnit5ExploratoryTestShould {
     }
 
     @Test
+    void printsCorrelations() {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(out));
+        BiConsumer<String, Exploration.ExplorationResult> printer = ExploratoryTest.PRINT_CORRELATIONS;
+        printer.accept("test", new Exploration.ExplorationResult(new MapTestResult(Map.of(
+                PASS,
+                List.of(ExplorationArguments.of(1, "arg1"),
+                        ExplorationArguments.of(2, "arg2")))),
+                new Correlations(List.of(new Correlation("precondition", 0.5),
+                        new Correlation("precondition2", 0.75))))
+        );
+        assertThat(out.toString()).isEqualTo("precondition => 0.5\n" +
+                "precondition2 => 0.75\n");
+    }
+
+    @Test
     void callsOverridableConsumer() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         System.setOut(new PrintStream(out));
-        BiConsumer<String, TestResult> printer = new PerfectJunit5() {
+        BiConsumer<String, Exploration.ExplorationResult> printer = new PerfectJunit5() {
             @Override
-            public BiConsumer<String, TestResult> testResultConsumer() {
+            public BiConsumer<String, Exploration.ExplorationResult> testResultConsumer() {
                 return (s, t) -> System.out.print(s);
             }
         }.testResultConsumer();
-        printer.accept("test", new MapTestResult(Map.of(
+        printer.accept("test", new Exploration.ExplorationResult(new MapTestResult(Map.of(
                 PASS,
                 List.of(ExplorationArguments.of(1, "arg1"),
-                        ExplorationArguments.of(2, "arg2"))))
+                        ExplorationArguments.of(2, "arg2")))), new Correlations())
         );
         assertThat(out.toString()).isEqualTo("test");
     }

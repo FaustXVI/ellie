@@ -98,7 +98,7 @@ class InstanceParser {
         List<AccessibleMethod> preConditions = findMethodsAnnotatedWith(com.github.ellie.junit5.annotations.PreCondition.class);
         assertThat(preConditions).as(
                 com.github.ellie.junit5.annotations.PreCondition.class.getSimpleName() + " methods return type should be predicate or consumer")
-                .allMatch(m -> m.returnsAnyOf(boolean.class, void.class, Boolean.class));
+                .allMatch(m -> m.returnsAnyOf(void.class));
         return preConditions;
     }
 

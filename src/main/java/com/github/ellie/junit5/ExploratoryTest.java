@@ -1,7 +1,6 @@
 package com.github.ellie.junit5;
 
-import com.github.ellie.core.explorers.Exploration;
-import com.github.ellie.core.explorers.TestResult;
+import com.github.ellie.core.explorers.Exploration.ExplorationResult;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
@@ -16,8 +15,8 @@ import static com.github.ellie.core.ConditionOutput.PASS;
 public interface ExploratoryTest {
 
 
-    BiConsumer<String, TestResult> PRINT_PASSING_CASES = (s, l) -> {
-        Stream<String> arguments = l.argumentsThat(PASS)
+    public static final BiConsumer<String, ExplorationResult> PRINT_PASSING_CASES = (s, l) -> {
+        Stream<String> arguments = l.testResult.argumentsThat(PASS)
                 .stream()
                 .map(args -> Arrays.stream(args.get())
                         .map(o -> {
@@ -34,18 +33,24 @@ public interface ExploratoryTest {
         System.out.println(method);
     };
 
+    public static final BiConsumer<String, ExplorationResult> PRINT_CORRELATIONS = (s, l) -> {
+        l.correlations.forEach(c->
+                System.out.println(c.name + " => " + c.value)
+        );
+    };
+
     @TestFactory
     default Stream<? extends DynamicTest> generatedTests() {
         return ExplorerBuilder.generateTestsFor(this)
                 .map(t -> DynamicTest.dynamicTest(t.name(), () -> {
-                    Exploration.ExplorationResult result = t.check(m -> Assertions.assertThat(m.causes)
+                    ExplorationResult result = t.check(m -> Assertions.assertThat(m.causes)
                             .as(m.message).isEmpty());
-                    testResultConsumer().accept(t.name(), result.testResult);
+                    testResultConsumer().accept(t.name(), result);
                 }));
     }
 
-    default BiConsumer<String, TestResult> testResultConsumer() {
-        return PRINT_PASSING_CASES;
+    default BiConsumer<String, ExplorationResult> testResultConsumer() {
+        return PRINT_CORRELATIONS;
     }
 
 }
