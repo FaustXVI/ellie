@@ -13,26 +13,26 @@ import java.util.Map;
 
 import static java.util.stream.Collectors.*;
 
-public class PostConditions {
+public class PreConditions {
 
     private final List<NamedCondition> conditions;
 
-    public PostConditions(List<NamedCondition> conditions) {
+    public PreConditions(List<NamedCondition> conditions) {
         this.conditions = Collections.unmodifiableList(conditions);
     }
 
-    public Explorer.PostConditionResults explore(List<ExplorationArguments> data) {
-        return new PostConditionResults(data.stream()
+    public Explorer.PreConditionResults explore(List<ExplorationArguments> data) {
+        return new PreConditionResults(data.stream()
                 .flatMap(arguments -> conditions.stream()
                         .map(e -> e.testWith(arguments)))
                 .collect(toList()));
     }
 
 
-    private static class PostConditionResults implements Explorer.PostConditionResults {
+    private static class PreConditionResults implements Explorer.PreConditionResults {
         private final Collection<NamedConditionResult> postConditionsResults;
 
-        private PostConditionResults(Collection<NamedConditionResult> postConditionsResults) {
+        private PreConditionResults(Collection<NamedConditionResult> postConditionsResults) {
             this.postConditionsResults = postConditionsResults;
         }
 

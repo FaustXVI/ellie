@@ -1,11 +1,12 @@
 package com.github.ellie.junit5;
 
+import com.github.ellie.core.ConditionOutput;
 import com.github.ellie.core.ExplorationArguments;
 import com.github.ellie.core.Name;
-import com.github.ellie.core.conditions.PostConditions;
-import com.github.ellie.core.ConditionOutput;
 import com.github.ellie.core.conditions.NamedCondition;
 import com.github.ellie.core.conditions.NamedConditionResult;
+import com.github.ellie.core.conditions.PostConditions;
+import com.github.ellie.core.conditions.PreConditions;
 import com.github.ellie.junit5.annotations.DataProvider;
 import com.github.ellie.junit5.annotations.TestedBehaviour;
 
@@ -25,6 +26,17 @@ class InstanceParser {
 
     InstanceParser(Object testInstance) {
         this.testInstance = testInstance;
+    }
+
+    private static Predicate<Object> asPredicate(Consumer<Object> consumer) {
+        return (o) -> {
+            try {
+                consumer.accept(o);
+                return true;
+            } catch (AssertionError e) {
+                return false;
+            }
+        };
     }
 
     List<ExplorationArguments> data() {
@@ -82,6 +94,14 @@ class InstanceParser {
         return postConditions;
     }
 
+    private List<AccessibleMethod> preConditions() {
+        List<AccessibleMethod> preConditions = findMethodsAnnotatedWith(com.github.ellie.junit5.annotations.PreCondition.class);
+        assertThat(preConditions).as(
+                com.github.ellie.junit5.annotations.PreCondition.class.getSimpleName() + " methods return type should be predicate or consumer")
+                .allMatch(m -> m.returnsAnyOf(boolean.class, void.class, Boolean.class));
+        return preConditions;
+    }
+
     PostConditions executablePostConditions() {
         AccessibleMethod exploredCode = testedBehaviour();
 
@@ -90,6 +110,12 @@ class InstanceParser {
                 .map(m -> new PostCondition(m,
                         exploredCode))
                 .collect(Collectors.toList()));
+    }
+
+    PreConditions executablePreConditions() {
+        return new PreConditions(preConditions()
+                .stream()
+                .map(PreCondition::new).collect(Collectors.toList()));
     }
 
 
@@ -113,21 +139,37 @@ class InstanceParser {
             return new NamedConditionResult(name(), ConditionOutput.fromPredicate(predicate).apply(behaviourMethod.invoke(explorationArguments)), explorationArguments);
         }
 
-        private static Predicate<Object> asPredicate(Consumer<Object> consumer) {
-            return (o) -> {
-                try {
-                    consumer.accept(o);
-                    return true;
-                } catch (AssertionError e) {
-                    return false;
-                }
-            };
-        }
-
         @Override
         public Name name() {
             return new Name(behaviourMethod.name() + "_" + postConditionSupplier.name());
         }
 
+    }
+
+    private static class PreCondition implements NamedCondition {
+        private final AccessibleMethod m;
+
+        PreCondition(AccessibleMethod m) {
+            this.m = m;
+        }
+
+        @Override
+        public NamedConditionResult testWith(ExplorationArguments explorationArguments) {
+            Predicate<ExplorationArguments> predicate = a -> {
+                try {
+                    m.invoke(a);
+                    return true;
+                } catch (AssertionError e) {
+                    return false;
+                }
+            };
+            return new NamedConditionResult(name(), ConditionOutput.fromPredicate(predicate).apply(explorationArguments), explorationArguments);
+
+        }
+
+        @Override
+        public Name name() {
+            return new Name(m.name());
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.github.ellie.junit5;
 
 import com.github.ellie.core.ExplorationArguments;
 import com.github.ellie.core.conditions.PostConditions;
+import com.github.ellie.core.conditions.PreConditions;
 import com.github.ellie.core.explorers.Explorer;
 import com.github.ellie.examples.invalids.NoDataExploration;
 import com.github.ellie.examples.invalids.NotIterableDataExploration;
@@ -83,7 +84,7 @@ class InstanceParserShould {
                 .containsAll(behaviourNames);
     }
 
-    private Collection<String> namesOf(Explorer.PostConditionResults results) {
+    private Collection<String> namesOf(Explorer.ConditionResults results) {
         return results
                 .resultByName()
                 .keySet().stream().map(n->n.value)
@@ -114,15 +115,34 @@ class InstanceParserShould {
     void composeBehaviourMethodWithPostConditionMethod() {
         OneSuppositionExploration testInstance = Mockito.spy(new OneSuppositionExploration());
         InstanceParser instanceParser = new InstanceParser(testInstance);
-        PostConditions conditions = instanceParser.executablePostConditions();
+        PostConditions postConditions = instanceParser.executablePostConditions();
         int testedInput = 2;
 
-        conditions.explore(List.of(ExplorationArguments.of(testedInput)));
+        postConditions.explore(List.of(ExplorationArguments.of(testedInput)));
 
         verify(testInstance).times2(testedInput);
         verify(testInstance).is4(testedInput);
     }
 
+    @Test
+    void namePreconditionWithConditionMethodName() {
+        InstanceParser instanceParser = new InstanceParser(new OneSuppositionOnePreConditionExploration());
+
+        assertThat(namesOf(instanceParser.executablePreConditions().explore(instanceParser.data())))
+                .containsExactly("is2");
+    }
+
+    @Test
+    void callPreConditionMethod() {
+        OneSuppositionOnePreConditionExploration testInstance = Mockito.spy(new OneSuppositionOnePreConditionExploration());
+        InstanceParser instanceParser = new InstanceParser(testInstance);
+        PreConditions preConditions = instanceParser.executablePreConditions();
+        int testedInput = 2;
+
+        preConditions.explore(List.of(ExplorationArguments.of(testedInput)));
+
+        verify(testInstance).is2(testedInput);
+    }
 
     private static Object[] args(Object... args) {
         return args;

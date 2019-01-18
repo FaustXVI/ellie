@@ -4,6 +4,7 @@ import com.github.ellie.junit5.annotations.DataProvider;
 import com.github.ellie.junit5.annotations.PostCondition;
 import com.github.ellie.junit5.annotations.PreCondition;
 import com.github.ellie.junit5.annotations.TestedBehaviour;
+import org.assertj.core.api.Assertions;
 
 import java.util.Collection;
 import java.util.List;
@@ -27,8 +28,8 @@ public class OneSuppositionOnePreConditionExploration {
     }
 
     @PreCondition
-    public Predicate<Integer> is2(int n) {
-        return i -> i == 2;
+    public void is2(int n) {
+        Assertions.assertThat(n).isEqualTo(2);
     }
 
 }

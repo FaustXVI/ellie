@@ -22,7 +22,7 @@
 
  * identify entry points list inputs (create arbitraty instances and instances of interest)
  * List preconditions and postconditions
- * Lib checks for us which conditions are satisfied and which correlations emerge between conditions
+ * Lib checks for us which postConditions are satisfied and which correlations emerge between postConditions
  * iterate
  
  ## Next Meeting schedule (SHOULD[1] be respected)
