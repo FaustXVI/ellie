@@ -25,6 +25,7 @@ class UnkownBehaviourExplorerShould {
     private Explorer otherExplorer;
     private UnkownBehaviourExplorer unkownBehaviourRunner;
     private Explorer.PostConditionResults results;
+    private Explorer.PreConditionResults preConditionResults;
     public static final Consumer<Exploration.ErrorMessage> IGNORE_ERROR_MESSAGE = c -> {
     };
 
@@ -32,6 +33,7 @@ class UnkownBehaviourExplorerShould {
     void createRunner() {
         otherExplorer = mock(Explorer.class);
         results = mock(Explorer.PostConditionResults.class);
+        preConditionResults = mock(Explorer.PreConditionResults.class);
         when(results.matchOutputs(Mockito.any())).thenReturn(EMPTY_TEST_RESULT);
         unkownBehaviourRunner = new UnkownBehaviourExplorer(otherExplorer);
     }
@@ -56,6 +58,21 @@ class UnkownBehaviourExplorerShould {
                 .collect(Collectors.toList());
 
         assertThat(checkedResults.get(0)).isSameAs(testResult);
+
+    }
+
+    @Test
+    void computeCorrelation() {
+        when(results.matchOutputs(Mockito.any()))
+                .thenReturn(EMPTY_TEST_RESULT);
+        Correlations expectedCorrelations = new Correlations();
+        when(this.preConditionResults.correlationsWith(Mockito.any())).thenReturn(expectedCorrelations);
+
+        List<Correlations> correlations = unkownBehaviourRunner.explore(results,preConditionResults)
+                .map(e -> e.check(IGNORE_ERROR_MESSAGE).correlations)
+                .collect(Collectors.toList());
+
+        assertThat(correlations.get(0)).isSameAs(expectedCorrelations);
 
     }
 
