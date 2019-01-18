@@ -61,7 +61,7 @@ public interface TestResult {
         return Math.abs(covariance / (standardDerivationPost * standardDerivationPre));
     }
 
-    default Correlations correlationsWith(ConditionResults conditionResults, AtLeastOneMatchExplorer atLeastOneMatchExplorer) {
+    default Correlations correlationsWith(ConditionResults conditionResults) {
         Map<Name, TestResult> preConditionResult = conditionResults.resultByName();
         return new Correlations(preConditionResult.entrySet().stream()
                 .map(n -> new Correlation(n.getKey().value, computeCorrelationFactorWith(n.getValue())))
