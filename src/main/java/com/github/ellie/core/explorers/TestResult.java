@@ -34,6 +34,7 @@ public interface TestResult {
 
 
         int n = passed.size() + failing.size();
+        if(n!= precond.size() + notPrecond.size()) return 0d;
 
         double Epre = precond.size() * 1.0 / n;
         double Epost = passed.size() * 1.0 / n;

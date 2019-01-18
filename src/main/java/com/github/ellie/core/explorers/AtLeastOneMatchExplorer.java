@@ -24,9 +24,10 @@ public class AtLeastOneMatchExplorer implements Explorer {
                                 Exploration.ErrorMessage errorMessage = new Exploration.ErrorMessage("no data validates this behaviour");
                                 errorHandler.accept(errorMessage);
                             }
-                            Map<Name, TestResult> preCoditionResult = preConditionResults.resultByName();
-                            Correlations correlations = new Correlations(preCoditionResult.keySet().stream()
-                                    .map(n -> new Correlation(n.value)).collect(Collectors.toList()));
+                            Map<Name, TestResult> preConditionResult = preConditionResults.resultByName();
+                            Correlations correlations = new Correlations(preConditionResult.entrySet().stream()
+                                    .map(n -> new Correlation(n.getKey().value, testResult.computeCorrelationFactorWith(n.getValue())))
+                                    .collect(Collectors.toList()));
                             return new Exploration.ExplorationResult(testResult, correlations);
                         }));
     }

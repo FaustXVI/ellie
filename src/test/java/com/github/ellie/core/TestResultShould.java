@@ -38,11 +38,17 @@ public class TestResultShould {
         put(FAIL, List.of(FOUR));
     }};
 
+    public static final Map<ConditionOutput, Collection<ExplorationArguments>> NOT_SAME_SIZE_OF_ARGUMENTS = new HashMap<>() {{
+        put(PASS, List.of(ONE, TWO));
+        put(FAIL, List.of(FOUR));
+    }};
+
     private static Stream<Arguments> correlations() {
         return Stream.of(
                 Arguments.of(ONE_TWO, ONE_TWO, 1d),
                 Arguments.of(ONE_TWO, ONE_THREE, 0d),
-                Arguments.of(ONE_TWO, THREE_QUARTERS, 1d / Math.sqrt(3d))
+                Arguments.of(ONE_TWO, THREE_QUARTERS, 1d / Math.sqrt(3d)),
+                Arguments.of(ONE_TWO, NOT_SAME_SIZE_OF_ARGUMENTS, 0d)
         );
     }
 

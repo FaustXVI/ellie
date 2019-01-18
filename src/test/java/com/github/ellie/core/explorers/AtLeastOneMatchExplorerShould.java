@@ -138,6 +138,7 @@ public class AtLeastOneMatchExplorerShould {
         for (Correlations correlations : allCorrelations) {
             correlations.forEach(c -> {
                 assertThat(c.name).isEqualTo("precondition");
+                assertThat(c.value).isEqualTo(0d);
             });
         }
     }
