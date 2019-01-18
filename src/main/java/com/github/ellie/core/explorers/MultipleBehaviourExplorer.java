@@ -20,10 +20,10 @@ public class MultipleBehaviourExplorer implements Explorer {
     @Override
     public Stream<Exploration> explore(PostConditionResults results, PreConditionResults preConditionResults) {
         return Stream.concat(explorer.explore(results),
-                dataThatPassesMultiplePostConditions(results));
+                dataThatPassesMultiplePostConditions(results,preConditionResults));
     }
 
-    private Stream<Exploration> dataThatPassesMultiplePostConditions(PostConditionResults results) {
+    private Stream<Exploration> dataThatPassesMultiplePostConditions(PostConditionResults results, PreConditionResults preConditionResults) {
         return Stream.of(Exploration.exploration(new Name("Match multiple post-conditions"),
                 (errorMessageHandler) -> {
                     TestResult testResult = dataThatPassesMaximumOneBehaviour(results);
@@ -32,7 +32,7 @@ public class MultipleBehaviourExplorer implements Explorer {
                         Exploration.ErrorMessage errorMessage = new Exploration.ErrorMessage("At least one data has many post-conditions", dataWithMultipleBehaviours);
                         errorMessageHandler.accept(errorMessage);
                     }
-                    Correlations correlations = new Correlations();
+                    Correlations correlations = preConditionResults.correlationsWith(testResult);
                     return new Exploration.ExplorationResult(testResult, correlations);
                 }));
     }

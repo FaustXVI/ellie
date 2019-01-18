@@ -29,19 +29,20 @@ class MultipleBehaviourExplorerShould {
             ExplorationArguments.of(2), List.of(ConditionOutput.FAIL));
     public static final Map<ExplorationArguments, Collection<ConditionOutput>>
             MULTIPLE_PASS = Map.of(ExplorationArguments.of(2), List.of(PASS, PASS));
-    private static final Map<ExplorationArguments, Collection<ConditionOutput>> MIXED = new HashMap<>(){{
+    private static final Map<ExplorationArguments, Collection<ConditionOutput>> MIXED = new HashMap<>() {{
         putAll(NO_MULTIPLE_PASS);
         putAll(MULTIPLE_PASS);
     }};
     private Explorer otherExplorer;
     private MultipleBehaviourExplorer multipleBehaviourRunner;
     private Explorer.PostConditionResults results;
-
+    private Explorer.PreConditionResults preConditionResults;
 
     @BeforeEach
     void createRunner() {
         otherExplorer = mock(Explorer.class);
         results = mock(Explorer.PostConditionResults.class);
+        preConditionResults = mock(Explorer.PreConditionResults.class);
         when(results.matchOutputs(Mockito.any())).thenReturn(EMPTY_TEST_RESULT);
         multipleBehaviourRunner = new MultipleBehaviourExplorer(otherExplorer);
     }
@@ -103,6 +104,19 @@ class MultipleBehaviourExplorerShould {
                 .collect(toList());
 
         assertThat(checkedResults.get(0)).isSameAs(EMPTY_TEST_RESULT);
+    }
+
+    @Test
+    void computeCorrelation() {
+        when(results.matchOutputs(Mockito.any()))
+                .thenReturn(EMPTY_TEST_RESULT);
+        Correlations expectedCorrelations = new Correlations();
+        when(this.preConditionResults.correlationsWith(Mockito.any())).thenReturn(expectedCorrelations);
+        List<Correlations> correlations = multipleBehaviourRunner.explore(results, preConditionResults)
+                .map(t -> t.check(IGNORE_ERROR_MESSAGE).correlations)
+                .collect(toList());
+
+        assertThat(correlations.get(0)).isSameAs(expectedCorrelations);
     }
 
 
