@@ -10,8 +10,16 @@ import java.util.function.Consumer;
 
 public class Exploration {
 
+    public static class ExplorationResult{
+        public final TestResult testResult;
+
+        public ExplorationResult(TestResult testResult) {
+            this.testResult = testResult;
+        }
+    }
+
     public interface Check {
-        TestResult check(Consumer<ErrorMessage> errorHandler);
+        ExplorationResult check(Consumer<ErrorMessage> errorHandler);
     }
 
     private final Name name;
@@ -22,7 +30,7 @@ public class Exploration {
         this.test = test;
     }
 
-    public TestResult check(Consumer<ErrorMessage> errorHandler){
+    public ExplorationResult check(Consumer<ErrorMessage> errorHandler){
         return test.check(errorHandler);
     }
 

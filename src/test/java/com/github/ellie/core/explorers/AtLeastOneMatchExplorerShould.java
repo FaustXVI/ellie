@@ -121,7 +121,7 @@ public class AtLeastOneMatchExplorerShould {
         when(this.postConditionResults.resultByName()).thenReturn(wrapName(results));
         Stream<Exploration> behaviours = exploratoryExplorer.explore(this.postConditionResults);
         List<TestResult> checkedResults = behaviours.map(t ->
-                t.check(IGNORE_ERROR_MESSAGE)).collect(Collectors.toList());
+                t.check(IGNORE_ERROR_MESSAGE).testResult).collect(Collectors.toList());
         assertThat(checkedResults).containsAll(results.values());
     }
 

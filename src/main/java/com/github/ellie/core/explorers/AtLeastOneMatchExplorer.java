@@ -20,7 +20,7 @@ public class AtLeastOneMatchExplorer implements Explorer {
                                 Exploration.ErrorMessage errorMessage = new Exploration.ErrorMessage("no data validates this behaviour");
                                 errorHandler.accept(errorMessage);
                             }
-                            return testResult;
+                            return new Exploration.ExplorationResult(testResult);
                         }));
     }
 

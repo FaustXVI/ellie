@@ -32,7 +32,7 @@ public class UnkownBehaviourExplorer implements Explorer {
                         Exploration.ErrorMessage errorMessage = new Exploration.ErrorMessage("At least one data has unknown post-exploration", dataWithUnknownBehaviour);
                         errorMessageHandler.accept(errorMessage);
                     }
-                    return result;
+                    return new Exploration.ExplorationResult(result);
                 });
     }
 

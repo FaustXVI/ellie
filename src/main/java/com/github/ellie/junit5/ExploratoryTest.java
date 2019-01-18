@@ -1,5 +1,6 @@
 package com.github.ellie.junit5;
 
+import com.github.ellie.core.explorers.Exploration;
 import com.github.ellie.core.explorers.TestResult;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DynamicTest;
@@ -37,9 +38,9 @@ public interface ExploratoryTest {
     default Stream<? extends DynamicTest> generatedTests() {
         return ExplorerBuilder.generateTestsFor(this)
                 .map(t -> DynamicTest.dynamicTest(t.name(), () -> {
-                    TestResult result = t.check(m -> Assertions.assertThat(m.causes)
+                    Exploration.ExplorationResult result = t.check(m -> Assertions.assertThat(m.causes)
                             .as(m.message).isEmpty());
-                    testResultConsumer().accept(t.name(),result);
+                    testResultConsumer().accept(t.name(), result.testResult);
                 }));
     }
 

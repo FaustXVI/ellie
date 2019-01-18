@@ -3,6 +3,7 @@ package com.github.ellie.core.explorers;
 import com.github.ellie.core.ConditionOutput;
 import com.github.ellie.core.ExplorationArguments;
 import com.github.ellie.core.conditions.ConditionResult;
+import com.github.ellie.core.explorers.Exploration.ExplorationResult;
 import org.mockito.stubbing.Answer;
 
 import java.util.Collection;
@@ -19,6 +20,7 @@ import static java.util.stream.Collectors.toList;
 
 public class ExplorerFixtures {
     public static final TestResult EMPTY_TEST_RESULT = o -> Collections.emptyList();
+    public static final ExplorationResult EMPTY_EXPLORATION_RESULT = new ExplorationResult(o -> Collections.emptyList());
     static final Consumer<Exploration.ErrorMessage> IGNORE_ERROR_MESSAGE = c -> {
     };
 

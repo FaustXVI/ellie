@@ -14,8 +14,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.explorers.ExplorerFixtures.EMPTY_TEST_RESULT;
-import static com.github.ellie.core.explorers.ExplorerFixtures.filterFrom;
+import static com.github.ellie.core.explorers.ExplorerFixtures.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
@@ -39,7 +38,7 @@ class UnkownBehaviourExplorerShould {
 
     @Test
     void keepsOtherRunnerTests() {
-        Exploration test = Exploration.exploration(new Name("test"), (c) -> EMPTY_TEST_RESULT);
+        Exploration test = Exploration.exploration(new Name("test"), (c) -> EMPTY_EXPLORATION_RESULT);
         Mockito.when(otherExplorer.explore(results))
                 .thenReturn(Stream.of(test));
 
@@ -53,7 +52,7 @@ class UnkownBehaviourExplorerShould {
                 .thenReturn(testResult);
 
         List<TestResult> checkedResults = unkownBehaviourRunner.explore(results)
-                .map(e -> e.check(IGNORE_ERROR_MESSAGE))
+                .map(e -> e.check(IGNORE_ERROR_MESSAGE).testResult)
                 .collect(Collectors.toList());
 
         assertThat(checkedResults.get(0)).isSameAs(testResult);

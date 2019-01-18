@@ -15,8 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.PASS;
-import static com.github.ellie.core.explorers.ExplorerFixtures.EMPTY_TEST_RESULT;
-import static com.github.ellie.core.explorers.ExplorerFixtures.IGNORE_ERROR_MESSAGE;
+import static com.github.ellie.core.explorers.ExplorerFixtures.*;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -49,7 +48,7 @@ class MultipleBehaviourExplorerShould {
 
     @Test
     void keepsOtherRunnerTests() {
-        Exploration test = Exploration.exploration(new Name("test"), (c) -> EMPTY_TEST_RESULT);
+        Exploration test = Exploration.exploration(new Name("test"), (c) -> EMPTY_EXPLORATION_RESULT);
         Mockito.when(otherExplorer.explore(results))
                 .thenReturn(Stream.of(test));
 
@@ -100,7 +99,7 @@ class MultipleBehaviourExplorerShould {
                 .thenReturn(EMPTY_TEST_RESULT);
 
         List<TestResult> checkedResults = multipleBehaviourRunner.explore(results)
-                .map(t -> t.check(IGNORE_ERROR_MESSAGE))
+                .map(t -> t.check(IGNORE_ERROR_MESSAGE).testResult)
                 .collect(toList());
 
         assertThat(checkedResults.get(0)).isSameAs(EMPTY_TEST_RESULT);
