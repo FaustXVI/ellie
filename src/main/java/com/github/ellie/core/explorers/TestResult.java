@@ -2,8 +2,11 @@ package com.github.ellie.core.explorers;
 
 import com.github.ellie.core.ConditionOutput;
 import com.github.ellie.core.ExplorationArguments;
+import com.github.ellie.core.Name;
+import com.github.ellie.core.explorers.Explorer.ConditionResults;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.github.ellie.core.ConditionOutput.FAIL;
@@ -57,4 +60,13 @@ public interface TestResult {
 
         return Math.abs(covariance / (standardDerivationPost * standardDerivationPre));
     }
+
+    default Correlations correlationsWith(ConditionResults conditionResults, AtLeastOneMatchExplorer atLeastOneMatchExplorer) {
+        Map<Name, TestResult> preConditionResult = conditionResults.resultByName();
+        return new Correlations(preConditionResult.entrySet().stream()
+                .map(n -> new Correlation(n.getKey().value, computeCorrelationFactorWith(n.getValue())))
+                .collect(Collectors.toList()));
+    }
+
+
 }

@@ -1,9 +1,5 @@
 package com.github.ellie.core.explorers;
 
-import com.github.ellie.core.Name;
-
-import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.PASS;
@@ -24,10 +20,7 @@ public class AtLeastOneMatchExplorer implements Explorer {
                                 Exploration.ErrorMessage errorMessage = new Exploration.ErrorMessage("no data validates this behaviour");
                                 errorHandler.accept(errorMessage);
                             }
-                            Map<Name, TestResult> preConditionResult = preConditionResults.resultByName();
-                            Correlations correlations = new Correlations(preConditionResult.entrySet().stream()
-                                    .map(n -> new Correlation(n.getKey().value, testResult.computeCorrelationFactorWith(n.getValue())))
-                                    .collect(Collectors.toList()));
+                            Correlations correlations = testResult.correlationsWith(preConditionResults, this);
                             return new Exploration.ExplorationResult(testResult, correlations);
                         }));
     }
