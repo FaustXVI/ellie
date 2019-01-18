@@ -3,22 +3,20 @@ package com.github.ellie.core.explorers;
 import com.github.ellie.core.ConditionOutput;
 import com.github.ellie.core.ExplorationArguments;
 import com.github.ellie.core.Name;
-import com.github.ellie.core.conditions.ConditionResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 
-import java.util.Collections;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static com.github.ellie.core.ConditionOutput.FAIL;
 import static com.github.ellie.core.ConditionOutput.PASS;
+import static com.github.ellie.core.explorers.ExplorerFixtures.EMPTY_TEST_RESULT;
+import static com.github.ellie.core.explorers.ExplorerFixtures.IGNORE_ERROR_MESSAGE;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -27,17 +25,18 @@ import static org.mockito.Mockito.when;
 
 class MultipleBehaviourExplorerShould {
 
-    public static final Map<ExplorationArguments, Stream<ConditionOutput>>
-            NO_MULTIPLE_PASS = Map.of(ExplorationArguments.of(1), Stream.of(PASS),
-            ExplorationArguments.of(2), Stream.of(ConditionOutput.FAIL));
-    public static final Map<ExplorationArguments, Stream<ConditionOutput>>
-            MULTIPLE_PASS = Map.of(ExplorationArguments.of(2), Stream.of(PASS, PASS));
-    public static final TestResult EMPTY_TEST_RESULT = o -> Collections.emptyList();
+    public static final Map<ExplorationArguments, Collection<ConditionOutput>>
+            NO_MULTIPLE_PASS = Map.of(ExplorationArguments.of(1), List.of(PASS),
+            ExplorationArguments.of(2), List.of(ConditionOutput.FAIL));
+    public static final Map<ExplorationArguments, Collection<ConditionOutput>>
+            MULTIPLE_PASS = Map.of(ExplorationArguments.of(2), List.of(PASS, PASS));
+    private static final Map<ExplorationArguments, Collection<ConditionOutput>> MIXED = new HashMap<>(){{
+        putAll(NO_MULTIPLE_PASS);
+        putAll(MULTIPLE_PASS);
+    }};
     private Explorer otherExplorer;
     private MultipleBehaviourExplorer multipleBehaviourRunner;
     private Explorer.PostConditionResults results;
-    private static final Consumer<Exploration.ErrorMessage> IGNORE_ERROR_MESSAGE = c -> {
-    };
 
 
     @BeforeEach
@@ -66,23 +65,9 @@ class MultipleBehaviourExplorerShould {
                         "Match multiple post-conditions");
     }
 
-
-    @Test
-    void callsConsumerWithResults() {
-        TestResult TestResult = EMPTY_TEST_RESULT;
-        when(results.matchOutputs(Mockito.any()))
-                .thenReturn(TestResult);
-
-        multipleBehaviourRunner.explore(results).forEach(ct -> {
-            assertThat(ct.name()).isEqualTo("Match multiple post-conditions");
-            assertThat(ct.check(IGNORE_ERROR_MESSAGE)).isSameAs(TestResult);
-        });
-
-    }
-
     @Test
     void failsIfAtLeastOneDataPassesManyTimes() {
-        when(results.matchOutputs(Mockito.any())).then(filterFrom(MULTIPLE_PASS));
+        when(results.matchOutputs(Mockito.any())).then(ExplorerFixtures.filterFrom(MULTIPLE_PASS));
 
         AtomicBoolean errorFound = new AtomicBoolean(false);
 
@@ -99,7 +84,7 @@ class MultipleBehaviourExplorerShould {
     @Test
     void passesIfNoDataPassesManyTimes() {
         when(results.matchOutputs(Mockito.any()))
-                .then(filterFrom(NO_MULTIPLE_PASS));
+                .then(ExplorerFixtures.filterFrom(NO_MULTIPLE_PASS));
 
         try {
             multipleBehaviourRunner.explore(results)
@@ -109,17 +94,16 @@ class MultipleBehaviourExplorerShould {
         }
     }
 
-    public static Answer<TestResult> filterFrom(Map<ExplorationArguments, Stream<ConditionOutput>> data) {
-        return invocationOnMock -> {
-            Predicate<Stream<ConditionOutput>> predicate = invocationOnMock.getArgument(0);
-            List<ConditionResult> results =
-                    data.entrySet()
-                            .stream()
-                            .map(e -> new ConditionResult(predicate.test(e.getValue()) ? PASS
-                                    : FAIL, e.getKey()))
-                            .collect(toList());
-            return o -> results.stream().filter(r -> o == r.output).map(r -> r.arguments).collect(toList());
-        };
+    @Test
+    void returnsTestResults() {
+        when(results.matchOutputs(Mockito.any()))
+                .thenReturn(EMPTY_TEST_RESULT);
+
+        List<TestResult> checkedResults = multipleBehaviourRunner.explore(results)
+                .map(t -> t.check(IGNORE_ERROR_MESSAGE))
+                .collect(toList());
+
+        assertThat(checkedResults.get(0)).isSameAs(EMPTY_TEST_RESULT);
     }
 
 

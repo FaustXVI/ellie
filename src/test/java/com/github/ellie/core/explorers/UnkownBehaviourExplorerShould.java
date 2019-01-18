@@ -6,14 +6,16 @@ import com.github.ellie.core.Name;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.github.ellie.core.explorers.ExplorerFixtures.EMPTY_TEST_RESULT;
+import static com.github.ellie.core.explorers.ExplorerFixtures.filterFrom;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
@@ -21,7 +23,6 @@ import static org.mockito.Mockito.when;
 
 class UnkownBehaviourExplorerShould {
 
-    public static final TestResult EMPTY_TEST_RESULT = o -> Collections.emptyList();
     private Explorer otherExplorer;
     private UnkownBehaviourExplorer unkownBehaviourRunner;
     private Explorer.PostConditionResults results;
@@ -46,15 +47,16 @@ class UnkownBehaviourExplorerShould {
     }
 
     @Test
-    void callsConsumerWithResults() {
-        TestResult TestResult = EMPTY_TEST_RESULT;
+    void returnsTestResults() {
+        TestResult testResult = EMPTY_TEST_RESULT;
         when(results.matchOutputs(Mockito.any()))
-                .thenReturn(TestResult);
+                .thenReturn(testResult);
 
-        unkownBehaviourRunner.explore(results).forEach(ct -> {
-            assertThat(ct.name()).isEqualTo("Unknown post-exploration");
-            assertThat(ct.check(IGNORE_ERROR_MESSAGE)).isSameAs(TestResult);
-        });
+        List<TestResult> checkedResults = unkownBehaviourRunner.explore(results)
+                .map(e -> e.check(IGNORE_ERROR_MESSAGE))
+                .collect(Collectors.toList());
+
+        assertThat(checkedResults.get(0)).isSameAs(testResult);
 
     }
 
@@ -69,8 +71,7 @@ class UnkownBehaviourExplorerShould {
     @Test
     void failsIfAtLeastOneDataPassesNothing() {
         ExplorationArguments two = ExplorationArguments.of(2);
-        when(results.matchOutputs(Mockito.any())).then(filterFrom(
-                Map.of(two, Stream.of(ConditionOutput.FAIL))));
+        when(results.matchOutputs(Mockito.any())).then(filterFrom(Map.of(two, List.of(ConditionOutput.FAIL))));
 
         AtomicBoolean errorFound = new AtomicBoolean(false);
         this.unkownBehaviourRunner.explore(results)
@@ -86,10 +87,9 @@ class UnkownBehaviourExplorerShould {
 
     @Test
     void passesIfAllDataPassesSomeThing() {
-        when(results.matchOutputs(Mockito.any())).then(filterFrom(
-                Map.of(ExplorationArguments.of(1), Stream.of(ConditionOutput.PASS),
-                        ExplorationArguments.of(2), Stream.of(ConditionOutput.PASS, ConditionOutput.PASS)
-                )));
+        when(results.matchOutputs(Mockito.any())).then(filterFrom(Map.of(ExplorationArguments.of(1), List.of(ConditionOutput.PASS),
+                ExplorationArguments.of(2), List.of(ConditionOutput.PASS, ConditionOutput.PASS)
+        )));
 
         try {
             unkownBehaviourRunner.explore(results)
@@ -97,10 +97,6 @@ class UnkownBehaviourExplorerShould {
         } catch (Exception e) {
             fail("All data passes something");
         }
-    }
-
-    private Answer<TestResult> filterFrom(Map<ExplorationArguments, Stream<ConditionOutput>> data) {
-        return MultipleBehaviourExplorerShould.filterFrom(data);
     }
 
 

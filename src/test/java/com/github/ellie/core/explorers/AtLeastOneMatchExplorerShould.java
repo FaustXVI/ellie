@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 
 import static com.github.ellie.core.ConditionOutput.FAIL;
 import static com.github.ellie.core.ConditionOutput.PASS;
+import static com.github.ellie.core.explorers.ExplorerFixtures.IGNORE_ERROR_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
@@ -102,7 +103,7 @@ public class AtLeastOneMatchExplorerShould {
 
     @ParameterizedTest
     @MethodSource("failingResults")
-    void failPotentialBehaviourIfNotDataValidatesPredicate(Map<String, TestResult> results) {
+    void failIfNoDataValidatesPredicate(Map<String, TestResult> results) {
         when(this.postConditionResults.resultByName()).thenReturn(wrapName(results));
         AtomicBoolean errorFound = new AtomicBoolean(false);
         exploratoryExplorer.explore(this.postConditionResults)
@@ -112,6 +113,16 @@ public class AtLeastOneMatchExplorerShould {
                             .contains("no data validates this behaviour");
                 }));
         assertThat(errorFound.get()).isTrue();
+    }
+
+    @ParameterizedTest
+    @MethodSource({"passingResults", "mixtedResults", "failingResults"})
+    void returnsTestResults(Map<String, TestResult> results) {
+        when(this.postConditionResults.resultByName()).thenReturn(wrapName(results));
+        Stream<Exploration> behaviours = exploratoryExplorer.explore(this.postConditionResults);
+        List<TestResult> checkedResults = behaviours.map(t ->
+                t.check(IGNORE_ERROR_MESSAGE)).collect(Collectors.toList());
+        assertThat(checkedResults).containsAll(results.values());
     }
 
 }
