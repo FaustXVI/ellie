@@ -34,7 +34,7 @@ public interface ExploratoryTest {
     };
 
     public static final BiConsumer<String, ExplorationResult> PRINT_CORRELATIONS = (s, l) -> {
-        l.correlations.forEach(c->
+        l.correlations.forEach(c ->
                 System.out.println(c.name + " => " + c.value)
         );
     };
@@ -43,8 +43,13 @@ public interface ExploratoryTest {
     default Stream<? extends DynamicTest> generatedTests() {
         return ExplorerBuilder.generateTestsFor(this)
                 .map(t -> DynamicTest.dynamicTest(t.name(), () -> {
-                    ExplorationResult result = t.check(m -> Assertions.assertThat(m.causes)
-                            .as(m.message).isEmpty());
+                    ExplorationResult result = t.check(m -> {
+                        Assertions.assertThat(m.causes)
+                                .as(m.message).isEmpty();
+                        if(!m.message.isEmpty()){
+                            Assertions.fail(m.message);
+                        }
+                    });
                     testResultConsumer().accept(t.name(), result);
                 }));
     }

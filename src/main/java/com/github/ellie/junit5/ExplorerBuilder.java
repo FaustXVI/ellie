@@ -12,8 +12,10 @@ import java.util.stream.Stream;
 class ExplorerBuilder {
     static Stream<Exploration> generateTestsFor(Object testInstance) {
         InstanceParser instanceParser = new InstanceParser(testInstance);
-        Explorer.PostConditionResults results = instanceParser.executablePostConditions().explore(instanceParser.data());
-        Explorer.PreConditionResults preconditionResults = emptyPreconditions();
+        // TODO check only one call of data
+        List<ExplorationArguments> data = instanceParser.data();
+        Explorer.PostConditionResults results = instanceParser.executablePostConditions().explore(data);
+        Explorer.PreConditionResults preconditionResults = instanceParser.executablePreConditions().explore(data);
         return new MultipleBehaviourExplorer(
                 new UnkownBehaviourExplorer(
                         new AtLeastOneMatchExplorer()

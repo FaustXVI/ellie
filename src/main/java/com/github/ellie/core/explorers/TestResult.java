@@ -54,7 +54,6 @@ public interface TestResult {
                         + failedAndPrecond.size() * (1 - Epre) * (0 - Epost)
                         + passedAndNotPrecond.size() * (0 - Epre) * (1 - Epost)
                         + passedAndPrecond.size() * (1 - Epre) * (1 - Epost);
-
         return Math.abs(covariance / (standardDerivationPost * standardDerivationPre));
     }
 
